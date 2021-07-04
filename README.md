@@ -8,7 +8,9 @@ This repository aims to derive and implement equations for training neural netwo
 
 # Forward Propagation
 
-## Forward Propagation in Scalar Form for a Single Training Example
+## Forward Propagation for a Single Training Example
+
+In this section, we will explain the forward pass, i.e. forward propagation, of a single training example. We will start by depicting the computations in component form and then continue to explain how to vectorize the forward propagation for a single training example. Finally, we will show how the network generates predictions and how it evaluates the goodness of its predictions using a specific loss function. 
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
@@ -40,9 +42,15 @@ $$
 
 
 
-where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the output, i.e. activation, of neuron $i$ in layer $l$. The weights and biases are initialized with certain values and represent the parameters of the network, i.e. the parameters which the network adjusts during he training phase. The weights must be initialized randomly while the biases can also be initialized with zeros (CITATION). The weight notation may seem a little cumbersome and counter intuitive at first, but it will make more sense when we introduce the matrix notation of the feed-forward mechanism. Also, for now, we are going to treat $f(\cdot)$ as some non-linear transformation whose output should resemble the *firing* rate of neuron $i$ in layer $l$. We are going to look at a few examples of $f(\cdot)$ and mention some of its desired properties later on, because we need some background knowledge about gradient descent and backpropagation first. 
+where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the output, i.e. activation, of neuron $i$ in layer $l$. The weights and biases are initialized with random values[^1] and represent the parameters of the network, i.e. the parameters which the network *learns* during he training phase. The activation function $f(\cdot)$ is some non-linear transformation whose output should resemble the *firing* rate of neuron $i$ in layer $l$. A detailed discussion of activation functions will be presented later, but for now, we will just assume that our activation function is always the sigmoid function which is defined as
+$$
+f(z_i^l) = \frac{1}{1 + e^{-z_i^l}},
+$$
+which has the desirable property that $0 < f(z_i^l) < 1$, so we can say that neuron $a_i^l$ is firing if $f(z_i^l)$ is close to 1. 
 
-Then, in the output layer, we simply have one neuron that represents the probability whether or not we should go to sports, i.e. 
+[^1]: Actually, only the weights must be initialized randomly and the biases may be initialized with zeros, because only the weights suffer from the *symmetry breaking problem* (CITATION)
+
+Then, in the output layer of our example network, we simply have one neuron that represents the probability whether or not we should go to sports, i.e. 
 $$
 a_1^2 = \hat{y}_i
 $$
@@ -50,19 +58,19 @@ or more generally,
 $$
 a_i^L = \hat{y}_i
 $$
-where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. In this network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
+where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. In our example network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}_i$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
 $$
 \text{prediction}_i =
 \begin{cases}
-1, & \hat{y}_i > \text{threshold} \\
-0, & \hat{y}_i \leq \text{threshold}
+1, & \hat{y}_i > \text{threshold}_i \\
+0, & \hat{y}_i \leq \text{threshold}_i
 \end{cases},
 $$
-where $1$ means that we will go to sports and $0$ that we won't go to sports. The threshold may be chosen manually, but usually (CITATION), it is 0.5. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision. Precision is the ratio of true positives divided by the sum of true positives and false positives while recall is the ratio of true positives divided by the sum of true positives and false negatives. 
+where $1$ means that we will go to sports and $0$ that we won't go to sports. The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but usually (CITATION), it is 0.5. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision[^2]. 
 
-## Forward Propagation in Matrix Form for a Single Training Example
+[^2]: Precision is the ratio of true positives divided by the sum of true positives and false positives while recall is the ratio of true positives divided by the sum of true positives and false negatives. 
 
-Now, we want to introduce a matrix-based approach for forward propagating the input data to the output layer, because first, it will make the notation easier and second, it will make your code run faster when you actually need to implement it in Python. So first, we will rewrite equation (3) as 
+Now, we want to introduce a matrix-based approach for forward propagating the input data to the output layer, because first, it will make the notation easier and second, it will make your code run faster when you actually need to implement it in Python, because vectorized operations are highly efficient and optimized. So first, we will rewrite equation (3) as 
 $$
 \textbf{z}^l = \textbf{W}^l \textbf{a}^{l-1} + \textbf{b}^l
 $$
@@ -123,9 +131,13 @@ $$
 	}
 \right].
 $$
-So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\bf{z}^l$, $\bf{a}^{l-1}$, and $\bf{b}^l$. For each neuron in layer $l$, the weight matrix $\bf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\bf{W}^l$ are $n^l \times n^{l-1}$. Then finally, in equation (10), the activation function $f(\cdot)$ is just applied to each element of $\bf{z}^l$ to produce the activation vector $\bf{a}^l$. 
+So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\textbf{z}^l$, $\textbf{a}^{l-1}$, and $\textbf{b}^l$. For each neuron in layer $l$, the weight matrix $\textbf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\textbf{W}^l$ are $n^l \times n^{l-1}$. Then finally, the activation function $f(\cdot)$ is just applied to each element of $\textbf{z}^l$ to produce the activation vector $\textbf{a}^l$. 
 
 We can now apply equations (8) and (10) recursively all the way to the output layer $L$, until we compute the predicted probabilities of the network as follows
+$$
+\textbf{a}^L = \hat{\textbf{y}},
+$$
+or written out explicitly
 $$
 \left[ 
 	\matrix{
@@ -146,18 +158,34 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (7). 
 
-## Loss and cost functions
+Having computed $\textbf{a}^L$, we can compute a certain *loss* which indicates how good or bad our model predicts for a single training example. For a classification problem involving $n^L$ classes, a common loss function is the binary *cross entropy* which is calculated as follows
+$$
+L(\textbf{y}, \hat{\textbf{y}}) = -\left( \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}}) \right),
+$$
+or written out explicitly
+$$
+\left[
+	\matrix{
+		L(y_1, \hat{y}_1) \\
+		L(y_2, \hat{y}_2)\\
+		\vdots \\
+		L(y_{n^L}, \hat{y}_{n^L})
+	}
+\right] =
+\left[
+	\matrix{
+		-\left( y_1 log(\hat{y}_1) + (1-y_1) log(1-\hat{y}_1) \right) \\
+		-\left( y_2 log(\hat{y}_2) + (1-y_2) log(1-\hat{y}_2) \right) \\
+		\vdots \\
+		-\left( y_{n^L} log(\hat{y}_{n^L}) + (1-y_{n^L}) log(1-\hat{y}_{n^L}) \right)
+	}
+\right]
+$$
+Interpret loss function
 
-Equations (8) and (10) are then applied recursively until we compute $\bf{a}^L$. Having computed $\bf{a}^L$, we can compute a certain *loss* which indicates how good or bad our model predicts for a single training example. For classification problems, a common loss function is the binary *cross entropy* which is calculated as follows
-$$
-L(y_i, \hat{y}_i) = -\left( y_i log(\hat{y}_i) + (1-y_i) log(1-\hat{y}_i) \right),
-$$
-or in vector form 
-$$
-L(\textbf{y}, \hat{\textbf{y}}) = -\left( \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}}) \right).
-$$
+## Forward Propagation for a Batch of Training Examples
 
-## Forward Propagation in Matrix Form for a Batch of Training Examples
+In this section, we will explain how to vectorize the forward propagation for a batch of training examples. That is, we will show how to compute the activations of each layer and the losses for `batch_size` training examples at once. 
 
 # Backward Propagation
 
@@ -173,7 +201,7 @@ The goal of the backward propagation algorithm is to iteratively adjust the weig
 
 ## Weight updates
 
-# Activation functions
+# Loss and Activation Functions
 
 Popular choices of activation functions in the hidden layers are the sigmoid (equation 3), ReLU (equation 4) and tanh (equation 5) functions. These functions and their corresponding derivatives are presented below
 $$
