@@ -8,9 +8,7 @@ This repository aims to derive and implement equations for training neural netwo
 
 # Forward Propagation
 
-## Forward Propagation for a Single Training Example
-
-In this section, we will explain the forward pass, i.e. forward propagation, of a single training example. We will start by depicting the computations in component form and then continue to explain how to vectorize the forward propagation for a single training example. Finally, we will show how the network generates predictions and how it evaluates the goodness of its predictions using a specific loss function. 
+In this section, we will start by explaining the forward pass, i.e. forward propagation, of a single training example. We will depict the computations in component form and then continue to explain how to vectorize the forward propagation for a single training example. We will show how the network generates predictions and how it evaluates the goodness of its predictions using a specific loss function. Finally, we will show a little "trick" to compute the forward propagation for `batch_size` training examples at once in a vectorized form.  
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
@@ -42,7 +40,7 @@ $$
 
 
 
-where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the output, i.e. activation, of neuron $i$ in layer $l$. The weights and biases are initialized with random values[^1] and represent the parameters of the network, i.e. the parameters which the network *learns* during he training phase. The activation function $f(\cdot)$ is some non-linear transformation whose output should resemble the *firing* rate of neuron $i$ in layer $l$. A detailed discussion of activation functions will be presented later, but for now, we will just assume that our activation function is always the sigmoid function which is defined as
+where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the output, i.e. activation $a_i^l$, of neuron $i$ in layer $l$. The weights and biases are initialized with random values[^1] and represent the parameters of the network, i.e. the parameters which the network *learns* during the training phase. The activation function $f(\cdot)$ is some non-linear transformation whose output should resemble the *firing* rate of neuron $i$ in layer $l$. A detailed discussion of activation functions will be presented later, but for now, we will just assume that our activation function is always the sigmoid function which is defined as
 $$
 f(z_i^l) = \frac{1}{1 + e^{-z_i^l}},
 $$
@@ -181,11 +179,46 @@ $$
 	}
 \right]
 $$
-Interpret loss function
+In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$ is far away from $y_i$ and low values for good predictions, i.e. when $\hat{y}_i$ is very close to $y_i$. Let's see if component $i$ of (16) fulfills these requirements by considering the following 4 edge cases:
 
-## Forward Propagation for a Batch of Training Examples
+- Bad predictions
 
-In this section, we will explain how to vectorize the forward propagation for a batch of training examples. That is, we will show how to compute the activations of each layer and the losses for `batch_size` training examples at once. 
+  - If $y_i = 1$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = -\infty$ and $(1-y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = \infty$  
+  - If $y_i = 0$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = -\infty$, so $L(y_i, \hat{y}_i) = \infty$  
+
+- Good predictions
+
+  - If $y_i = 1$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$ 
+
+  - If $y_i = 0$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$  
+
+in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and monotonically increasing to avoid local minima (CITATION). 
+
+We will conclude this section by showing how to compute the complete forward propagation for `batch_size` training examples at once. It starts by defining your input data matrix as follows
+$$
+\textbf{X} = \textbf{A}^0,
+$$
+where the feature vectors of each training examples are stacked horizontally in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (17) can be written out explicitly as
+$$
+\left[
+\matrix{
+	x_1^1 & x_1^2 & \ldots & x_1^M \\
+	x_2^1 & x_2^2 & \ldots & x_2^M \\
+	\vdots & \vdots & \ddots & \vdots \\
+	x_{n^0}^1 & x_{n^0}^2 & \ldots & x_{n^0}^M
+}
+\right] = 
+\left[ 
+	\matrix{
+	a_1^{0, 1} & a_1^{0, 2} & \ldots & a_1^{0, M} \\
+	a_2^{0, 1} & a_2^{0, 2} & \ldots & a_2^{0, M} \\
+	\vdots & \vdots & \ddots & \vdots \\
+	a_{n^0}^{0, 1} & a_{n^0}^{0, 2} & \ldots & a_{n^0}^{0, M}
+}
+\right],
+$$
+
+where $x_i^m = a_1^{0, m}$ both refer to the value of the i-th feature of the m-th training example. 
 
 # Backward Propagation
 
