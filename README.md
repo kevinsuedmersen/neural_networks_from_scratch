@@ -1,4 +1,9 @@
-# Neural Networks from Scratch
+L(y_2^1, \hat{y}_2^1)\matrix{
+		z_1^{l, 1} & z_1^{l, 2} & \ldots & z_1^{l, M} \\
+		z_2^{l, 1} & z_2^{l, 2} & \ldots & z_2^{l, M} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		z_{n^l}^{l, 1} & z_{n^l}^{l, 2} & \ldots & z_{n^l}^{l, M}
+	}Neural Networks from Scratch
 
 This repository aims to derive and implement equations for training neural networks from scratch, which consist of an arbitrary number of fully connected, dense layers. First, we will attempt to derive equations for forward- as well as backward propagation in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend it to a matrix-based approach for processing `batch_size` examples at once. After implementing the necessary Python code, we will test the network's performance on the MNIST hand-written digits dataset and compare its performance with famous deep learning libraries such as TensorFlow.
 
@@ -192,13 +197,13 @@ In general, we want a loss function which has high values for bad predictions, i
 
   - If $y_i = 0$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$  
 
-in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and monotonically increasing to avoid local minima (CITATION). 
+in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and monotonically increasing to avoid local minima (CITATION). TODO: Read AK's email about loss function properties!
 
 We will conclude this section by showing how to compute the complete forward propagation for `batch_size` training examples at once. It starts by defining your input data matrix as follows
 $$
 \textbf{X} = \textbf{A}^0,
 $$
-where the feature vectors of each training examples are stacked horizontally in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (17) can be written out explicitly as
+where the feature vectors of each training examples are stacked horizontally next to each other in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (17) can be written out explicitly as
 $$
 \left[
 \matrix{
@@ -219,6 +224,99 @@ $$
 $$
 
 where $x_i^m = a_1^{0, m}$ both refer to the value of the i-th feature of the m-th training example. 
+
+Next, equation (9) becomes
+$$
+\textbf{Z}^l = \textbf{W}^l \textbf{A}^{l-1} + \textbf{B}^l,
+$$
+or written out explicitly
+$$
+\left[
+	\matrix{
+		z_1^{l, 1} & z_1^{l, 2} & \ldots & z_1^{l, M} \\
+		z_2^{l, 1} & z_2^{l, 2} & \ldots & z_2^{l, M} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		z_{n^l}^{l, 1} & z_{n^l}^{l, 2} & \ldots & z_{n^l}^{l, M}
+	}
+\right] =
+\left[
+	\matrix{
+		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
+		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
+	}
+\right]
+\left[ 
+	\matrix{
+		a_1^{l-1, 1} & a_1^{l-1, 2} & \ldots & a_1^{l-1, M} \\
+		a_2^{l-1, 1} & a_2^{l-1, 2} & \ldots & a_2^{l-1, M} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		a_{n^{l-1}}^{l-1, 1} & a_{n^{l-1}}^{l-1, 2} & \ldots & a_{n^{l-1}}^{l-1, M}
+	}
+\right] +
+\left[
+	\matrix{
+		b_1^{l} & b_1^{l} & \ldots & b_1^{l} \\
+		b_2^{l} & b_2^{l} & \ldots & b_2^{l} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		b_{n^l}^{l} & b_{n^l}^{l} & \ldots & b_{n^l}^{l}
+	}
+\right],
+$$
+
+where $\textbf{Z}^l$ simply contains $M$ columns (one for each $\textbf{z}^{l, m}$), $\textbf{A}^{l-1}$ contains $M$ columns (one for each $\textbf{a}^{l-1}$), where $\textbf{W}^l$ remains unchanged and where $\textbf{B}^l$ needs to be repeated or *broadcasted* horizontally $M$ times to make its addition conform. The dimensions of each component are as follows
+
+- $\textbf{Z}^l \rightarrow n^l \times M$
+- $\textbf{W}^l \rightarrow n^l \times n^{l-1}$
+- $\textbf{A}^{l-1} \rightarrow n^{l-1} \times M$
+- $\textbf{W}^l \textbf{A}^{l-1} \rightarrow n^{l} \times M$
+- $\textbf{B}^l \rightarrow n^{l} \times M$
+
+so the dimensions are conform. 
+
+Then, the activation function is applied element-wise as usual
+$$
+\textbf{A}^l = f(\textbf{Z}^l),
+$$
+which is equal to
+$$
+\left[ 
+	\matrix{
+		a_1^{l, 1} & a_1^{l, 2} & \ldots & a_1^{l, M} \\
+		a_2^{l, 1} & a_2^{l, 2} & \ldots & a_2^{l, M} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		a_{n^{l}}^{l, 1} & a_{n^{l}}^{l, 2} & \ldots & a_{n^{l}}^{l, M}
+	}
+\right] =
+\left[
+	\matrix{
+		f(z_1^{l, 1}) & f(z_1^{l, 2}) & \ldots & f(z_1^{l, M}) \\
+		f(z_2^{l, 1}) & f(z_2^{l, 2}) & \ldots & f(z_2^{l, M}) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		f(z_{n^l}^{l, 1}) & f(z_{n^l}^{l, 2}) & \ldots & f(z_{n^l}^{l, M})
+	}
+\right].
+$$
+Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
+$$
+L(\textbf{Y}, \hat{\textbf{Y}}) = 
+\left[
+	\matrix{
+		L(\textbf{y}^1, \hat{\textbf{y}}^1) & L(\textbf{y}^2, \hat{\textbf{y}}^2) & \ldots & L(\textbf{y}^M, \hat{\textbf{y}}^M)
+	\matrix}
+\right] =
+\left[
+	\matrix{
+		L(y_1^1, \hat{y}_1^1) & L(y_1^2, \hat{y}_1^2) & \ldots & L(y_1^M, \hat{y}_1^M) \\
+		L(y_2^1, \hat{y}_2^1) & L(y_2^2, \hat{y}_2^2) & \ldots & L(y_2^M, \hat{y}_2^M) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		L(y_{n^L}^1, \hat{y}_{n^L}^2) & L(y_{n^L}^2, \hat{y}_{n^L}^2) & \ldots & L(y_{n^L}^M, \hat{y}_{n^L}^M)
+	}
+\right].
+$$
+
+Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*. TODO: How to aggregate losses over all categories and samples
 
 # Backward Propagation
 
