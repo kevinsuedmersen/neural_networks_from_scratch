@@ -161,30 +161,18 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (7). 
 
-Having computed $\textbf{a}^L$, we can compute a certain *loss* which indicates how good or bad our model predicts for a single training example. For a classification problem involving $n^L$ classes, a common loss function is the binary *cross entropy* which is calculated as follows
+Having computed $\textbf{a}^L$, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problem involving $n^L$ classes, a good[^3] choice for a loss function is the *cross entropy* which is calculated as follows
+
+[^3]: "good" in the sense that, unlike e.g. the squared error, it avoids a learning slowdown, because its gradient with respect to (w.r.t.) the weights and biases is independent of the derivative of the activation function in the output layer CITATION: http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function
+
+
 $$
-L(\textbf{y}, \hat{\textbf{y}}) = -\left( \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}}) \right),
+L(\textbf{y}, \hat{\textbf{y}}) = -|| \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}})) ||^2 
+= -\sum_{i=1}^{n^L} y_i log(\hat{y}_i) + (1-y_i) log(1-\hat{y_i}),
 $$
-or written out explicitly
-$$
-\left[
-	\matrix{
-		L(y_1, \hat{y}_1) \\
-		L(y_2, \hat{y}_2)\\
-		\vdots \\
-		L(y_{n^L}, \hat{y}_{n^L})
-	}
-\right] =
-\left[
-	\matrix{
-		-\left( y_1 log(\hat{y}_1) + (1-y_1) log(1-\hat{y}_1) \right) \\
-		-\left( y_2 log(\hat{y}_2) + (1-y_2) log(1-\hat{y}_2) \right) \\
-		\vdots \\
-		-\left( y_{n^L} log(\hat{y}_{n^L}) + (1-y_{n^L}) log(1-\hat{y}_{n^L}) \right)
-	}
-\right]
-$$
-In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$ is far away from $y_i$ and low values for good predictions, i.e. when $\hat{y}_i$ is very close to $y_i$. Let's see if component $i$ of (16) fulfills these requirements by considering the following 4 edge cases:
+where $\textbf{y}$ is the ground truth vector where element $y_i = 1$ if the current training example belongs to class $i$ and $y_i = 0$ otherwise. 
+
+In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$ is far away from $y_i$, and low values for good predictions, i.e. when $\hat{y}_i$ is very close to $y_i$. Let's see if component $i$ of (15) fulfills these requirements by considering the following 4 edge cases:
 
 - Bad predictions
 
@@ -197,13 +185,15 @@ In general, we want a loss function which has high values for bad predictions, i
 
   - If $y_i = 0$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$  
 
-in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and monotonically increasing to avoid local minima (CITATION). TODO: Read AK's email about loss function properties!
+in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and it should be derivable using probability theory[^4].
+
+[^4]: E.g. the loss function in linear regression, the squared error, is derivable by using the Maximum Likelihood theory assuming that the distribution of the training examples follows a Gaussian distribution (CITATION)
 
 We will conclude this section by showing how to compute the complete forward propagation for `batch_size` training examples at once. It starts by defining your input data matrix as follows
 $$
 \textbf{X} = \textbf{A}^0,
 $$
-where the feature vectors of each training examples are stacked horizontally next to each other in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (17) can be written out explicitly as
+where the feature vectors of each training examples are stacked horizontally next to each other in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (16) can be written out explicitly as
 $$
 \left[
 \matrix{
@@ -223,7 +213,7 @@ $$
 \right],
 $$
 
-where $x_i^m = a_1^{0, m}$ both refer to the value of the i-th feature of the m-th training example. 
+where $x_i^m = a_i^{0, m}$ both refer to the value of the i-th feature of the m-th training example. 
 
 Next, equation (9) becomes
 $$
@@ -305,18 +295,19 @@ L(\textbf{Y}, \hat{\textbf{Y}}) =
 	\matrix{
 		L(\textbf{y}^1, \hat{\textbf{y}}^1) & L(\textbf{y}^2, \hat{\textbf{y}}^2) & \ldots & L(\textbf{y}^M, \hat{\textbf{y}}^M)
 	\matrix}
-\right] =
-\left[
-	\matrix{
-		L(y_1^1, \hat{y}_1^1) & L(y_1^2, \hat{y}_1^2) & \ldots & L(y_1^M, \hat{y}_1^M) \\
-		L(y_2^1, \hat{y}_2^1) & L(y_2^2, \hat{y}_2^2) & \ldots & L(y_2^M, \hat{y}_2^M) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		L(y_{n^L}^1, \hat{y}_{n^L}^2) & L(y_{n^L}^2, \hat{y}_{n^L}^2) & \ldots & L(y_{n^L}^M, \hat{y}_{n^L}^M)
-	}
-\right].
+\right],
 $$
 
-Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*. TODO: How to aggregate losses over all categories and samples
+where each element $m = 1, 2, ..., M$ of the above loss vector represents the loss we have already defined in equation (15), i.e.
+$$
+L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m).
+$$
+
+Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all `batch_size` training examples
+$$
+C = \frac{1}{M} \sum_m^M L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\frac{1}{M} \sum_m^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m),
+$$
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the mode, to account for overfitting.
 
 # Backward Propagation
 
