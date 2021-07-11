@@ -1,9 +1,4 @@
-L(y_2^1, \hat{y}_2^1)\matrix{
-		z_1^{l, 1} & z_1^{l, 2} & \ldots & z_1^{l, M} \\
-		z_2^{l, 1} & z_2^{l, 2} & \ldots & z_2^{l, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		z_{n^l}^{l, 1} & z_{n^l}^{l, 2} & \ldots & z_{n^l}^{l, M}
-	}Neural Networks from Scratch
+# Neural Networks from Scratch
 
 This repository aims to derive and implement equations for training neural networks from scratch, which consist of an arbitrary number of fully connected, dense layers. First, we will attempt to derive equations for forward- as well as backward propagation in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend it to a matrix-based approach for processing `batch_size` examples at once. After implementing the necessary Python code, we will test the network's performance on the MNIST hand-written digits dataset and compare its performance with famous deep learning libraries such as TensorFlow.
 
@@ -307,21 +302,29 @@ Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now ag
 $$
 C = \frac{1}{M} \sum_m^M L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\frac{1}{M} \sum_m^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the mode, to account for overfitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
 
 # Backward Propagation
 
-The goal of the backward propagation algorithm is to iteratively adjust the weights and biases of the network such that the cost decreases. 
+- Goal 
+- Motivation
+- Derivation
+  - basic explanation
+  - provide the 4 fundamental equations 
+  - derive each of them
+- Weight and biases updates using gradient descent
+- matrix notation
+- for batch_size training examples at once
 
-## Gradient Descent
+The goal of the backward propagation algorithm is to iteratively adjust the weights and biases of the network such that the cost decreases. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network and (2) by updating the weights and biases using the gradient descent algorithm. 
 
-## Backward Propagation in Scalar Form for a Single Training Example
+You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ (using the slightly less common way to compute the derivative) as follows
+$$
+\frac{\partial{C}}{\partial{w_j}} = \frac{C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - C(\textbf{w}, \textbf{b})}{\epsilon},
+$$
+where $\textbf{w}$ and $\textbf{b}$ are vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimally small scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network.  
 
-## Backward Propagation in Matrix Form for a Single Training Example
-
-## Backward Propagation in Matrix Form for a Batch of Training Examples
-
-## Weight updates
+The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\delta^l$ (HOW TO MAKE THIS BOLD?), and then computes the gradients using that error. Then, the error propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
 
 # Loss and Activation Functions
 
