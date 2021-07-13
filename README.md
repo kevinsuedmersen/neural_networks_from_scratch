@@ -316,15 +316,28 @@ Note that the loss function represents an error over a *single* training example
 - matrix notation
 - for batch_size training examples at once
 
-The goal of the backward propagation algorithm is to iteratively adjust the weights and biases of the network such that the cost decreases. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network and (2) by updating the weights and biases using the gradient descent algorithm. 
+The goal of the backward propagation algorithm is to iteratively adjust the weights and biases of the network such that the cost decreases. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network and (2) by updating the weights and biases using gradient descent. 
 
-You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ (using the slightly less common way to compute the derivative) as follows
+You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
 $$
 \frac{\partial{C}}{\partial{w_j}} = \frac{C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - C(\textbf{w}, \textbf{b})}{\epsilon},
 $$
-where $\textbf{w}$ and $\textbf{b}$ are vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimally small scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network.  
+where $\textbf{w}$ and $\textbf{b}$ are vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimal scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network.  
 
-The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\delta^l$ (HOW TO MAKE THIS BOLD?), and then computes the gradients using that error. Then, the error propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
+The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$, and then computes the gradients using that error. Then, the error propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
+
+In the next sections, we will start by providing the 4 key equations of the backpropagation algorithm, explain how to use them, and finally, we will derive them. The 4 key equations are:
+
+1. An equation for the error at the output layer, i.e. $\boldsymbol{\delta}^L$. Needed for initializing the backpropagation algorithm
+2. A recursive equation relating $\boldsymbol{\delta}^l$ to $\boldsymbol{\delta}^{l+1}$. Note the in the first iteration, $\boldsymbol{\delta}^{l+1} = \boldsymbol{\delta}^L$ which we computed in the first equation. Needed for recursively calculating the error at each layer
+3. An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the weights in layer $l$
+4. An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the biases in layer $l$ 
+
+The error at the output layer $\boldsymbol{\delta}^L$ can be expresses as follows
+$$
+abc
+$$
+
 
 # Loss and Activation Functions
 
