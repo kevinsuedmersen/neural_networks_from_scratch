@@ -306,25 +306,24 @@ Note that the loss function represents an error over a *single* training example
 
 # Backward Propagation
 
-- Goal 
-- Motivation
 - Derivation
   - basic explanation
   - provide the 4 fundamental equations 
   - derive each of them
-- Weight and biases updates using gradient descent
 - matrix notation
 - for batch_size training examples at once
 
-The goal of the backward propagation algorithm is to iteratively adjust the weights and biases of the network such that the cost decreases. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network and (2) by updating the weights and biases using gradient descent. 
+Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*.
+
+GIVE EXAMPLE OF GRADIENT DESCENT 
 
 You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
 $$
 \frac{\partial{C}}{\partial{w_j}} = \frac{C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - C(\textbf{w}, \textbf{b})}{\epsilon},
 $$
-where $\textbf{w}$ and $\textbf{b}$ are vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimal scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network.  
+where $\textbf{w}$ and $\textbf{b}$ are flattened vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimal scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
 
-The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$, and then computes the gradients using that error. Then, the error propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
+The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
 
 In the next sections, we will start by providing the 4 key equations of the backpropagation algorithm, explain how to use them, and finally, we will derive them. The 4 key equations are:
 
@@ -335,9 +334,90 @@ In the next sections, we will start by providing the 4 key equations of the back
 
 The error at the output layer $\boldsymbol{\delta}^L$ can be expresses as follows
 $$
-abc
+\boldsymbol{\delta}^L = \frac{\partial C}{\partial \textbf{z}^L} = \frac{\partial C}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
 $$
 
+Remember that the derivative of a function yielding a scalar, e.g. the cost function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the Jacobi matrix. So, working out the above formula will produce the following result
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		\frac{\partial C}{\partial a^L_1}, & \frac{\partial C}{\partial a^L_2}, & ..., & \frac{\partial C}{\partial a^L_{n^L}}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
+	\frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
+	\vdots & \vdots & \ddots & \vdots \\
+	\frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+	}
+\right]
+$$
+
+which we can multiply out as follows
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1} + 
+		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_1} + ... + 
+		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_1}, &
+		
+		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_2} + 
+		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2} + ... + 
+		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_2}, &
+		
+		..., &
+		
+		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_{n^L}} + 
+		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
+		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+	}
+\right]
+$$
+which can be simplified to
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_1}, & 
+		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_2}, &
+		..., &
+		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_{n^L}}
+	}
+\right]
+$$
+Notice that every $a^L_j$​ is only a function of $z^L_j$​, so $\frac{\partial a^L_j}{\partial z^L_k} = 0$​ if $j \ne k$​​​. ​We can use that to simplify the above expression to
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1}, &
+		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2}, &
+		..., &
+		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+	}
+\right]
+$$
+
+Finally, remember that $a^L_j = f(z^L_j)$, so $\frac{\partial a^L_j}{\partial z^L_j} = f'(z^L_j)$, so the above expression may be rewritten as 
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		\frac{\partial C}{\partial a^L_1} f'(z^L_1), &
+		\frac{\partial C}{\partial a^L_2} f'(z^L_2), &
+		..., &
+		\frac{\partial C}{\partial a^L_{n^L}} f'(z^L_{n^L})
+	}
+\right]
+$$
+This is the equation for the error at the output layer which we will refer to as BP1. 
+
+While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is ... and the activation function is ...
+
+PROVIDE CONCRETE EXPRESSION FOR KNOWN COST AND ACTIVATION FUNCTION
 
 # Loss and Activation Functions
 
