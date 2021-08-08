@@ -10,6 +10,8 @@ This repository aims to derive and implement equations for training neural netwo
 
 In this section, we will start by explaining the forward pass, i.e. forward propagation, of a single training example. We will depict the computations in component form and then continue to explain how to vectorize the forward propagation for a single training example. We will show how the network generates predictions and how it evaluates the goodness of its predictions using a specific loss function. Finally, we will show a little "trick" to compute the forward propagation for `batch_size` training examples at once in a vectorized form.  
 
+## Scalar Form
+
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
 ![neural_network_pic](resources/drawings/neural_network_pic.png)
@@ -67,6 +69,8 @@ $$
 where $1$ means that we will go to sports and $0$ that we won't go to sports. The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but usually (CITATION), it is 0.5. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision[^2]. 
 
 [^2]: Precision is the ratio of true positives divided by the sum of true positives and false positives while recall is the ratio of true positives divided by the sum of true positives and false negatives. 
+
+## Matrix Form
 
 Now, we want to introduce a matrix-based approach for forward propagating the input data to the output layer, because first, it will make the notation easier and second, it will make your code run faster when you actually need to implement it in Python, because vectorized operations are highly efficient and optimized. So first, we will rewrite equation (3) as 
 $$
@@ -184,6 +188,8 @@ in all of the 4 above cases, we get the desired result. Also, we need the loss f
 
 [^4]: E.g. the loss function in linear regression, the squared error, is derivable by using the Maximum Likelihood theory assuming that the distribution of the training examples follows a Gaussian distribution (CITATION)
 
+## Batch-wise Matrix Form
+
 We will conclude this section by showing how to compute the complete forward propagation for `batch_size` training examples at once. It starts by defining your input data matrix as follows
 $$
 \textbf{X} = \textbf{A}^0,
@@ -300,7 +306,7 @@ $$
 
 Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all `batch_size` training examples
 $$
-C = \frac{1}{M} \sum_m^M L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\frac{1}{M} \sum_m^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m),
+C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m),
 $$
 Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
 
@@ -313,15 +319,23 @@ Note that the loss function represents an error over a *single* training example
 - matrix notation
 - for batch_size training examples at once
 
-Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*.
+Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once.
+
+## Gradient Descent
 
 GIVE EXAMPLE OF GRADIENT DESCENT 
 
+## Backward Propagation for a Single Training Example
+
+### Motivation
+
 You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
 $$
-\frac{\partial{C}}{\partial{w_j}} = \frac{C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - C(\textbf{w}, \textbf{b})}{\epsilon},
+\frac{\partial{L}}{\partial{w_j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
 $$
-where $\textbf{w}$ and $\textbf{b}$ are flattened vectors containing all weights and biases of the network, where $\epsilon$ is a infinitesimal scalar and where $\textbf{e}_j$ is the unit vector being $1$ at position $j$ and $0$ elsewhere. Assuming that our network has one million parameters, we would need to calculate $C(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $C(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+where $\textbf{w}$​ and $\textbf{b}$​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​ is a infinitesimal scalar and where $\textbf{e}_j$​ is the unit vector being $1$​ at position $j$​ and $0$​ elsewhere. Assuming that our network has one million parameters, we would need to calculate$L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+
+### 4 Key Equations
 
 The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer index 1) are computed. 
 
@@ -332,9 +346,11 @@ In the next sections, we will start by providing the 4 key equations of the back
 3. An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the weights in layer $l$
 4. An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the biases in layer $l$ 
 
-The error at the output layer $\boldsymbol{\delta}^L$ can be expresses as follows
+#### The Error at the Output Layer  for a Single Training Example
+
+The error at the output layer $\boldsymbol{\delta}^L$ for a single training example can be expresses as follows
 $$
-\boldsymbol{\delta}^L = \frac{\partial C}{\partial \textbf{z}^L} = \frac{\partial C}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
+\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
 $$
 
 Remember that the derivative of a function yielding a scalar, e.g. the cost function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the Jacobi matrix. So, working out the above formula will produce the following result
@@ -342,7 +358,7 @@ $$
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\frac{\partial C}{\partial a^L_1}, & \frac{\partial C}{\partial a^L_2}, & ..., & \frac{\partial C}{\partial a^L_{n^L}}
+		\frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
 	}
 \right]
 \left[
@@ -360,19 +376,19 @@ $$
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1} + 
-		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_1} + ... + 
-		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_1}, &
+		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1} + 
+		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_1} + ... + 
+		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_1}, &
 		
-		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_2} + 
-		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2} + ... + 
-		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_2}, &
+		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_2} + 
+		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2} + ... + 
+		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_2}, &
 		
 		..., &
 		
-		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_{n^L}} + 
-		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
-		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_{n^L}} + 
+		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
+		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
 	}
 \right]
 $$
@@ -381,10 +397,10 @@ $$
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_1}, & 
-		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_2}, &
+		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_1}, & 
+		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_2}, &
 		..., &
-		\sum_{j=1}^{n^L} \frac{\partial C}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_{n^L}}
+		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_{n^L}}
 	}
 \right]
 $$
@@ -393,10 +409,10 @@ $$
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\frac{\partial C}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1}, &
-		\frac{\partial C}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2}, &
+		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1}, &
+		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2}, &
 		..., &
-		\frac{\partial C}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
 	}
 \right]
 $$
@@ -406,18 +422,62 @@ $$
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\frac{\partial C}{\partial a^L_1} f'(z^L_1), &
-		\frac{\partial C}{\partial a^L_2} f'(z^L_2), &
+		\frac{\partial L}{\partial a^L_1} f'(z^L_1), &
+		\frac{\partial L}{\partial a^L_2} f'(z^L_2), &
 		..., &
-		\frac{\partial C}{\partial a^L_{n^L}} f'(z^L_{n^L})
+		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
 	}
 \right]
 $$
-This is the equation for the error at the output layer which we will refer to as BP1. 
+This is the equation for the error at the output layer which we will refer to as **BP1**. 
 
-While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is ... and the activation function is ...
+#### Concrete Example
 
-PROVIDE CONCRETE EXPRESSION FOR KNOWN COST AND ACTIVATION FUNCTION
+While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
+
+From the categorical cross entropy cost function in equation (24), we can see that​ for $i = 1, 2, ..., n^L$,​
+$$
+\frac{\partial L}{\partial a^{L}_i} = - \left( \frac{y_i}{a^{L}_i} - \frac{1 - y_i}{1 - a^{L}_i} \right),
+$$
+
+where we used the definition $\hat{y}_i = a^{L}_i$​. We can now do a little algebra to simplify the above expression as follows
+$$
+\frac{\partial L}{\partial a^{L}_i} = - 
+\left( 
+	\frac{y_i}{a^{L}_i} \frac{{1 - a^{L}_i}}{{1 - a^{L}_i}} - 
+    \frac{1 - y_i}{1 - a^{L}_i} \frac{a^{L}_i}{a^{L}_i} 
+\right) =
+
+- \left( \frac{y_i - a^{L}_i}{a^{L} (1 - a^{L}_i)} \right)
+$$
+
+Notice that $a^{L}_i = f(z^{L}_i)$​​​​ and that in the case of the sigmoid function, $f'(z^{L}_i) = f(z^{L}_i) (1 - f(z^{L}_i))$​​​​. We can use that, to simplify the above expression to
+$$
+\frac{\partial L}{\partial a^{L}_i} = 
+- \left( \frac{y_i - a^{L}_i}{f'(z^{L}_i)} \right)
+$$
+Now finally, we plug this interim result back into equation BP1 while noticing that the two $f'(z^{L, m}_i)$​ terms will cancel out
+$$
+\boldsymbol{\delta}^L = 
+\left[
+	\matrix{
+		- \left( y_1 - a^{L}_1 \right), &
+		- \left( y_2 - a^{L}_2 \right), &
+		..., &
+		- \left( y_{n^L} - a^{L}_{n^L} \right)
+	}
+\right] =
+- \left[
+	\matrix{
+		\left( y_1 - a^{L}_1 \right), &
+		\left( y_2 - a^{L}_2 \right), &
+		..., &
+		\left( y_{n^L} - a^{L}_{n^L} \right)
+	}
+\right]
+$$
+
+The above expression has the particularly nice property that $\boldsymbol{\delta}^L$ is not dependent on $f'(z^{L, m}_i)$​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
 
 # Loss and Activation Functions
 
