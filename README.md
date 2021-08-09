@@ -329,7 +329,7 @@ The backpropagation algorithm consists of 4 key equations:
 
 ## BP1: The Error at the Output Layer 
 
-The error at the output layer $\boldsymbol{\delta}^L$ for a single training example can be expressed as follows
+The error at the output layer $\boldsymbol{\delta}^L$​, which can conveniently be defined as $\frac{\partial L}{\partial \textbf{z}^L}$, can be expressed as follows
 $$
 \boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
 $$
@@ -458,7 +458,9 @@ $$
 \right]
 $$
 
-The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L,}_i)$​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
+The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L}_i)$​​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
+
+## BP2: A Recursive Equation for the Errors between Layers
 
 
 
