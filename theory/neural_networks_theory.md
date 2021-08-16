@@ -310,31 +310,29 @@ Note that the loss function represents an error over a *single* training example
 
 # Backward Propagation
 
-Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once.
+Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once. 
 
-You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
-$$
-\frac{\partial{L}}{\partial{w_j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
-$$
-where $\textbf{w}$​ and $\textbf{b}$​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​ is a infinitesimal scalar and where $\textbf{e}_j$​ is the unit vector being $1$​ at position $j$​ and $0$​ elsewhere. Assuming that our network has one million parameters, we would need to calculate$L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+## Backpropagation for a Single Training Example
 
-The backpropagation algorithm works as follows. For any given layer $l$, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
+The backpropagation algorithm works as follows. For any given layer $l$​, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$​​, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
-The backpropagation algorithm consists of 4 key equations:
+The backpropagation algorithm is based on 4 key equations:
 
-- BP1: An equation for the error at the output layer, i.e. $\boldsymbol{\delta}^L$​. Needed for initializing the backpropagation algorithm
-- BP2: A recursive equation relating $\boldsymbol{\delta}^l$ to $\boldsymbol{\delta}^{l+1}$. Note the in the first iteration, $\boldsymbol{\delta}^{l+1} = \boldsymbol{\delta}^L$​ which we computed in BP1. Needed for recursively calculating the error at each layer
-- BP3: An equation relating $\boldsymbol{\delta}^l$ to the derivative of the loss function w.r.t. the weights in layer $l$
-- BP4: An equation relating $\boldsymbol{\delta}^l$​ to the derivative of the loss function w.r.t. the biases in layer $l$​ 
+- BP1.1: An equation for the error at the output layer, i.e. $\boldsymbol{\delta}^L$​. Needed for initializing the backpropagation algorithm
+- BP2.1: A recursive equation relating $\boldsymbol{\delta}^l$ to $\boldsymbol{\delta}^{l+1}$. Note the in the first iteration, $\boldsymbol{\delta}^{l+1} = \boldsymbol{\delta}^L$​ which we computed in BP1. Needed for recursively calculating the error at each layer
+- BP3.1: An equation relating $\boldsymbol{\delta}^l$​ to the derivative of the cost function w.r.t. the weights in layer $l$​, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$.​
+- BP4: An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the biases in layer $l$, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​.
 
-## BP1: The Error at the Output Layer 
+## Backpropagation for a Single Training Example
 
-The error at the output layer $\boldsymbol{\delta}^L$​, which can conveniently be defined as $\frac{\partial L}{\partial \textbf{z}^L}$, can be expressed as follows
+### BP1.1
+
+The error at the output layer $\boldsymbol{\delta}^L$​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​, can be expressed as follows
 $$
 \boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
 $$
 
-Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the Jacobi matrix. So, working out the above equation will produce the following result
+Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
 $$
 \boldsymbol{\delta}^L = 
 \left[
@@ -410,9 +408,9 @@ $$
 	}
 \right]
 $$
-This is the equation for the error at the output layer BP1. 
+This is the equation for the error at the output layer BP1.1. 
 
-### Concrete Example
+#### Concrete Example
 
 While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
 
@@ -432,12 +430,12 @@ $$
 - \left( \frac{y_i - a^{L}_i}{a^{L} (1 - a^{L}_i)} \right).
 $$
 
-Notice that $a^{L}_i = f(z^{L}_i)$​​​​ and that in the case of the sigmoid function, $f'(z^{L}_i) = f(z^{L}_i) (1 - f(z^{L}_i))$​​​​. We can use that, to simplify the above expression to
+Notice that $a^{L}_i = f(z^{L}_i)$​​​​​​ and that in the case of the sigmoid function, $f'(z^{L}_i) = f(z^{L}_i) (1 - f(z^{L}_i)) = a^L_i (1 - a^L_i)$​​​​​​. We can use that, to simplify the above expression to
 $$
 \frac{\partial L}{\partial a^{L}_i} = 
-- \left( \frac{y_i - a^{L}_i}{f'(z^{L}_i)} \right)
+- \left( \frac{y_i - a^{L}_i}{f'(z^{L}_i)} \right).
 $$
-Now finally, we plug this interim result back into each element of BP1 while noticing that the two $f'(z^{L}_i)$​​ terms will cancel out
+Now finally, we plug this interim result back into each element of BP1.1 while noticing that the two $f'(z^{L}_i)$​​​​ terms will cancel out, yielding
 $$
 \boldsymbol{\delta}^L = 
 \left[
@@ -455,16 +453,38 @@ $$
 		..., &
 		\left( y_{n^L} - a^{L}_{n^L} \right)
 	}
-\right]
+\right].
 $$
 
 The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L}_i)$​​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
 
-## BP2: A Recursive Equation for the Errors between Layers
+### BP2.1
 
+CONTINUE HERE
 
+### BP3.1
 
-## Gradient Descent
+### BP4.1 
+
+## Backpropagation for batch_size Training Examples at once
+
+### BP1.2
+
+### BP2.2
+
+### BP3.2
+
+### BP4.2
+
+## Why Backpropagation?
+
+You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
+$$
+\frac{\partial{L}}{\partial{w_j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
+$$
+where $\textbf{w}$​ and $\textbf{b}$​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​ is a infinitesimal scalar and where $\textbf{e}_j$​ is the unit vector being $1$​ at position $j$​ and $0$​ elsewhere. Assuming that our network has one million parameters, we would need to calculate$L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+
+# Gradient Descent
 
 TODO
 
