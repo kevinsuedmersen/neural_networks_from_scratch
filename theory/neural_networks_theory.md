@@ -406,9 +406,23 @@ $$
 		..., &
 		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
 	}
-\right]
+\right].
 $$
-This is the equation for the error at the output layer BP1.1. 
+When implementing everything in code, it will come in handy to keep every training example in a separate row, so we will re-define the result of the above equation as its transposition
+$$
+\boldsymbol{\delta}^L \coloneqq 
+\left[
+	\matrix{
+		\frac{\partial L}{\partial a^L_1} f'(z^L_1) \\
+		\frac{\partial L}{\partial a^L_2} f'(z^L_2)\\
+		\vdots \\
+		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
+	}
+\right].
+$$
+
+
+This is the equation for the error at the output layer, i.e. BP1.1. 
 
 #### Concrete Example
 
@@ -503,9 +517,94 @@ $$
 	}
 \right].
 $$
-
+Recall that $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$, so we can simplify the above equation to
+$$
+\boldsymbol{\delta}^{l-1} = \left[
+	\matrix{
+		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
+		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
+		..., &
+		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right].
+$$
+Notice that 
+$$
+z^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ a^{l-1}_k \right) + b^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ f(z^{l-1}_k) \right) + b^l_j
+$$
+and therfore,
+$$
+\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
+$$
+Plugging (41) back into each element of (39) and rearranging a little bit yields 
+$$
+\boldsymbol{\delta}^{l-1} = \left[
+	\matrix{
+		f'(z^{l-1}_1) \sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
+		f'(z^{l-1}_2) \sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
+		..., &
+		f'(z^{l-1}_{n^{l-1}}) \sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
+	}
+\right],
+$$
+which can be split into the element-by-element vector multiplication
+$$
+\boldsymbol{\delta}^{l-1} = 
+\left[
+	\matrix{
+		f'(z^{l-1}_1) , &
+		f'(z^{l-1}_2) , &
+		..., &
+		f'(z^{l-1}_{n^{l-1}})  
+	}
+\right] \odot
+\left[
+	\matrix{
+		\sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
+		\sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
+		..., &
+		\sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
+	}
+\right].
+$$
+ Finally, we want to vectorize the sum in the RHS of the above equation, so that the actual implementation in code can harness optimized matrix multiplication libraries. This can be achieved as follows
+$$
+\boldsymbol{\delta}^{l-1} = 
+\left[
+	\matrix{
+		f'(z^{l-1}_1) , &
+		f'(z^{l-1}_2) , &
+		..., &
+		f'(z^{l-1}_{n^{l-1}})  
+	}
+\right] \odot
+\left[
+	\matrix{
+		\delta^l_1, & \delta^l_2, &, ..., \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
+		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
+	}
+\right],
+$$
+or written more compactly
+$$
+\boldsymbol{\delta}^{l-1} = \left( f('\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+$$
+Again, later on, we want to keep every training example in a separate row, so we will redefine the above result to its transposition
+$$
+\boldsymbol{\delta}^{l-1} \coloneqq \left( f('\textbf{z}^{l-1}) \right) \odot (\textbf{W}^l)^T \boldsymbol{\delta}^l.
+$$
+Equation (46) is a representation of the error in the previous layer in terms of the error in the current layer, i.e. BP2.1.
 
 ### BP3.1
+
+CONTINUE HERE
 
 ### BP4.1 
 
