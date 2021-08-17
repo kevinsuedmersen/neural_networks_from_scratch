@@ -460,7 +460,50 @@ The above expression has the particularly nice property that $\boldsymbol{\delta
 
 ### BP2.1
 
-CONTINUE HERE
+In order to represent the error of the previous layer $\boldsymbol{\delta}^{l-1}$​ in terms of the error in the current layer $\boldsymbol{\delta}^{l}$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+$$
+\boldsymbol{\delta}^{l-1} \coloneqq 
+\frac{\partial L}{\partial \textbf{z}^{l-1}} = 
+\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}.
+$$
+Remembering from above that the derivative of a function yielding a scalar is defined as a row vector and that the derivative of a vector w.r.t. another vector is defined as the Jacobian matrix, we can rewrite the above expression as
+$$
+\boldsymbol{\delta}^{l-1} = \left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}} 
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial z^l_1}{\partial z^{l-1}_1}, & \frac{\partial z^l_1}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} \\
+        \frac{\partial z^l_2}{\partial z^{l-1}_1}, & \frac{\partial z^l_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1}, & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right].
+$$
+Multiplying out the above equation yields the $1 \times n^{l-1}$​ row vector
+$$
+\boldsymbol{\delta}^{l-1} = \left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_1} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_1} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1}, &
+	\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_2} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_2} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2}, &
+	\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right],
+$$
+which can be simplified to
+$$
+\boldsymbol{\delta}^{l-1} = \left[
+	\matrix{
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
+		..., &
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right].
+$$
+
 
 ### BP3.1
 
