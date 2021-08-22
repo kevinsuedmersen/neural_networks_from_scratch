@@ -407,21 +407,30 @@ $$
 		..., &
 		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
 	}
-\right].
+\right],
 $$
-When implementing everything in code, it will come in handy to keep every training example in a separate row, so we will re-define the result of the above equation as its transposition
+which can be decomposed into the following Hadamard (element by element) product
 $$
-\boldsymbol{\delta}^L \coloneqq 
+\boldsymbol{\delta}^L =
 \left[
 	\matrix{
-		\frac{\partial L}{\partial a^L_1} f'(z^L_1) \\
-		\frac{\partial L}{\partial a^L_2} f'(z^L_2)\\
-		\vdots \\
-		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
+		\frac{\partial L}{\partial a^L_1}, &
+		\frac{\partial L}{\partial a^L_2}, &
+		..., &
+		\frac{\partial L}{\partial a^L_{n^L}}
 	}
-\right].
+\right]
+\odot
+\left[
+	\matrix{
+		f'(z^L_1), &
+		f'(z^L_2), &
+		..., &
+		f'(z^L_{n^L})
+	}
+\right] =
+\frac{\partial L}{\partial \textbf{a}^L} \odot f'(\textbf{z}^L)
 $$
-
 
 This is the equation for the error at the output layer, i.e. BP1.1. 
 
@@ -598,11 +607,7 @@ or written more compactly
 $$
 \boldsymbol{\delta}^{l-1} = \left( f('\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
 $$
-Again, later on, we want to keep every training example in a separate row, so we will redefine the above result to its transposition
-$$
-\boldsymbol{\delta}^{l-1} \coloneqq \left( f('\textbf{z}^{l-1}) \right) \odot (\textbf{W}^l)^T \boldsymbol{\delta}^l.
-$$
-Equation (46) is a representation of the error in the previous layer in terms of the error in the current layer, i.e. BP2.1.
+Equation (46) represents BP2.1.
 
 ### BP3.1
 
@@ -695,7 +700,71 @@ $$
 	}
 \right]
 $$
+The $(j,k)$-th element of the above vector represents
+$$
+\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}}.
+$$
+Recall that 
+$$
+z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j,
+$$
+so
+$$
+\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
+$$
+Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (52) becomes
+$$
+\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = 
+\frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}} =
+\delta^l_j \ a^{l-1}_k .
+$$
+Plugging the result of equation (55) back into each element of equation (51) yields
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ..., & \delta^l_1 a^{l-1}_{n^{l-1}}, &
+		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ..., & \delta^l_2 a^{l-1}_{n^{l-1}}, &
+		..., &
+		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ..., & \delta^l_{n^l} a^{l-1}_{n^{l-1}}
+		
+	}
+\right].
+$$
+Assume that we wanted to unflatten the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent it as
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
+		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ... & \delta^l_2 a^{l-1}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
+	}
+\right].
+$$
+With that expression, we can now see that we can decompose it into the following vector by vector multiplication
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
 
+\left[
+	\matrix{
+		\delta^l_1 \\
+		\delta^l_2 \\
+		\vdots \\
+		\delta^l_{n^l} \\
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
+	}
+\right] =
+\boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T.
+$$
+ 
+
+Equation (57) represents BP3.1. 
 
 ### BP4.1 
 
@@ -715,7 +784,7 @@ You might wonder why we should bother trying to derive a complicated algorithm a
 $$
 \frac{\partial{L}}{\partial{w_j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
 $$
-where $\textbf{w}$​ and $\textbf{b}$​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​ is a infinitesimal scalar and where $\textbf{e}_j$​ is the unit vector being $1$​ at position $j$​ and $0$​ elsewhere. Assuming that our network has one million parameters, we would need to calculate$L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$ a million times (once for each $j$), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$ once, summing up to a total of $1,000,001$ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​​ is a infinitesimal scalar and where $\textbf{e}_j$​​ is the unit vector being $1$​​ at position $j$​​ and $0$​​ elsewhere. Assuming that our network has one million parameters, we would need to calculate $L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$​ a million times (once for each $j$​), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$​ once, summing up to a total of $1,000,001$​ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
 
 # Gradient Descent
 
