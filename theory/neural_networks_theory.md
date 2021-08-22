@@ -704,21 +704,13 @@ The $(j,k)$-th element of the above vector represents
 $$
 \frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}}.
 $$
-Recall that 
-$$
-z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j,
-$$
-so
-$$
-\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
-$$
-Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (52) becomes
+Recall that since $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, we know that $\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k$. Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (51) becomes
 $$
 \frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = 
 \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}} =
 \delta^l_j \ a^{l-1}_k .
 $$
-Plugging the result of equation (55) back into each element of equation (51) yields
+Plugging the result of equation (52) back into each element of equation (51) yields
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
 \left[
@@ -837,7 +829,7 @@ $$
 
 
 
-Furthermore, notice that we have already defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$​ and notice that since, $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j, k} \ a^{l-1}_k + b^l_j$​, we know that $\frac{\partial z^l_j}{\partial b^l_j} = 1$​​. Using these insights, we can simplify equation (61) to
+Furthermore, notice that we have already defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$​ and notice that since, $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j, k} \ a^{l-1}_k + b^l_j$​, we know that $\frac{\partial z^l_j}{\partial b^l_j} = 1$​​. Using these insights, we can simplify equation (59) to
 $$
 \frac{\partial L}{\partial \textbf{b}^l} =
 \left[
