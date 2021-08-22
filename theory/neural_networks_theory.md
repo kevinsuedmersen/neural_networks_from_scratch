@@ -614,34 +614,86 @@ $$
 $$
 We flattened the weight matrix into a long vector, because now, it is obvious that the term $\frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}$, i.e. the derivative of a vector w.r.t another vector, is defined as the Jacobi matrix. Writing out the above equation explicitly yields
 $$
-\begin{array}{l}
-    \frac{\partial L}{\partial \textbf{w}^l} = 
-    \left[
-        \matrix{
-            \frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+    	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
         }
-    \right]
-    \left[
-        \matrix{
-            \frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
-            & \frac{\partial z^l_1}{\partial w^l_{2, 1}}, & \frac{\partial z^l_1}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{2, n^{l-1}}}, 
-            & ..., & 
-            \frac{\partial z^l_1}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_1}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{n^l, n^{l-1}}} \\
+\right]
+\left[
+	\matrix{
+    	\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
+        & \frac{\partial z^l_1}{\partial w^l_{2, 1}}, & \frac{\partial z^l_1}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{2, n^{l-1}}}, 
+        & ..., & 
+        \frac{\partial z^l_1}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_1}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{n^l, n^{l-1}}} \\
 
-            \frac{\partial z^l_2}{\partial w^l_{1, 1}}, & \frac{\partial z^l_2}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{1, n^{l-1}}}, 
-            & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
-            & ..., & 
-            \frac{\partial z^l_2}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_2}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{n^l, n^{l-1}}} \\
+		\frac{\partial z^l_2}{\partial w^l_{1, 1}}, & \frac{\partial z^l_2}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{1, n^{l-1}}}, 
+        & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
+        & ..., & 
+        \frac{\partial z^l_2}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_2}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{n^l, n^{l-1}}} \\
 
-            \vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+		\vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
 
-            \frac{\partial z^l_{n^l}}{\partial w^l_{1, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{1, n^{l-1}}}, 
-            & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{2, n^{l-1}}}, 
-            & ..., & 
-            \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+		\frac{\partial z^l_{n^l}}{\partial w^l_{1, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{1, n^{l-1}}}, 
+        & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{2, n^{l-1}}}, 
+        & ..., & 
+        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+    }
+\right].
+$$
+
+Notice that $\frac{\partial z^l_j}{\partial w^l_{i, k}} = 0$​ if $j \neq i$​, because weight $w^l_{i,k}$ is not connected to (not a function of) $z^l_j$ and hence, the above expression becomes
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+    	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
         }
-    \right].
-\end{array}
+\right]
+\left[
+	\matrix{
+    	\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
+        & 0, & 0, & ..., & 0, 
+        & ..., & 
+        0, & 0, & ..., & 0 \\
+
+		0, & 0, & ..., & 0, 
+        & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
+        & ..., & 
+        0, & 0, & ..., & 0 \\
+
+		\vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+
+		0, & 0, & ..., & 0, 
+        & 0, & 0, & ..., & 0, 
+        & ..., & 
+        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+    }
+\right].
+$$
+The above expression yields the following $1 \times (n^l \times n^{l-1})$​ row vector
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 1}}, &
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 2}}, &
+		..., &
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, &
+		
+		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 1}}, &
+		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 2}}, &
+		..., &
+		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, &
+		
+		..., &
+		
+		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 1}}, &
+		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 2}}, &
+		..., &
+		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, n^{l-1}}}
+	}
+\right]
 $$
 
 
