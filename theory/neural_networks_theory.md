@@ -604,7 +604,42 @@ Equation (46) is a representation of the error in the previous layer in terms of
 
 ### BP3.1
 
-CONTINUE HERE
+After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights (and later the biases as well). To find an expression for the derivative of the loss w.r.t. the weights in layer $l$, it might help to view weight matrix $\textbf{W}^l$ as a long, flattened vector $\textbf{w}^l$, whose, $(i,j)$-th element represents (or came from) the weight in the $i$-th row and $j$-th column of $\textbf{W}^l$, such that $\textbf{W}^l[i, j] = \textbf{w}^l[(i,j)]$​​. 
+
+With that in mind, we can express the derivative of the loss w.r.t the weights in layer $l$ as
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}.
+$$
+We flattened the weight matrix into a long vector, because now, it is obvious that the term $\frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}$, i.e. the derivative of a vector w.r.t another vector, is defined as the Jacobi matrix. Writing out the above equation explicitly yields
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
+		& \frac{\partial z^l_1}{\partial w^l_{2, 1}}, & \frac{\partial z^l_1}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{2, n^{l-1}}}, 
+		& ..., & 
+		\frac{\partial z^l_1}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_1}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{n^l, n^{l-1}}} \\
+		
+		\frac{\partial z^l_2}{\partial w^l_{1, 1}}, & \frac{\partial z^l_2}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{1, n^{l-1}}}, 
+		& \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
+		& ..., & 
+		\frac{\partial z^l_2}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_2}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{n^l, n^{l-1}}} \\
+		
+		\vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
+		
+		\frac{\partial z^l_{n^l}}{\partial w^l_{1, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{1, n^{l-1}}}, 
+		& \frac{\partial z^l_{n^l}}{\partial w^l_{2, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{2, n^{l-1}}}, 
+		& ..., & 
+		\frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+	}
+\right].
+$$
+ 
 
 ### BP4.1 
 
