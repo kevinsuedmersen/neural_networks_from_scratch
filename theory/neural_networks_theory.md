@@ -768,7 +768,92 @@ Equation (57) represents BP3.1.
 
 ### BP4.1 
 
+Now, we want to relate the errors of each layer to the derivative of the loss w.r.t. the biases. The derivative of the loss w.r.t the biases can be expressed as follows
+$$
+\frac{\partial L}{\partial \textbf{b}^l} = 
+\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{b}^l} = 
+\left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial z^l_1}{\partial b^l_1}, & \frac{\partial z^l_1}{\partial b^l_2}, & ..., & \frac{\partial z^l_1}{\partial b^l_{n^l}} \\
+		\frac{\partial z^l_2}{\partial b^l_1}, & \frac{\partial z^l_2}{\partial b^l_2}, & ..., & \frac{\partial z^l_2}{\partial b^l_{n^l}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\frac{\partial z^l_{n^l}}{\partial b^l_1}, & \frac{\partial z^l_{n^l}}{\partial b^l_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}} \\
+	}
+\right],
+$$
+which we can multiply out as follows
+$$
+\frac{\partial L}{\partial \textbf{b}^l} = \left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1} +
+        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_1} + 
+        ... + 
+        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_1}, &
+        
+        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_2} +
+        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2} + 
+        ... + 
+        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_2}, &
+        
+        ... &
+        
+        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_{n^l}} +
+        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_{n^l}} + 
+        ... + 
+        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}, &
+	}
+\right],
+$$
+which can be simplified to
+$$
+\frac{\partial L}{\partial \textbf{b}^l} = 
+\left[
+	\matrix{
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_1}, &
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_2}, &
+		... &
+		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_{n^l}}
+	}
+\right].
+$$
+Notice that $\frac{\partial z^l_j}{\partial b^l_k} = 0$ if $j \neq k$, so we can simplify the above expression to 
+$$
+\frac{\partial L}{\partial \textbf{b}^l} =
+\left[
+	\matrix{
+		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1}, &
+		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2}, &
+		..., &
+		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
+	}
+\right].
+$$
+
+
+
+
+Furthermore, notice that we have already defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$​ and notice that since, $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j, k} \ a^{l-1}_k + b^l_j$​, we know that $\frac{\partial z^l_j}{\partial b^l_j} = 1$​​. Using these insights, we can simplify equation (61) to
+$$
+\frac{\partial L}{\partial \textbf{b}^l} =
+\left[
+	\matrix{
+		\delta^l_1 , & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right] =
+\boldsymbol{\delta}^l.
+$$
+The above equation represents BP4.1
+
+
+
 ## Backpropagation for batch_size Training Examples at once
+
+In the previous section, we have derived equations which can help us to compute the gradients of a single training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplications. 
 
 ### BP1.2
 
