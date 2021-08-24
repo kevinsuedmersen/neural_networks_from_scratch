@@ -352,7 +352,6 @@ $$
 
 which we can multiply out as follows
 $$
-
 \boldsymbol{\delta}^L = \\
 \left[
 	\matrix{
@@ -370,7 +369,7 @@ $$
     	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
     	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
     }
-\right]
+\right]
 $$
  and which can be simplified to
 $$
@@ -429,7 +428,7 @@ $$
 		f'(z^L_{n^L})
 	}
 \right] =
-\frac{\partial L}{\partial \textbf{a}^L} \odot f'(\textbf{z}^L)
+\frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T
 $$
 
 This is the equation for the error at the output layer, i.e. BP1.1. 
@@ -754,7 +753,7 @@ $$
 \right] =
 \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T.
 $$
- 
+
 
 Equation (57) represents BP3.1. 
 
@@ -837,7 +836,7 @@ $$
 		\delta^l_1 , & \delta^l_2, & ..., & \delta^l_{n^l}
 	}
 \right] =
-\boldsymbol{\delta}^l.
+\left( \boldsymbol{\delta}^l \right)^T.
 $$
 The above equation represents BP4.1
 
@@ -845,9 +844,40 @@ The above equation represents BP4.1
 
 ## Backpropagation for batch_size Training Examples at once
 
-In the previous section, we have derived equations which can help us to compute the gradients of a single training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplications. 
+In the previous section, we have derived equations which can help us to compute the gradients of a single training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
 
 ### BP1.2
+
+Recall from BP1.1 that 
+$$
+\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
+$$
+We want to end up with an expression where each column represents a different training example. In order to achieve that, we will redefine the above expression as its transpose like so
+$$
+\begin{array}{c}
+\boldsymbol{\delta}^L \coloneqq 
+\left( \boldsymbol{\delta}^L \right)^T =
+\left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
+ = \left[
+	\matrix{
+		\frac{\partial L}{\partial a^L_1} \\
+		\frac{\partial L}{\partial a^L_2} \\
+		\vdots \\
+		\frac{\partial L}{\partial a^L_{n^L}}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		f'(z^L_1) \\
+		f'(z^L_2) \\
+		\vdots \\
+		f'(z^L_{n^L})
+	}
+\right]
+\end{array}.
+$$
+
 
 ### BP2.2
 
