@@ -431,7 +431,7 @@ $$
 \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T
 $$
 
-This is the equation for the error at the output layer, i.e. BP1.1. 
+This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
 
 #### Concrete Example
 
@@ -460,6 +460,7 @@ $$
 $$
 Now finally, we plug this interim result back into each element of BP1.1 while noticing that the two $f'(z^{L}_i)$​​​​ terms will cancel out, yielding
 $$
+\begin{array}{c}
 \boldsymbol{\delta}^L = 
 \left[
 	\matrix{
@@ -468,15 +469,16 @@ $$
 		..., &
 		- \left( y_{n^L} - a^{L}_{n^L} \right)
 	}
-\right] =
-- \left[
+\right] \\
+= - \left[
 	\matrix{
 		\left( y_1 - a^{L}_1 \right), &
 		\left( y_2 - a^{L}_2 \right), &
 		..., &
 		\left( y_{n^L} - a^{L}_{n^L} \right)
 	}
-\right].
+\right]
+\end{array}
 $$
 
 The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L}_i)$​​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
@@ -877,9 +879,54 @@ $$
 \right]
 \end{array}.
 $$
+To calculate $\boldsymbol{\delta}^L$ for $M$ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$ next to each other in a column wise fashion like this
+$$
+\begin{array}{c}
+	\boldsymbol{\Delta}^L \coloneqq 
+	\left[
+		\matrix{\boldsymbol{\delta}^{L, 1}, & \boldsymbol{\delta}^{L, 2}, & ..., & \boldsymbol{\delta}^{L, M}}
+	\right] \\
+	= \left[
+		\matrix{
+			\frac{\partial L}{\partial a^{L, 1}_1}, & \frac{\partial L}{\partial a^{L, 2}_1}, & ..., & \frac{\partial L}{\partial a^{L, M}_1} \\
+			\frac{\partial L}{\partial a^{L, 1}_2}, & \frac{\partial L}{\partial a^{L, 2}_2}, & ..., & \frac{\partial L}{\partial a^{L, M}_2} \\
+			\vdots & \vdots & \ddots & \vdots \\
+			\frac{\partial L}{\partial a^{L, 1}_{n^L}}, & \frac{\partial L}{\partial a^{L, 2}_{n^L}}, & ..., & \frac{\partial L}{\partial a^{L, M}_{n^L}}
+		}
+	\right]
+	\odot
+	\left[
+		\matrix{
+			f'(z^{L, 1}_1), & f'(z^{L, 2}_1), & ..., & f'(z^{L, M}_1) \\
+			f'(z^{L, 1}_2), & f'(z^{L, 2}_2), & ..., & f'(z^{L, M}_2) \\
+			\vdots & \vdots & \ddots & \vdots \\
+			f'(z^{L, 1}_{n^L}), & f'(z^{L, 2}_{n^L}), & ..., & f'(z^{L, M}_{n^L})
+		}
+	\right]
+\end{array},
+$$
+or written more compactly as
+$$
+\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L).
+$$
 
+#### Concrete example
+
+Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (64) as follows
+$$
+\boldsymbol{\Delta}^L = - \left[
+	\matrix{
+		\left( y_1^1 - a^{L, 1}_1 \right), & \left( y_1^2 - a^{L, 2}_1 \right), & ..., & \left( y_1^M - a^{L, M}_1 \right) \\
+		\left( y_2^1 - a^{L, 1}_2 \right), & \left( y_2^2 - a^{L, 2}_2 \right), & ..., & \left( y_2^M - a^{L, M}_2 \right) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right), & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right), & ..., & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
+	}
+\right].
+$$
 
 ### BP2.2
+
+CONTINUE HERE
 
 ### BP3.2
 
