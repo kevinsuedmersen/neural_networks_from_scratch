@@ -606,9 +606,19 @@ $$
 $$
 or written more compactly
 $$
-\boldsymbol{\delta}^{l-1} = \left( f('\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l,
 $$
-Equation (46) represents BP2.1.
+which represents BP2.1. 
+
+To see how this equation helps us to compute the error at each layer, notice that in the first iteration of backpropagation, we have that
+$$
+\boldsymbol{\delta}^{L-1} = \left( f'(\textbf{z}^{L-1}) \right)^T \odot (\boldsymbol{\delta}^L)^T \textbf{W}^L,
+$$
+from which we already know how to compute $\boldsymbol{\delta}^L$ thanks to BP1.1. Still being in the first iteration of backpropagation, we will compute the actual values of $\boldsymbol{\delta}^{L-1}$ and cache the results. Then, being in the 2nd iteration of the backpropagation algorithm, we will iterate (47) backwards like this
+$$
+\boldsymbol{\delta}^{L-2} = \left( f'(\textbf{z}^{L-2}) \right)^T \odot (\boldsymbol{\delta}^{L-1})^T \textbf{W}^{L-1},
+$$
+from which we computed $\boldsymbol{\delta}^{L-1}$​ in the previous iteration. This procedure, i.e. computing the value of the error and iterating backwards, will be repeated until we computed the values of $\boldsymbol{\delta}^1$. ​
 
 ### BP3.1
 
@@ -858,8 +868,8 @@ We want to end up with an expression where each column represents a different tr
 $$
 \begin{array}{c}
 \boldsymbol{\delta}^L \coloneqq 
-\left( \boldsymbol{\delta}^L \right)^T =
-\left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
+\left( \boldsymbol{\delta}^L \right)^T \\
+= \left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
  = \left[
 	\matrix{
 		\frac{\partial L}{\partial a^L_1} \\
@@ -879,7 +889,7 @@ $$
 \right]
 \end{array}.
 $$
-To calculate $\boldsymbol{\delta}^L$ for $M$ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$ next to each other in a column wise fashion like this
+To calculate $\boldsymbol{\delta}^L$​ for $m = 1, 2, ..., M$​ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$​ next to each other in a column wise fashion like this
 $$
 \begin{array}{c}
 	\boldsymbol{\Delta}^L \coloneqq 
@@ -907,12 +917,14 @@ $$
 $$
 or written more compactly as
 $$
-\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L).
+\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L),
 $$
+
+which represents BP1.2.
 
 #### Concrete example
 
-Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (64) as follows
+Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (66) as follows
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
@@ -921,12 +933,83 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right), & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right), & ..., & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
 	}
-\right].
+\right]
+= \textbf{Y} - \textbf{A}^L,
 $$
+
+which is easily computed, because we are given $\textbf{Y}$ (since we are talking about a supervised learning problem here) and we already computed $\textbf{A}^L$ during the forward propagation. 
 
 ### BP2.2
 
-CONTINUE HERE
+Recall from BP2.1 that 
+$$
+\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+$$
+Again, we want to end up with an expression, where each column represents a different training example, so we will redefine the above expression as its transpose like so
+$$
+\boldsymbol{\delta}^{l-1} \coloneqq \left( \boldsymbol{\delta}^{l-1} \right)^T = f'(\textbf{z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\delta}^l,
+$$
+remembering that when transposing a matrix multiplication, we have to transpose each factor and reverse their orders (except for the Hadamard product, because it's an element-by-element multiplication). So, for each $1, 2, ...M$, we will stack (column-wise) the errors and weighted inputs of each training example as follows
+$$
+\left[
+	\matrix{
+		\boldsymbol{\delta}^{l-1, 1}, & \boldsymbol{\delta}^{l-1, 2}, & ..., & \boldsymbol{\delta}^{l-1, M}
+	}
+\right] =
+\left[
+	\matrix{
+		f'(\textbf{z}^{l-1, 1}), & f'(\textbf{z}^{l-1, 2}), & ..., & f'(\textbf{z}^{l-1, M}) 
+	}
+\right] \odot
+\left( \textbf{W}^l \right)^T
+\left[
+	\matrix{
+		\boldsymbol{\delta}^{l, 1}, & \boldsymbol{\delta}^{l, 2}, & ..., & \boldsymbol{\delta}^{l, M}
+	}
+\right].
+$$
+
+
+Writing out each element of the above equation, we will get
+$$
+\left[
+	\matrix{
+		\delta^{l-1, 1}_1, & \delta^{l-1, 2}_1, & ..., & \delta^{l-1, M}_1 \\
+		\delta^{l-1, 1}_2, & \delta^{l-1, 2}_2, & ..., & \delta^{l-1, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l-1, 1}_{n^{l-1}}, & \delta^{l-1, 2}_{n^{l-1}}, & ..., & \delta^{l-1, M}_{n^{l-1}} \\
+	}
+\right] = 
+\left[
+	\matrix{
+		f'(z^{l-1, 1}_1), & f'(z^{l-1, 2}_1), & ..., & f'(z^{l-1, M}_1) \\
+		f'(z^{l-1, 1}_2), & f'(z^{l-1, 2}_2), & ..., & f'(z^{l-1, M}_2) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		f'(z^{l-1, 1}_{n^{l-1}}), & f'(z^{l-1, 2}_{n^{l-1}}), & ..., & f'(z^{l-1, M}_{n^{l-1}})
+	}
+\right] \odot
+\left[
+	\matrix{
+		w^l_{1,1}, & w^l_{2,1}, & ..., & w^l_{n^l,1} \\ 
+		w^l_{1,2}, & w^l_{2,2}, & ..., & w^l_{n^l,2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1,n^{l-1}}, & w^l_{2,n^{l-1}}, & ..., & w^l_{n^l,n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
+		\delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, 1}_{n^{l}}, & \delta^{l, 2}_{n^{l}}, & ..., & \delta^{l, M}_{n^{l}} \\
+	}
+\right],
+$$
+ which we can write more compactly as
+$$
+\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^{l},
+$$
+which represents BP2.2.
 
 ### BP3.2
 
