@@ -1013,11 +1013,11 @@ which represents BP2.2.
 
 ### BP3.2
 
-Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, so we know that 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, we know that 
 $$
 \frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{w}^l},
 $$
-where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$. 
+where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$​ and $L^m$ is the loss associated with the $m$-th training example. 
 
 From BP3.1, we know that 
 $$
@@ -1101,13 +1101,63 @@ $$
 	}
 \right],
 $$
-or written more compactly
+or written more compactly as
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T.
+\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
 $$
-
+which represents equation BP3.2. 
 
 ### BP4.2
+
+Finally, the other real quantity of interest is the gradient of the cost function w.r.t. the biases. Again, using the fact that the cost is an average over $M$​ training examples, we can deduce that
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
+$$
+Remember from BP4.1 that 
+$$
+\frac{\partial L}{\partial \textbf{b}^{l}} = \left[
+	\matrix{
+		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right],
+$$
+which, first of all, we will redefine as its transpose to remain conform with the notations used from BP1.2 to BP3.2, i.e.
+$$
+\frac{\partial L}{\partial \textbf{b}^{l}} \coloneqq
+\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T = 
+\left[
+	\matrix{
+		\delta^l_1 \\ 
+		\delta^l_2 \\
+        \vdots \\
+        \delta^l_{n^l}
+	}
+\right].
+$$
+From here on out, it is really straight forward. Plugging (82) back into (80) yields
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = 
+\frac{1}{M} \sum^M_{m=1}
+\left[
+	\matrix{
+		\delta^{l, m}_1 \\ 
+		\delta^{l, m}_2 \\
+        \vdots \\
+        \delta^{l, m}_{n^l}
+	}
+\right],
+$$
+or written more compactly as
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = 
+\frac{1}{M} \sum^M_{m=1}
+\boldsymbol{\delta}^{l, m},
+$$
+which represents equation BP4.2. 
+
+### Summary
+
+TODO: List / summarize equations BP1.2 to BP4.2
 
 ## Why Backpropagation?
 
