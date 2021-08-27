@@ -1013,6 +1013,100 @@ which represents BP2.2.
 
 ### BP3.2
 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, so we know that 
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{w}^l},
+$$
+where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$. 
+
+From BP3.1, we know that 
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\delta^l_1 \\
+		\delta^l_2 \\
+		\vdots \\
+		\delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}
+	}
+\right],
+$$
+so, using that, we can rewrite equation (73) as follows
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M} \sum^M_{m=1} 
+\left[
+	\matrix{
+		\delta^{l, m}_1 \\
+		\delta^{l, m}_2 \\
+		\vdots \\
+		\delta^{l, m}_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1, m}_1, & a^{l-1, m}_2, & ..., & a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Working out the above matrix multiplication yields
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M} \sum^M_{m=1} 
+\left[
+	\matrix{
+		\delta^{l, m}_1 a^{l-1, m}_1, & \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\delta^{l, m}_2 a^{l-1, m}_1, & \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, m}_{n^l} a^{l-1, m}_1, & \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Moving the summation inwards gives us 
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M}
+\left[
+	\matrix{
+		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Notice that each cell contains a scalar product, which should ring a bell, because when multiplying two matrices with each other, each cell in the resulting matrix is a scalar product of a row of the left matrix and a column of the right matrix. Using this insight, we can decompose the above equation into the following matrix multiplication
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M}
+\left[
+	\matrix{
+		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
+        \delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \delta^{l, 1}_{n^l}, & \delta^{l, 2}_{n^l}, & ..., & \delta^{l, M}_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1, 1}_1, & a^{l-1, 1}_2, & ..., & a^{l-1, 1}_{n^{l-1}} \\
+		a^{l-1, 2}_1, & a^{l-1, 2}_2, & ..., & a^{l-1, 2}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		a^{l-1, M}_1, & a^{l-1, M}_2, & ..., & a^{l-1, M}_{n^{l-1}}
+	}
+\right],
+$$
+or written more compactly
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T.
+$$
+
+
 ### BP4.2
 
 ## Why Backpropagation?
