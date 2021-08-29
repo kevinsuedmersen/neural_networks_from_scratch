@@ -319,7 +319,7 @@ The backpropagation algorithm is based on 4 key equations:
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
   - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
-- BP2.x: A recursive equation relating the error layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
+- BP2.x: A recursive equation relating the error at layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
   - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$, which is a matrix where each column contains the error for a different training example.
 - BP3.x: An equation relating the error at layer $l$ to:
@@ -335,7 +335,7 @@ Most of the work will go into deriving equations BP1.1-BP4.1 and applying these 
 
 ### BP1.1
 
-The error at the output layer $\boldsymbol{\delta}^L$​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​, can be expressed as follows
+The error at the output layer $\boldsymbol{\delta}^L$​​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​​, can be expressed as follows (remembering the chain rule from calculus)
 $$
 \boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
 $$
@@ -435,13 +435,18 @@ $$
 		..., &
 		f'(z^L_{n^L})
 	}
-\right] =
-\frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T
+\right],
 $$
 
-This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+or written more compactly as 
+$$
+\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
+$$
 
-#### Concrete Example
+
+This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$​, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+
+#### Example
 
 While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
 
@@ -617,6 +622,8 @@ $$
 \boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l,
 $$
 which represents BP2.1. 
+
+#### Example
 
 To see how this equation helps us to compute the error at each layer, notice that in the first iteration of backpropagation, we have that
 $$
@@ -811,12 +818,12 @@ $$
         ... + 
         \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_2}, &
         
-        ... &
+        ..., &
         
         \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_{n^l}} +
         \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_{n^l}} + 
         ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}, &
+        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
 	}
 \right],
 $$
@@ -827,7 +834,7 @@ $$
 	\matrix{
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_1}, &
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_2}, &
-		... &
+		..., &
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_{n^l}}
 	}
 \right].
@@ -858,7 +865,7 @@ $$
 \right] =
 \left( \boldsymbol{\delta}^l \right)^T.
 $$
-The above equation represents BP4.1
+The above equation represents BP4.1.
 
 
 
@@ -930,7 +937,7 @@ $$
 
 which represents BP1.2.
 
-#### Concrete example
+#### Example
 
 Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (66) as follows
 $$
@@ -1157,15 +1164,18 @@ $$
 $$
 or written more compactly as
 $$
-\frac{\partial C}{\partial \textbf{b}^l} = 
-\frac{1}{M} \sum^M_{m=1}
-\boldsymbol{\delta}^{l, m},
+\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
 $$
 which represents equation BP4.2. 
 
 ### Summary
 
-TODO: List / summarize equations BP1.2 to BP4.2
+To summarize, in our backpropagation module, we want to implement the following 4 equations:
+
+- BP1.2: $\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L)$ 
+- BP2.2: $\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^l$ 
+- BP3.2: $\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$ 
+- BP4.2: $\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
 
 ## Why Backpropagation?
 
