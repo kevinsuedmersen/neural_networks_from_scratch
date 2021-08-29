@@ -312,16 +312,24 @@ Note that the loss function represents an error over a *single* training example
 
 Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once. 
 
-## Backpropagation for a Single Training Example
-
-The backpropagation algorithm works as follows. For any given layer $l$​, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$​​, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
+The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
 The backpropagation algorithm is based on 4 key equations:
 
-- BP1.1: An equation for the error at the output layer, i.e. $\boldsymbol{\delta}^L$​. Needed for initializing the backpropagation algorithm
-- BP2.1: A recursive equation relating $\boldsymbol{\delta}^l$ to $\boldsymbol{\delta}^{l+1}$. Note the in the first iteration, $\boldsymbol{\delta}^{l+1} = \boldsymbol{\delta}^L$​ which we computed in BP1. Needed for recursively calculating the error at each layer
-- BP3.1: An equation relating $\boldsymbol{\delta}^l$​ to the derivative of the cost function w.r.t. the weights in layer $l$​, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$.​
-- BP4: An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the biases in layer $l$, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​.
+- BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
+  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
+  - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
+- BP2.x: A recursive equation relating the error layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
+  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$, which is a matrix where each column contains the error for a different training example.
+- BP3.x: An equation relating the error at layer $l$ to:
+  - The derivative of the *loss* function w.r.t the weights in layer $l$ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$. We'll refer to this equation as BP3.1
+  - The derivative of the *cost* function w.r.t. the weights in layer $l$ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​.We'll refer to this equation as BP3.2
+- BP4.x: An equation relating the error at layer $l$ to:
+  - The derivative of the *loss* function w.r.t the biases in layer $l$​​ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​. We'll refer to this equation as BP4.1
+  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​.We'll refer to this equation as BP4.2
+
+Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` equations at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
 ## Backpropagation for a Single Training Example
 
