@@ -1187,7 +1187,25 @@ where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing
 
 # Gradient Descent
 
-TODO
+In the previous section, we described how to compute the gradients, which mathematically speaking, point into the *direction* of the steepest ascent of the cost function. In this section, we will describe how to use the gradients in order to *update* the weights and biases such that the cost decreases. 
+
+We will use a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2, we can perform the weight updates as
+$$
+\textbf{w}^{l}_{s} = \textbf{w}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{w}^l} \right)_{s-1},
+$$
+and similarly, the bias updates as
+$$
+\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)_{s-1},
+$$
+for update steps $i = 1, 2, ..., S$. Notice that $\textbf{w}^{l}_{s=0}$ and $\textbf{b}^{l}_{s=0}$ are initialized randomly, $S$ represents the number of update steps and $\lambda$ represents the *learning rate* controlling the step size toward the local (and hopefully global) minimum of the cost function. 
+
+Assuming that we divided our dataset into batches with $M$ training examples each, we will end up with $S$ batches, where $S$ is computed as 
+$$
+S = \text{round\_up}(N/M),
+$$
+where $\text{round\_up}$​ is a function that always rounds a floating point number *up* to the nearest integer and where $N$ represents the number of all training examples in total. Notice that $S$ always needs to be rounded up in order to make sure that during one *epoch*[^epoch], all training examples have been forward- and backward propagated through the network. 
+
+[^epoch]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
 # Loss and Activation Functions
 
