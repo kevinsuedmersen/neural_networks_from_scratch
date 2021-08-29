@@ -312,22 +312,30 @@ Note that the loss function represents an error over a *single* training example
 
 Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once. 
 
-## Backpropagation for a Single Training Example
-
-The backpropagation algorithm works as follows. For any given layer $l$​, the backpropagation algorithm computes an intermediate quantity, the so called *error* $\boldsymbol{\delta}^l$​​, and then computes the gradients using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
+The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
 The backpropagation algorithm is based on 4 key equations:
 
-- BP1.1: An equation for the error at the output layer, i.e. $\boldsymbol{\delta}^L$​. Needed for initializing the backpropagation algorithm
-- BP2.1: A recursive equation relating $\boldsymbol{\delta}^l$ to $\boldsymbol{\delta}^{l+1}$. Note the in the first iteration, $\boldsymbol{\delta}^{l+1} = \boldsymbol{\delta}^L$​ which we computed in BP1. Needed for recursively calculating the error at each layer
-- BP3.1: An equation relating $\boldsymbol{\delta}^l$​ to the derivative of the cost function w.r.t. the weights in layer $l$​, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$.​
-- BP4: An equation relating $\boldsymbol{\delta}^l$ to the derivative of the cost function w.r.t. the biases in layer $l$, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​.
+- BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
+  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
+  - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
+- BP2.x: A recursive equation relating the error at layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
+  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$, which is a matrix where each column contains the error for a different training example.
+- BP3.x: An equation relating the error at layer $l$ to:
+  - The derivative of the *loss* function w.r.t the weights in layer $l$ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$. We'll refer to this equation as BP3.1
+  - The derivative of the *cost* function w.r.t. the weights in layer $l$ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​.We'll refer to this equation as BP3.2
+- BP4.x: An equation relating the error at layer $l$ to:
+  - The derivative of the *loss* function w.r.t the biases in layer $l$​​ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​. We'll refer to this equation as BP4.1
+  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​.We'll refer to this equation as BP4.2
+
+Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` equations at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
 ## Backpropagation for a Single Training Example
 
 ### BP1.1
 
-The error at the output layer $\boldsymbol{\delta}^L$​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​, can be expressed as follows
+The error at the output layer $\boldsymbol{\delta}^L$​​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​​, can be expressed as follows (remembering the chain rule from calculus)
 $$
 \boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
 $$
@@ -427,13 +435,18 @@ $$
 		..., &
 		f'(z^L_{n^L})
 	}
-\right] =
-\frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T
+\right],
 $$
 
-This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+or written more compactly as 
+$$
+\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
+$$
 
-#### Concrete Example
+
+This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$​, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+
+#### Example
 
 While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
 
@@ -606,9 +619,21 @@ $$
 $$
 or written more compactly
 $$
-\boldsymbol{\delta}^{l-1} = \left( f('\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l,
 $$
-Equation (46) represents BP2.1.
+which represents BP2.1. 
+
+#### Example
+
+To see how this equation helps us to compute the error at each layer, notice that in the first iteration of backpropagation, we have that
+$$
+\boldsymbol{\delta}^{L-1} = \left( f'(\textbf{z}^{L-1}) \right)^T \odot (\boldsymbol{\delta}^L)^T \textbf{W}^L,
+$$
+from which we already know how to compute $\boldsymbol{\delta}^L$ thanks to BP1.1. Still being in the first iteration of backpropagation, we will compute the actual values of $\boldsymbol{\delta}^{L-1}$ and cache the results. Then, being in the 2nd iteration of the backpropagation algorithm, we will iterate (47) backwards like this
+$$
+\boldsymbol{\delta}^{L-2} = \left( f'(\textbf{z}^{L-2}) \right)^T \odot (\boldsymbol{\delta}^{L-1})^T \textbf{W}^{L-1},
+$$
+from which we computed $\boldsymbol{\delta}^{L-1}$​ in the previous iteration. This procedure, i.e. computing the value of the error and iterating backwards, will be repeated until we computed the values of $\boldsymbol{\delta}^1$. ​
 
 ### BP3.1
 
@@ -793,12 +818,12 @@ $$
         ... + 
         \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_2}, &
         
-        ... &
+        ..., &
         
         \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_{n^l}} +
         \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_{n^l}} + 
         ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}, &
+        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
 	}
 \right],
 $$
@@ -809,7 +834,7 @@ $$
 	\matrix{
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_1}, &
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_2}, &
-		... &
+		..., &
 		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_{n^l}}
 	}
 \right].
@@ -840,7 +865,7 @@ $$
 \right] =
 \left( \boldsymbol{\delta}^l \right)^T.
 $$
-The above equation represents BP4.1
+The above equation represents BP4.1.
 
 
 
@@ -858,8 +883,8 @@ We want to end up with an expression where each column represents a different tr
 $$
 \begin{array}{c}
 \boldsymbol{\delta}^L \coloneqq 
-\left( \boldsymbol{\delta}^L \right)^T =
-\left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
+\left( \boldsymbol{\delta}^L \right)^T \\
+= \left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
  = \left[
 	\matrix{
 		\frac{\partial L}{\partial a^L_1} \\
@@ -879,7 +904,7 @@ $$
 \right]
 \end{array}.
 $$
-To calculate $\boldsymbol{\delta}^L$ for $M$ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$ next to each other in a column wise fashion like this
+To calculate $\boldsymbol{\delta}^L$​ for $m = 1, 2, ..., M$​ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$​ next to each other in a column wise fashion like this
 $$
 \begin{array}{c}
 	\boldsymbol{\Delta}^L \coloneqq 
@@ -907,12 +932,14 @@ $$
 $$
 or written more compactly as
 $$
-\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L).
+\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L),
 $$
 
-#### Concrete example
+which represents BP1.2.
 
-Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (64) as follows
+#### Example
+
+Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (66) as follows
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
@@ -921,16 +948,234 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right), & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right), & ..., & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
 	}
-\right].
+\right]
+= \textbf{Y} - \textbf{A}^L,
 $$
+
+which is easily computed, because we are given $\textbf{Y}$ (since we are talking about a supervised learning problem here) and we already computed $\textbf{A}^L$ during the forward propagation. 
 
 ### BP2.2
 
-CONTINUE HERE
+Recall from BP2.1 that 
+$$
+\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+$$
+Again, we want to end up with an expression, where each column represents a different training example, so we will redefine the above expression as its transpose like so
+$$
+\boldsymbol{\delta}^{l-1} \coloneqq \left( \boldsymbol{\delta}^{l-1} \right)^T = f'(\textbf{z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\delta}^l,
+$$
+remembering that when transposing a matrix multiplication, we have to transpose each factor and reverse their orders (except for the Hadamard product, because it's an element-by-element multiplication). So, for each $1, 2, ...M$, we will stack (column-wise) the errors and weighted inputs of each training example as follows
+$$
+\left[
+	\matrix{
+		\boldsymbol{\delta}^{l-1, 1}, & \boldsymbol{\delta}^{l-1, 2}, & ..., & \boldsymbol{\delta}^{l-1, M}
+	}
+\right] =
+\left[
+	\matrix{
+		f'(\textbf{z}^{l-1, 1}), & f'(\textbf{z}^{l-1, 2}), & ..., & f'(\textbf{z}^{l-1, M}) 
+	}
+\right] \odot
+\left( \textbf{W}^l \right)^T
+\left[
+	\matrix{
+		\boldsymbol{\delta}^{l, 1}, & \boldsymbol{\delta}^{l, 2}, & ..., & \boldsymbol{\delta}^{l, M}
+	}
+\right].
+$$
+
+
+Writing out each element of the above equation, we will get
+$$
+\left[
+	\matrix{
+		\delta^{l-1, 1}_1, & \delta^{l-1, 2}_1, & ..., & \delta^{l-1, M}_1 \\
+		\delta^{l-1, 1}_2, & \delta^{l-1, 2}_2, & ..., & \delta^{l-1, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l-1, 1}_{n^{l-1}}, & \delta^{l-1, 2}_{n^{l-1}}, & ..., & \delta^{l-1, M}_{n^{l-1}} \\
+	}
+\right] = 
+\left[
+	\matrix{
+		f'(z^{l-1, 1}_1), & f'(z^{l-1, 2}_1), & ..., & f'(z^{l-1, M}_1) \\
+		f'(z^{l-1, 1}_2), & f'(z^{l-1, 2}_2), & ..., & f'(z^{l-1, M}_2) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		f'(z^{l-1, 1}_{n^{l-1}}), & f'(z^{l-1, 2}_{n^{l-1}}), & ..., & f'(z^{l-1, M}_{n^{l-1}})
+	}
+\right] \odot
+\left[
+	\matrix{
+		w^l_{1,1}, & w^l_{2,1}, & ..., & w^l_{n^l,1} \\ 
+		w^l_{1,2}, & w^l_{2,2}, & ..., & w^l_{n^l,2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1,n^{l-1}}, & w^l_{2,n^{l-1}}, & ..., & w^l_{n^l,n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
+		\delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, 1}_{n^{l}}, & \delta^{l, 2}_{n^{l}}, & ..., & \delta^{l, M}_{n^{l}} \\
+	}
+\right],
+$$
+ which we can write more compactly as
+$$
+\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^{l},
+$$
+which represents BP2.2.
 
 ### BP3.2
 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, we know that 
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{w}^l},
+$$
+where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$​ and $L^m$ is the loss associated with the $m$-th training example. 
+
+From BP3.1, we know that 
+$$
+\frac{\partial L}{\partial \textbf{w}^l} = 
+\left[
+	\matrix{
+		\delta^l_1 \\
+		\delta^l_2 \\
+		\vdots \\
+		\delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}
+	}
+\right],
+$$
+so, using that, we can rewrite equation (73) as follows
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M} \sum^M_{m=1} 
+\left[
+	\matrix{
+		\delta^{l, m}_1 \\
+		\delta^{l, m}_2 \\
+		\vdots \\
+		\delta^{l, m}_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1, m}_1, & a^{l-1, m}_2, & ..., & a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Working out the above matrix multiplication yields
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M} \sum^M_{m=1} 
+\left[
+	\matrix{
+		\delta^{l, m}_1 a^{l-1, m}_1, & \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\delta^{l, m}_2 a^{l-1, m}_1, & \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, m}_{n^l} a^{l-1, m}_1, & \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Moving the summation inwards gives us 
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M}
+\left[
+	\matrix{
+		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+	}
+\right].
+$$
+Notice that each cell contains a scalar product, which should ring a bell, because when multiplying two matrices with each other, each cell in the resulting matrix is a scalar product of a row of the left matrix and a column of the right matrix. Using this insight, we can decompose the above equation into the following matrix multiplication
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{1}{M}
+\left[
+	\matrix{
+		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
+        \delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \delta^{l, 1}_{n^l}, & \delta^{l, 2}_{n^l}, & ..., & \delta^{l, M}_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1, 1}_1, & a^{l-1, 1}_2, & ..., & a^{l-1, 1}_{n^{l-1}} \\
+		a^{l-1, 2}_1, & a^{l-1, 2}_2, & ..., & a^{l-1, 2}_{n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		a^{l-1, M}_1, & a^{l-1, M}_2, & ..., & a^{l-1, M}_{n^{l-1}}
+	}
+\right],
+$$
+or written more compactly as
+$$
+\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
+$$
+which represents equation BP3.2. 
+
 ### BP4.2
+
+Finally, the other real quantity of interest is the gradient of the cost function w.r.t. the biases. Again, using the fact that the cost is an average over $M$​ training examples, we can deduce that
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
+$$
+Remember from BP4.1 that 
+$$
+\frac{\partial L}{\partial \textbf{b}^{l}} = \left[
+	\matrix{
+		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right],
+$$
+which, first of all, we will redefine as its transpose to remain conform with the notations used from BP1.2 to BP3.2, i.e.
+$$
+\frac{\partial L}{\partial \textbf{b}^{l}} \coloneqq
+\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T = 
+\left[
+	\matrix{
+		\delta^l_1 \\ 
+		\delta^l_2 \\
+        \vdots \\
+        \delta^l_{n^l}
+	}
+\right].
+$$
+From here on out, it is really straight forward. Plugging (82) back into (80) yields
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = 
+\frac{1}{M} \sum^M_{m=1}
+\left[
+	\matrix{
+		\delta^{l, m}_1 \\ 
+		\delta^{l, m}_2 \\
+        \vdots \\
+        \delta^{l, m}_{n^l}
+	}
+\right],
+$$
+or written more compactly as
+$$
+\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
+$$
+which represents equation BP4.2. 
+
+### Summary
+
+To summarize, in our backpropagation module, we want to implement the following 4 equations:
+
+- BP1.2: $\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L)$ 
+- BP2.2: $\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^l$ 
+- BP3.2: $\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$ 
+- BP4.2: $\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
 
 ## Why Backpropagation?
 
@@ -942,7 +1187,25 @@ where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing
 
 # Gradient Descent
 
-TODO
+In the previous section, we described how to compute the gradients, which mathematically speaking, point into the *direction* of the steepest ascent of the cost function. In this section, we will describe how to use the gradients in order to *update* the weights and biases such that the cost decreases. 
+
+We will use a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2, we can perform the weight updates as
+$$
+\textbf{w}^{l}_{s} = \textbf{w}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{w}^l} \right)_{s-1},
+$$
+and similarly, the bias updates as
+$$
+\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)_{s-1},
+$$
+for update steps $i = 1, 2, ..., S$. Notice that $\textbf{w}^{l}_{s=0}$ and $\textbf{b}^{l}_{s=0}$ are initialized randomly, $S$ represents the number of update steps and $\lambda$ represents the *learning rate* controlling the step size toward the local (and hopefully global) minimum of the cost function. 
+
+Assuming that we divided our dataset into batches with $M$ training examples each, we will end up with $S$ batches, where $S$ is computed as 
+$$
+S = \text{round\_up}(N/M),
+$$
+where $\text{round\_up}$​ is a function that always rounds a floating point number *up* to the nearest integer and where $N$ represents the number of all training examples in total. Notice that $S$ always needs to be rounded up in order to make sure that during one *epoch*[^epoch], all training examples have been forward- and backward propagated through the network. 
+
+[^epoch]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
 # Loss and Activation Functions
 
