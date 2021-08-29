@@ -1207,12 +1207,42 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 [^epoch]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
-# Loss and Activation Functions
+# Activation and Loss Functions
 
-Popular choices of activation functions in the hidden layers are the sigmoid (equation 3), ReLU (equation 4) and tanh (equation 5) functions. These functions and their corresponding derivatives are presented below
+As we could see from the forward and backward propagation sections, we need to compute the values of certain loss and activations as well as their corresponding derivatives. In this section, we will start by outlining common activation functions (and their derivatives) and then we will continue with common loss functions (and their derivatives).
+
+## Activation Functions
+
+### Sigmoid
+
+We have already taken a sneak peek at the sigmoid function during the forward propagation, so that the reader has a general idea what we are talking about, but now, we will delve into more depth. The sigmoid function can be expressed as
 $$
-\sigma(z) = \frac{1}{1 + e^{-z}}
+f(z) = \frac{1}{1 + e^{-z}}.
 $$
+
+Notice that for very large positive inputs, $f(z) \rightarrow 1$​ and that for very large negative inputs, $f(z) \rightarrow 0$ and that $f(z) = 0.5$ if $z=0$. 
+
+The corresponding derivative is
+$$
+f'(z) = f(z) \times (1 - f(z)),
+$$
+from which we can see that for very large inputs (positive as well as negative), $f'(z) \rightarrow 0$ and that $f'(z) = 0.25$ if $z=0$​​​. The fact that the sigmoid function's derivative is close to 0 for very large inputs causes the errors (at each layer where the sigmoid activation function is used) to be very small, which in turn causes the gradients to contain very small values. This problem is called *learning slowdown* (briefly mentioned earlier) and when calculating the error at the output layer, this problem can be solved by using the categorical cross entropy cost function as we have shown in the examples for equations BP1.1 and BP1.2. 
+
+### ReLU
+
+The Rectified Linear Unit (ReLU) is defined as
+$$
+f(z) = max(0, z)
+$$
+
+
+### Softmax
+
+abc
+
+### tanh
+
+abc
 
 TODO: 
 
@@ -1225,6 +1255,10 @@ Ideally, $f(z)$ should be differentiable, non-linear, monotonically increasing a
 In the output layer, the activation may also be linear and it depends whether we're doing regression or classification (multi-class or multi-label)...
 
 [^2]: The gradient of the cost function with respect to all the weights and biases in the network
+
+# Weight Initialization
+
+abc
 
 # Implementation in Code
 
