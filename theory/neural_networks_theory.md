@@ -1232,9 +1232,32 @@ from which we can see that for very large inputs (positive as well as negative),
 
 The Rectified Linear Unit (ReLU) is defined as
 $$
-f(z) = max(0, z)
+f(z) = max(0, z),
+$$
+Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
+$$
+f'(z) = 
+\begin{cases}
+z & \text{if} & z > 0 \\
+0 & \text{if} & z \leq 0
+\end{cases}
+$$
+Notice from equation (31), that if e.g. $f'(z^L_1) = 0$​​, $\delta^L_1 = 0$​​. Then, by looking at equation (57), we know that 
+$$
+\begin{array}{c}
+\delta^L_1 a^{L-1}_1 = 0, \\
+\delta^L_1 a^{L-1}_2 = 0, \\
+\vdots \\
+\delta^L_1 a^{L-1}_{n^{l-1}} = 0,
+\end{array}
 $$
 
+
+which in turn means that 
+$$
+\frac{\partial L}{\partial \textbf{w}^L}[1, 2, ..., n^{l-1}] = 0,
+$$
+namely that elements $1$​ to $n^{l-1}$​ of the flattened weight gradient are zero. Simply put, this means that for a particular training example, all weights connected to neuron $1$​ in layer $L$​​​ won't get updated if $f'(z^L_1) = 0$. 
 
 ### Softmax
 
