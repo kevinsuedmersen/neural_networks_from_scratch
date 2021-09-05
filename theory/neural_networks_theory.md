@@ -314,7 +314,7 @@ Neural networks learn by iteratively adjusting their weights and biases such tha
 
 The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
-The backpropagation algorithm is based on 4 key equations:
+The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The final results these derivations will assume that the activation functions only depend on a scalar input (e.g. Sigmoid function) and not on a vector input (e.g. Softmax function), but we will explicitly tell you when we are making these assumptions. The four key equations are as follows:
 
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
@@ -391,7 +391,7 @@ $$
 	}
 \right].
 $$
-Notice that $a^L_j$ is only a function of (i.e. it only depends on) $z^L_j$, so $\frac{\partial a^L_j}{\partial z^L_k} = 0$ if $j \ne k$​​​. ​We can use that to simplify the above expression to
+If $a^L_j$​​​​​ depends on each $z^L_k$​​​​​ for all $j$​​​​​ and all $k$​​​​​ (e.g. when using the Softmax activation function), then the above equation cannot be simplified any further. However, if $a^L_j$​​​​ only depends on $z^L_j$ (e.g. when using the Sigmoid activation function)​​​​, such that $\frac{\partial a^L_j}{\partial z^L_k} = 0$​​​​ if $j \ne k$​​​​​​​, we can simplify the above expression to
 $$
 \boldsymbol{\delta}^L = 
 \left[
@@ -401,7 +401,7 @@ $$
 		..., &
 		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
 	}
-\right]
+\right].
 $$
 
 Finally, remember that $a^L_j = f(z^L_j)$, so $\frac{\partial a^L_j}{\partial z^L_j} = f'(z^L_j)$, so the above expression may be rewritten as 
@@ -553,15 +553,15 @@ $$
 	}
 \right].
 $$
-Notice that 
+Now, let's try to break down each $\frac{\partial z^l_j}{\partial z^{l-1}_k}$ (for $k = 1, 2, ..., n^{l-1}$​) of the above equation. Notice that 
 $$
 z^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ a^{l-1}_k \right) + b^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ f(z^{l-1}_k) \right) + b^l_j
 $$
-and therfore,
+and therefore,
 $$
 \frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
 $$
-Plugging (41) back into each element of (39) and rearranging a little bit yields 
+Plugging (43) back into each element of (41) and rearranging a little bit yields 
 $$
 \boldsymbol{\delta}^{l-1} = \left[
 	\matrix{
@@ -570,7 +570,7 @@ $$
 		..., &
 		f'(z^{l-1}_{n^{l-1}}) \sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
 	}
-\right],
+\right].
 $$
 which can be split into the element-by-element vector multiplication
 $$
@@ -592,7 +592,7 @@ $$
 	}
 \right].
 $$
- Finally, we want to vectorize the sum in the RHS of the above equation, so that the actual implementation in code can harness optimized matrix multiplication libraries. This can be achieved as follows
+Finally, we want to vectorize the sum in the RHS of the above equation, so that the actual implementation in code can harness optimized matrix multiplication libraries. This can be achieved as follows
 $$
 \boldsymbol{\delta}^{l-1} = 
 \left[
@@ -1259,29 +1259,39 @@ $$
 $$
 namely that elements $1$​ to $n^{l-1}$​ of the flattened weight gradient are zero. Simply put, this means that for a particular training example, all weights connected to neuron $1$​ in layer $L$​​​ won't get updated if $f'(z^L_1) = 0$. 
 
-### Softmax
-
-abc
-
 ### tanh
 
-abc
+TODO
 
-TODO: 
+### Softmax
 
-- Show equations for the activation function and their corresponding derivatives
-- Show graphs of each activation function and their corresponding derivatives
-- Discuss properties of the activation functions in the output layer
+Unlike all other activation functions discussed so far, the softmax function takes a vector as input and outputs a vector whose elements sum up to $1$. It is defined as follows
+$$
+f(\textbf{z}^l) = 
+\left[
+	\matrix{
+		\frac{e^{z_1}}{\sum^{n^l}_{j=1} e^{z_j}}, & \frac{e^{z_2}}{\sum^{n^l}_{j=1} e^{z_j}}, & ..., & \frac{e^{z_{n^l}}}{\sum^{n^l}_{j=1} e^{z_j}}
+	}
+\right]
+$$
 
-Ideally, $f(z)$ should be differentiable, non-linear, monotonically increasing and non-saturating. It should be differentiable, because in the back-propagation algorithm, we need to compute its derivative and it should be non-linear, because otherwise there is no benefit of introducing hidden layers. The latter follows from the fact that a chain of deeply nested linear transformations can be rewritten as merely another linear transformation (CITATION Studienbrief 3). Furthermore, it should be monotonically increasing so that as few as possible local minima are generated (GENERATED WHERE?) and it should be non-saturating to avoid the vanishing gradient problem. The vanishing gradient problem occurs when the norm of the gradient[^2] is very small which happens when $z$ is very large and $f'(z)$ is very small. Of course, the monotonically increasing and non-saturating properties could easily be achieved by setting $f(z)$ to the identity function, but then $f(z)$ would not be non-linear anymore, so there are some tradeoffs to be made and in practice, the ReLU is a good compromise between these tradeoffs. Note however, that the ReLU function is actually not defined at $z = 0$ so theoretically, it is not always differentiable. In practice however, the probability that $z$ is *exactly* $0$ is extremely small so that in code, it is often implemented that $f'(0) = 0$. 
 
-In the output layer, the activation may also be linear and it depends whether we're doing regression or classification (multi-class or multi-label)...
+## Loss functions
 
-[^2]: The gradient of the cost function with respect to all the weights and biases in the network
+TODO
 
-# Weight Initialization
+### Categorical Crossentropy
 
-abc
+TODO
 
-# Implementation in Code
+### Mean Squared Error
 
+TODO
+
+# Optimization Methods
+
+TODO
+
+## Weight Initialization
+
+TODO
