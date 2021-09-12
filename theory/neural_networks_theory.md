@@ -314,7 +314,7 @@ Neural networks learn by iteratively adjusting their weights and biases such tha
 
 The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
-The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The final results these derivations will assume that the activation functions only depend on a scalar input (e.g. Sigmoid function) and not on a vector input (e.g. Softmax function), but we will explicitly tell you when we are making these assumptions. The four key equations are as follows:
+The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The four key equations are as follows:
 
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
@@ -343,119 +343,41 @@ $$
 Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
 $$
 \boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
-	}
-\right]
-\left[
-	\matrix{
-		\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
-	\frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
-	\vdots & \vdots & \ddots & \vdots \\
-	\frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-	}
-\right]
+	\frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L} =
+	\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L),
 $$
 
-which we can multiply out as follows
+which can be written out as follows
 $$
-\boldsymbol{\delta}^L = \\
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
 	\matrix{
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_1} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_1}, &
-
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_2} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_2}, &
-
-		..., &
-
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_{n^L}} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    \frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
     }
 \right]
-$$
- and which can be simplified to
-$$
-\boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_1}, & 
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_2}, &
-		..., &
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_{n^L}}
-	}
-\right].
-$$
-If $a^L_j$​​​​​ depends on each $z^L_k$​​​​​ for all $j$​​​​​ and all $k$​​​​​ (e.g. when using the Softmax activation function), then the above equation cannot be simplified any further. However, if $a^L_j$​​​​ only depends on $z^L_j$ (e.g. when using the Sigmoid activation function)​​​​, such that $\frac{\partial a^L_j}{\partial z^L_k} = 0$​​​​ if $j \ne k$​​​​​​​, we can simplify the above expression to
-$$
-\boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1}, &
-		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2}, &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-	}
-\right].
-$$
-
-Finally, remember that $a^L_j = f(z^L_j)$, so $\frac{\partial a^L_j}{\partial z^L_j} = f'(z^L_j)$, so the above expression may be rewritten as 
-$$
-\boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1} f'(z^L_1), &
-		\frac{\partial L}{\partial a^L_2} f'(z^L_2), &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
-	}
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
+        \frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
 \right],
 $$
-which can be decomposed into the following Hadamard (element by element) product
-$$
-\boldsymbol{\delta}^L =
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1}, &
-		\frac{\partial L}{\partial a^L_2}, &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}}
-	}
-\right]
-\odot
-\left[
-	\matrix{
-		f'(z^L_1), &
-		f'(z^L_2), &
-		..., &
-		f'(z^L_{n^L})
-	}
-\right],
-$$
-
-or written more compactly as 
-$$
-\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
-$$
-
-
-This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$​, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+which yields a $1 \times n^L$ row vector. In its most general form, the above vector matrix product represents BP1.1, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer $a^L$​​, the above equation cannot be simplified any further. In the next section, we will show how to simplify this equation by choosing a specific loss and activation function. 
 
 #### Example
 
-While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
-
-From the categorical cross entropy loss function in equation (15), we can see that​ for $i = 1, 2, ..., n^L$,​
+For classification problems, a common choice for the loss function is the categorical cross entropy (see equation 15) and a common choice for the activation function in the output layer is the softmax function, which unlike e.g. the sigmoid activation function, takes a vector as input and also outputs a vector, whose $j$​-th component is defined as follows 
+$$
+a^l_j = f([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
+$$
+First, we will try to find concrete expressions for each component of $\left[\matrix{\frac{\partial L}{\partial a^L_1}, \frac{\partial L}{\partial a^L_2}, ..., \frac{\partial L}{\partial a^L_{n^L}}}\right]$​. From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$​,
 $$
 \frac{\partial L}{\partial a^{L}_i} = - \left( \frac{y_i}{a^{L}_i} - \frac{1 - y_i}{1 - a^{L}_i} \right),
 $$
 
-where we used the definition $\hat{y}_i \coloneqq a^{L}_i$​​​​. We can now do a little algebra to simplify the above expression. First, we want to create a common denominator which we can achieve as follows
+where we used the definition $\hat{y}_i \coloneqq a^{L}_i$​​​​​​​. We can now simplify the above expression by creating a common denominator and then simplifying the numerator:
 $$
 \frac{\partial L}{\partial a^{L}_i} = - 
 \left( 
@@ -466,11 +388,39 @@ $$
 - \left( \frac{y_i - a^{L}_i}{a^{L} (1 - a^{L}_i)} \right).
 $$
 
-Notice that $a^{L}_i = f(z^{L}_i)$​​​​​​ and that in the case of the sigmoid function, $f'(z^{L}_i) = f(z^{L}_i) (1 - f(z^{L}_i)) = a^L_i (1 - a^L_i)$​​​​​​. We can use that, to simplify the above expression to
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​. When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by (remembering the Quotient Rule from calculus)
 $$
-\frac{\partial L}{\partial a^{L}_i} = 
-- \left( \frac{y_i - a^{L}_i}{f'(z^{L}_i)} \right).
+\large{
+\begin{array}{l}
+	\frac{\partial a^l_j}{\partial z^l_j}
+	= \frac{e^{z^l_j} \left( \sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
+	= \frac{e^{z^l_j} \left( \left(\sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} \right)}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
+	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \frac{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \\
+	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \left( \frac{\sum^{n^l}_{k=1} e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} - \frac{e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} \right) \\ 
+	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \left( 1 - \frac{e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} \right),
+\end{array}
+}
 $$
+ where we can now use the definition of the Softmax function (equation 28) again to simplify further to
+$$
+\frac{\partial a^l_j}{\partial z^L_j} = a^l_j (1 - a^l_j).
+$$
+The second case is represented by $\frac{\partial a^l_j}{\partial z^l_k}$, where $k \neq j$, so that
+$$
+\large{
+	\begin{array}{l}
+		\frac{\partial a^l_j}{\partial z^l_k}
+		= \frac{0 \times \left(\sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
+		= \frac{- e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
+		= - \frac{e^{z^l_j}}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)} \frac{e^{z^l_k}}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)} \\
+		= -a^l_j \ a^l_k.
+	\end{array}
+}
+$$
+
+
+CHECK BELOW
+
 Now finally, we plug this interim result back into each element of BP1.1 while noticing that the two $f'(z^{L}_i)$​​​​ terms will cancel out, yielding
 $$
 \begin{array}{c}
@@ -1209,7 +1159,7 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 # Activation and Loss Functions
 
-As we could see from the forward and backward propagation sections, we need to compute the values of certain loss and activations as well as their corresponding derivatives. In this section, we will start by outlining common activation functions (and their derivatives) and then we will continue with common loss functions (and their derivatives).
+In the previous sections, we used some specific loss and activation functions and in this section we want to show some other common choices. 
 
 ## Activation Functions
 
