@@ -436,9 +436,8 @@ $$
 $$
 
 
-CHECK BELOW
+WHY NOT EQUAL TO
 
-Now finally, we plug this interim result back into each element of BP1.1 while noticing that the two $f'(z^{L}_i)$​​​​ terms will cancel out, yielding
 $$
 \begin{array}{c}
 \boldsymbol{\delta}^L = 
