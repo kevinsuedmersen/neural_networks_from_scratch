@@ -385,37 +385,54 @@ $$
     \frac{1 - y_i}{1 - a^{L}_i} \frac{a^{L}_i}{a^{L}_i} 
 \right) =
 
-- \left( \frac{y_i - a^{L}_i}{a^{L} (1 - a^{L}_i)} \right).
+- \left( \frac{y_i - a^{L}_i}{a^{L}_i (1 - a^{L}_i)} \right).
 $$
 
-Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​. When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by (remembering the Quotient Rule from calculus)
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​. When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
 \large{
 \begin{array}{l}
-	\frac{\partial a^l_j}{\partial z^l_j}
-	= \frac{e^{z^l_j} \left( \sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
-	= \frac{e^{z^l_j} \left( \left(\sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} \right)}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
-	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \frac{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \\
-	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \left( \frac{\sum^{n^l}_{k=1} e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} - \frac{e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} \right) \\ 
-	= \frac{e^{z^l_j}}{\sum^{n^l}_{k=1} e^{z^l_k}} \left( 1 - \frac{e^{z^l_k}}{\sum^{n^l}_{k=1} e^{z^l_k}} \right),
+	\frac{\partial a^L_j}{\partial z^L_j}
+	= \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
 \end{array}
 }
 $$
  where we can now use the definition of the Softmax function (equation 28) again to simplify further to
 $$
-\frac{\partial a^l_j}{\partial z^L_j} = a^l_j (1 - a^l_j).
+\frac{\partial a^L_j}{\partial z^L_j} = a^L_j (1 - a^L_j).
 $$
-The second case is represented by $\frac{\partial a^l_j}{\partial z^l_k}$, where $k \neq j$, so that
+The second case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​, where $k \neq j$​​, so that
 $$
 \large{
 	\begin{array}{l}
-		\frac{\partial a^l_j}{\partial z^l_k}
-		= \frac{0 \times \left(\sum^{n^l}_{k=1} e^{z^l_k} \right) - e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
-		= \frac{- e^{z^l_j} (e^{z^l_j})}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)^2} \\
-		= - \frac{e^{z^l_j}}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)} \frac{e^{z^l_k}}{\left( \sum^{n^l}_{k=1} e^{z^l_k} \right)} \\
-		= -a^l_j \ a^l_k.
+		\frac{\partial a^L_j}{\partial z^L_k}
+		= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+		= \frac{- e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+		= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
+		= -a^L_j \ a^L_k.
 	\end{array}
 }
+$$
+With (30), (32) and (33), we can now fill in each component of (27) as follows
+$$
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+- \left[
+	\matrix{
+    \left( \frac{y_1 - a^{L}_1}{a^{L}_1 (1 - a^{L}_1)} \right), & \left( \frac{y_2 - a^{L}_2}{a^{L}_2 (1 - a^{L}_2)} \right), & ..., & \left( \frac{y_{n^L} - a^{L}_{n^L}}{a^{L}_{n^L} (1 - a^{L}_{n^L})} \right)
+    }
+\right]
+\left[
+	\matrix{
+    	a^L_1 (1 - a^L_1), & -a^L_1 \ a^L_2, & ..., & -a^L_1 \ a^L_{n^L} \\
+        -a^L_2 \ a^L_1, & a^L_2 (1 - a^L_2), & ..., & -a^L_2 \ a^L_{n^L} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        -a^L_{n^L} \ a^L_1, & -a^L_{n^L} \ a^L_2, & ..., & a^L_{n^L} (1 - a^L_{n^L})
+    }
+\right],
 $$
 
 
