@@ -158,33 +158,29 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (7). 
 
-Having computed $\textbf{a}^L$, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problem involving $n^L$ classes, a good[^3] choice for a loss function is the *cross entropy* which is calculated as follows
-
-[^3]: "good" in the sense that, unlike e.g. the squared error, it avoids a learning slowdown, because its gradient with respect to (w.r.t.) the weights and biases is independent of the derivative of the activation function in the output layer CITATION: http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function
+Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problems where *exactly* one of  $n^L$​ classes must be predicted, a commonly used cost function is the *categorical cross entropy*, which is defined as follows
 
 
 $$
-L(\textbf{y}, \hat{\textbf{y}}) = -|| \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}})) ||^2 
-= -\sum_{i=1}^{n^L} y_i log(\hat{y}_i) + (1-y_i) log(1-\hat{y_i}),
+L(\textbf{y}, \hat{\textbf{y}}) 
+= -|| \textbf{y} \ log(\hat{\textbf{y}}) ||^2 
+= -\sum_{i=1}^{n^L} y_i \ log(\hat{y}_i),
 $$
-where $\textbf{y}$ is the ground truth vector where element $y_i = 1$ if the current training example belongs to class $i$ and $y_i = 0$ otherwise. 
+where $\textbf{y}$ is the ground truth vector (containing the target values) where element $y_i = 1$ and all other elements are zero if the current training example belongs to class $i$, i.e. where $\textbf{y}$ is *one-hot-encoded*. 
 
-In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$ is far away from $y_i$, and low values for good predictions, i.e. when $\hat{y}_i$ is very close to $y_i$. Let's see if component $i$ of (15) fulfills these requirements by considering the following 4 edge cases:
+In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$​​ is far away from $y_i$​​, and low values for good predictions, i.e. when $\hat{y}_i$​​ is very close to $y_i$​​. Let's see if component $i$​​ of (15) fulfills these requirements by considering the following example of a multi-class classificaton problem with 2 classes:
 
 - Bad predictions
 
-  - If $y_i = 1$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = -\infty$ and $(1-y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = \infty$  
-  - If $y_i = 0$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = -\infty$, so $L(y_i, \hat{y}_i) = \infty$  
+  - If $\textbf{y} = [1, 0]$​​​ and $\hat{\textbf{y}} = [0, 1]$​​​, then $L(y_i, \hat{y}_i)= -(1 \times log(0) + 0 \times log(1)) = -(-\infty + 0) = \infty$​​​
+  - If $\textbf{y} = [0, 1]$​​​​ and $\hat{\textbf{y}} = [1, 0]$​​​​, then $L(y_i, \hat{y}_i)= -(0 \times log(1) + 1 \times log(0)) = -(0 -\infty) = \infty$​​​​
 
 - Good predictions
 
-  - If $y_i = 1$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$ 
+  - If $\textbf{y} = [1, 1]$​​​​​ and $\hat{\textbf{y}} = [1, 1]$​​​​​, then $L(y_i, \hat{y}_i)= -(1 \times log(1) + 1 \times log(1)) = -(0 + 0) = 0$
+- If $\textbf{y} = [0, 0]$​​​ and $\hat{\textbf{y}} = [0, 0]$​​​, then $L(y_i, \hat{y}_i)= -(0 \times log(0) + 0 \times log(0)) = -(0 + 0) = 0$​​​
 
-  - If $y_i = 0$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$  
-
-in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and it should be derivable using probability theory[^4].
-
-[^4]: E.g. the loss function in linear regression, the squared error, is derivable by using the Maximum Likelihood theory assuming that the distribution of the training examples follows a Gaussian distribution (CITATION)
+in all of the 4 above cases, we get the desired result. 
 
 ## Forward Propagation for a Batch of  Training Examples
 
@@ -417,12 +413,24 @@ $$
 	\end{array}
 }
 $$
-With (30), (32) and (33), we can now fill in each component of (27) as follows
+So, summarizing, 
+$$
+\frac{\partial a^L_j}{\partial z^L_k} = 
+\large{
+	\begin{cases}
+		a^L_j(1-a^L_j) & \text{if} & j=k \\
+        -a^L_j \ a^L_k & \text{if} & j \neq k
+	\end{cases}
+}
+$$
+
+
+With (30), and (34), we can now fill in each component of (27) as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
 	\matrix{
-    \left( \frac{y_1 - a^{L}_1}{a^{L}_1 (1 - a^{L}_1)} \right), & \left( \frac{y_2 - a^{L}_2}{a^{L}_2 (1 - a^{L}_2)} \right), & ..., & \left( \frac{y_{n^L} - a^{L}_{n^L}}{a^{L}_{n^L} (1 - a^{L}_{n^L})} \right)
+    	\frac{y_1}{a^L_1}, & \frac{y_2}{a^L_2}, & ..., & \frac{y_{n^L}}{a^L_{n^L}}
     }
 \right]
 \left[
