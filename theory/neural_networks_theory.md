@@ -172,13 +172,13 @@ In general, we want a loss function which has high values for bad predictions, i
 
 - Bad predictions
 
-  - If $\textbf{y} = [1, 0]$​​​ and $\hat{\textbf{y}} = [0, 1]$​​​, then $L(y_i, \hat{y}_i)= -(1 \times log(0) + 0 \times log(1)) = -(-\infty + 0) = \infty$​​​
-  - If $\textbf{y} = [0, 1]$​​​​ and $\hat{\textbf{y}} = [1, 0]$​​​​, then $L(y_i, \hat{y}_i)= -(0 \times log(1) + 1 \times log(0)) = -(0 -\infty) = \infty$​​​​
+  - If $\textbf{y} = [1, 0]^T$ and $\hat{\textbf{y}} = [0, 1]^T$, then $L(y_i, \hat{y}_i)= -(1 \times log(0) + 0 \times log(1)) = -(-\infty + 0) = \infty$
+  - If $\textbf{y} = [0, 1]^T$ and $\hat{\textbf{y}} = [1, 0]^T$, then $L(y_i, \hat{y}_i)= -(0 \times log(1) + 1 \times log(0)) = -(0 -\infty) = \infty$
 
 - Good predictions
 
-  - If $\textbf{y} = [1, 1]$​​​​​ and $\hat{\textbf{y}} = [1, 1]$​​​​​, then $L(y_i, \hat{y}_i)= -(1 \times log(1) + 1 \times log(1)) = -(0 + 0) = 0$
-- If $\textbf{y} = [0, 0]$​​​ and $\hat{\textbf{y}} = [0, 0]$​​​, then $L(y_i, \hat{y}_i)= -(0 \times log(0) + 0 \times log(0)) = -(0 + 0) = 0$​​​
+  - If $\textbf{y} = [1, 1]^T$ and $\hat{\textbf{y}} = [1, 1]^T$, then $L(y_i, \hat{y}_i)= -(1 \times log(1) + 1 \times log(1)) = -(0 + 0) = 0$
+- If $\textbf{y} = [0, 0]^T$ and $\hat{\textbf{y}} = [0, 0]^T$, then $L(y_i, \hat{y}_i)= -(0 \times log(0) + 0 \times log(0)) = -(0 + 0) = 0$
 
 in all of the 4 above cases, we get the desired result. 
 
@@ -303,7 +303,7 @@ $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$​​​ training examples. When computing the cost for $M$​​​ training examples, it makes sense to choose the average as an aggregation, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
 
 # Backward Propagation
 
@@ -316,15 +316,16 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
   - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
-- BP2.x: A recursive equation relating the error at layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
+- BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
-  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$, which is a matrix where each column contains the error for a different training example.
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​, which is a matrix where each column contains the error for a different training example.
+  - Note that in the first iteration, we set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^l$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​
 - BP3.x: An equation relating the error at layer $l$ to:
-  - The derivative of the *loss* function w.r.t the weights in layer $l$ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$. We'll refer to this equation as BP3.1
-  - The derivative of the *cost* function w.r.t. the weights in layer $l$ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​.We'll refer to this equation as BP3.2
+  - The derivative of the *loss* function w.r.t the weights in layer $l$​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$​. We'll refer to this equation as BP3.1
+  - The derivative of the *cost* function w.r.t. the weights in layer $l$​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​​.We'll refer to this equation as BP3.2
 - BP4.x: An equation relating the error at layer $l$ to:
-  - The derivative of the *loss* function w.r.t the biases in layer $l$​​ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​. We'll refer to this equation as BP4.1
-  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​.We'll refer to this equation as BP4.2
+  - The derivative of the *loss* function w.r.t the biases in layer $l$​​​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​​. We'll refer to this equation as BP4.1
+  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​​.We'll refer to this equation as BP4.2
 
 Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` equations at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
