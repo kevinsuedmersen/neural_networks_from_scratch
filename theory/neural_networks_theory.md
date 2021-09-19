@@ -558,7 +558,7 @@ $$
 $$
 which can be written out explicitly as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \left[
 	\matrix{
     	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -586,23 +586,44 @@ $$
 \right].
 $$
 
-Notice that $\frac{\partial z^l_j}{\partial w^l_{i, k}} = 0$​ if $j \neq i$​, because weight $w^l_{i,k}$ is not connected to, and hence not a function of $z^l_j$. Therefore, the above expression becomes
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{w}^l)$. Deriving the components of $\nabla L(\textbf{z}^l)$ is easy, because per definition, 
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j.
+$$
+To derive each component of $J_{\textbf{z}^l}(\textbf{w}^l)$, we need to consider two cases again. First, consider $\frac{\partial z^l_j}{\partial w^l_{j, k}}$ if $j = k$. Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
+$$
+\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
+$$
+Next, consider $\frac{\partial z^l_j}{\partial w^l_{j, k}}$ if $j \neq k$. In that case, the weight $w^l_{j, k}$ is not connected to neuron $j$ in layer $l$, so 
+$$
+\frac{\partial z^l_j}{\partial w^l_{j,k}} = 0.
+$$
+Summarizing, we have that 
+$$
+\large
+\frac{\partial z^l_j}{\partial w^l_{j,k}} =
+\begin{cases}
+	a^{l-1}_k & \text{if} \ j=k \\
+	0 & \text{if} \ j \neq k \\
+\end{cases}
+$$
+Using (46) and (49), we can now fill in each value of (45) as follows
+$$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \left[
 	\matrix{
-    	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+    	\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
         }
 \right]
 \left[
 	\matrix{
-    	\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
+    	a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
         & 0, & 0, & ..., & 0, 
         & ..., & 
         0, & 0, & ..., & 0 \\
 
 		0, & 0, & ..., & 0, 
-        & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
+        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
         & ..., & 
         0, & 0, & ..., & 0 \\
 
@@ -610,55 +631,22 @@ $$
 
 		0, & 0, & ..., & 0, 
         & 0, & 0, & ..., & 0, 
-        & ..., & 
-        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+        & ..., 
+        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
     }
 \right].
 $$
-The above expression yields the following $1 \times (n^l \times n^{l-1})$​ row vector
+Multiplying out the above expression yields the following $1 \times (n^l \times n^{l-1})$ row vector
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-\left[
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l)
+= \left[
 	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 1}}, &
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, &
-		
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 1}}, &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, &
-		
-		..., &
-		
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 1}}, &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, n^{l-1}}}
+		\delta^l_1 \ a^{l-1}_1, & \delta^l_1 \ a^{l-1}_2, & ..., & \delta^l_1 \ a^{l-1}_{n^{l-1}}, &
+		\delta^l_2 \ a^{l-1}_1, & \delta^l_2 \ a^{l-1}_2, & ..., & \delta^l_2 \ a^{l-1}_{n^{l-1}}, &
+		... &
+		\delta^l_{n^l} \ a^{l-1}_1, & \delta^l_{n^l} \ a^{l-1}_2, & ..., & \delta^l_{n^l} \ a^{l-1}_{n^{l-1}}, &
 	}
 \right]
-$$
-The $(j,k)$-th element of the above vector represents
-$$
-\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}}.
-$$
-Recall that since $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, we know that $\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k$. Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (48) becomes
-$$
-\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \delta^l_j \ a^{l-1}_k.
-$$
-Plugging the result of equation (52) back into each element of equation (47) yields
-$$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-\left[
-	\matrix{
-		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ..., & \delta^l_1 a^{l-1}_{n^{l-1}}, &
-		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ..., & \delta^l_2 a^{l-1}_{n^{l-1}}, &
-		..., &
-		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ..., & \delta^l_{n^l} a^{l-1}_{n^{l-1}}
-		
-	}
-\right].
 $$
 Assume that we wanted to represent the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent the above equation as
 $$
@@ -698,8 +686,12 @@ The above equation represents BP3.1.
 
 Now, we want to relate the errors of each layer to the derivative of the loss w.r.t. the biases. The derivative of the loss w.r.t the biases can be expressed as follows
 $$
-\frac{\partial L}{\partial \textbf{b}^l} = 
-\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{b}^l} = 
+\frac{\partial L}{\partial \textbf{b}^l} 
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{b}^l} 
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{b}^l),
+$$
+which can be written out explicitly as
+$$
 \left[
 	\matrix{
 		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -712,8 +704,10 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\frac{\partial z^l_{n^l}}{\partial b^l_1}, & \frac{\partial z^l_{n^l}}{\partial b^l_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}} \\
 	}
-\right],
+\right]
 $$
+
+
 which we can multiply out as follows
 $$
 \frac{\partial L}{\partial \textbf{b}^l} = \left[
