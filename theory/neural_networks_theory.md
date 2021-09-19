@@ -586,11 +586,7 @@ $$
 \right].
 $$
 
-Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{w}^l)$. Deriving the components of $\nabla L(\textbf{z}^l)$ is easy, because per definition, 
-$$
-\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j.
-$$
-To derive each component of $J_{\textbf{z}^l}(\textbf{w}^l)$, we need to consider two cases again. First, consider $\frac{\partial z^l_j}{\partial w^l_{j, k}}$ if $j = k$. Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{w}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (38), and to derive each component of $J_{\textbf{z}^l}(\textbf{w}^l)$, we need to consider two cases again. First, consider $\frac{\partial z^l_j}{\partial w^l_{j, k}}$ if $j = k$. Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
 \frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
 $$
@@ -650,7 +646,7 @@ $$
 $$
 Assume that we wanted to represent the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent the above equation as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \text{flatten} \left( \left[
 	\matrix{
 		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
@@ -662,7 +658,7 @@ $$
 $$
 where $\text{flatten}$ is a function that flattens any 2 dimensional matrix into a 1 dimensional row vector row-wise. With (51), we can now see that we can decompose it into the following vector by vector multiplication
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \text{flatten} \left( \left[
 	\matrix{
 		\delta^l_1 \\
@@ -692,6 +688,7 @@ $$
 $$
 which can be written out explicitly as
 $$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
 	\matrix{
 		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -706,70 +703,37 @@ $$
 	}
 \right]
 $$
-
-
-which we can multiply out as follows
+Again, the components of $\nabla L(\textbf{z}^l)$ are given by (38), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we derive that 
 $$
-\frac{\partial L}{\partial \textbf{b}^l} = \left[
+\large
+\frac{\partial z^l_j}{\partial z^l_k} = 
+\begin{cases}
+	1 & \text{if} \ j = k \\
+	0 & \text{if} \ j \neq k
+\end{cases}
+$$
+So, using (28) and (56), we can re-write equation (55) as follows
+$$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
+\left[
 	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_1} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_1}, &
-        
-        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_2} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_2}, &
-        
-        ..., &
-        
-        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_{n^l}} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_{n^l}} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
+		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		1, & 0, & ..., & 0 \\
+		0, & 1, & ..., & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0, & 0, & ..., & 1 \\
 	}
 \right],
 $$
-which can be simplified to
+which simply equals
 $$
-\frac{\partial L}{\partial \textbf{b}^l} = 
-\left[
-	\matrix{
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_1}, &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_{n^l}}
-	}
-\right].
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = (\boldsymbol{\delta}^l)^T.
 $$
-Notice that $\frac{\partial z^l_j}{\partial b^l_k} = 0$ if $j \neq k$, so we can simplify the above expression to 
-$$
-\frac{\partial L}{\partial \textbf{b}^l} =
-\left[
-	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1}, &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2}, &
-		..., &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
-	}
-\right].
-$$
-
-
-
-
-Furthermore, notice that we have already defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$​ and notice that since, $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j, k} \ a^{l-1}_k + b^l_j$​, we know that $\frac{\partial z^l_j}{\partial b^l_j} = 1$​​. Using these insights, we can simplify equation (59) to
-$$
-\frac{\partial L}{\partial \textbf{b}^l} =
-\left[
-	\matrix{
-		\delta^l_1 , & \delta^l_2, & ..., & \delta^l_{n^l}
-	}
-\right] =
-\left( \boldsymbol{\delta}^l \right)^T.
-$$
-The above equation represents BP4.1.
+The above equation represents BP4.1. 
 
 
 
