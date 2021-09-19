@@ -319,7 +319,7 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
 - BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
   - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​, which is a matrix where each column contains the error for a different training example.
-  - Note that in the first iteration, we set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^l$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​
+  - Note that in the first iteration, we must set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^L$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​After that, we can recursively substitute the error all the way back to layer index $0$. 
 - BP3.x: An equation relating the error at layer $l$ to:
   - The derivative of the *loss* function w.r.t the weights in layer $l$​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$​. We'll refer to this equation as BP3.1
   - The derivative of the *cost* function w.r.t. the weights in layer $l$​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​​.We'll refer to this equation as BP3.2
@@ -338,14 +338,16 @@ $$
 \boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
 $$
 
-Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
+Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector, i.e. the *gradient*, and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
 $$
 \boldsymbol{\delta}^L = 
 	\frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L} =
 	\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L),
 $$
 
-which can be written out as follows
+where $\nabla L(\textbf{a}^L)$ represents the gradient, and where $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$ represents the Jacobi matrix. 
+
+The above expression can be written out as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
@@ -366,32 +368,23 @@ which yields a $1 \times n^L$ row vector. In its most general form, the above ve
 
 #### Example
 
-For classification problems, a common choice for the loss function is the categorical cross entropy (see equation 15) and a common choice for the activation function in the output layer is the softmax function, which unlike e.g. the sigmoid activation function, takes a vector as input and also outputs a vector, whose $j$​-th component is defined as follows 
+For multi-class classification problems, a common choice for the loss function is the categorical cross entropy (see equation 15) and a common choice for the activation function in the output layer is the *softmax* function, which unlike e.g. the sigmoid activation function, takes a vector as input and also outputs a vector, whose $j$​-th component is defined as follows 
 $$
 a^l_j = f([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
 $$
-First, we will try to find concrete expressions for each component of $\left[\matrix{\frac{\partial L}{\partial a^L_1}, \frac{\partial L}{\partial a^L_2}, ..., \frac{\partial L}{\partial a^L_{n^L}}}\right]$​. From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$​,
+First, we will try to find concrete expressions for each component of $\nabla L(\textbf{a}^L)$ in (27). From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$,
 $$
-\frac{\partial L}{\partial a^{L}_i} = - \left( \frac{y_i}{a^{L}_i} - \frac{1 - y_i}{1 - a^{L}_i} \right),
-$$
-
-where we used the definition $\hat{y}_i \coloneqq a^{L}_i$​​​​​​​. We can now simplify the above expression by creating a common denominator and then simplifying the numerator:
-$$
-\frac{\partial L}{\partial a^{L}_i} = - 
-\left( 
-	\frac{y_i}{a^{L}_i} \frac{{1 - a^{L}_i}}{{1 - a^{L}_i}} - 
-    \frac{1 - y_i}{1 - a^{L}_i} \frac{a^{L}_i}{a^{L}_i} 
-\right) =
-
-- \left( \frac{y_i - a^{L}_i}{a^{L}_i (1 - a^{L}_i)} \right).
+\frac{\partial L}{\partial a^{L}_j} = - \frac{y_j}{a^{L}_j},
 $$
 
-Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​. When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
+where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​. 
+
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
 \large{
 \begin{array}{l}
 	\frac{\partial a^L_j}{\partial z^L_j}
-	= \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
 	= \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
 	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
 	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
@@ -408,8 +401,8 @@ $$
 \large{
 	\begin{array}{l}
 		\frac{\partial a^L_j}{\partial z^L_k}
-		= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-		= \frac{- e^{z^L_j} (e^{z^L_j})}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+		= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+		= \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
 		= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
 		= -a^L_j \ a^L_k.
 	\end{array}
@@ -426,8 +419,7 @@ $$
 }
 $$
 
-
-With (30), and (34), we can now fill in each component of (27) as follows
+Using above expression, we can now fill in each component of (27) as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -445,32 +437,28 @@ $$
 \right],
 $$
 
-
-WHY NOT EQUAL TO
-
+which, when multiplied out, yields
 $$
-\begin{array}{c}
-\boldsymbol{\delta}^L = 
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
 	\matrix{
-		- \left( y_1 - a^{L}_1 \right), &
-		- \left( y_2 - a^{L}_2 \right), &
-		..., &
-		- \left( y_{n^L} - a^{L}_{n^L} \right)
+		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L}), 
+		& -y_2 + a^L_2(y_1 + y_2 + ... + y_{n^L}), 
+		& ..., 
+		& -y_{n^L} + a^L_{n^L}(y_1 + y_2 + ... + y_{n^L}) 
 	}
-\right] \\
-= - \left[
+\right].
+$$
+ Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ always due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
+$$
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+- \left[
 	\matrix{
-		\left( y_1 - a^{L}_1 \right), &
-		\left( y_2 - a^{L}_2 \right), &
-		..., &
-		\left( y_{n^L} - a^{L}_{n^L} \right)
+		(y_1 - a^L_1), & (y_2 - a^L_2), ..., & (y_{n^L} - a^L_{n^L})
 	}
-\right]
-\end{array}
+\right].
 $$
 
-The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L}_i)$​​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
 
 ### BP2.1
 
