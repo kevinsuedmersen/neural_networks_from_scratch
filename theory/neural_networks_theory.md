@@ -468,7 +468,7 @@ $$
 \frac{\partial L}{\partial \textbf{z}^{l-1}} = 
 \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}.
 $$
-Remembering from above that the derivative of a function yielding a scalar is defined as a row vector and that the derivative of a vector w.r.t. another vector is defined as the Jacobian matrix, we can rewrite the above expression as
+Remembering from above that the derivative of a function yielding a scalar is defined as the gradient and that the derivative of a function yielding a vector w.r.t. another vector is defined as the Jacobian matrix, we can rewrite the above expression as
 $$
 \boldsymbol{\delta}^{l-1} = \left[
 	\matrix{
@@ -506,7 +506,7 @@ $$
 	}
 \right].
 $$
-Recall that $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$, so we can simplify the above equation to
+Recall that p $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$, so we can simplify the above equation to
 $$
 \boldsymbol{\delta}^{l-1} = \left[
 	\matrix{
