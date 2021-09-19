@@ -335,19 +335,12 @@ Most of the work will go into deriving equations BP1.1-BP4.1 and applying these 
 
 The error at the output layer $\boldsymbol{\delta}^L$​​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​​, can be expressed as follows (remembering the chain rule from calculus)
 $$
-\boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
+\boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} 
+= \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
+= \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
 
-Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector, i.e. the *gradient*, and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
-$$
-\boldsymbol{\delta}^L = 
-	\frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L} =
-	\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L),
-$$
-
-where $\nabla L(\textbf{a}^L)$ represents the gradient, and where $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$ represents the Jacobi matrix. 
-
-The above expression can be written out as follows
+Remember that the derivative of a function yielding a scalar, the loss function, w.r.t. a vector is defined as a row vector, i.e. the *gradient* $\nabla L(\textbf{a}^L)$, and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$. So, writing out every component of the above expression produces
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
@@ -364,7 +357,7 @@ $$
     }
 \right],
 $$
-which yields a $1 \times n^L$ row vector. In its most general form, the above vector matrix product represents BP1.1, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer $a^L$​​, the above equation cannot be simplified any further. In the next section, we will show how to simplify this equation by choosing a specific loss and activation function. 
+which ends up as a $1 \times n^L$ row vector. In its most general form, the above vector matrix product represents BP1.1, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer $a^L$​​, the above equation cannot be simplified any further. In the next section, we will show how to simplify this equation by choosing a specific loss and activation function. 
 
 #### Example
 
@@ -379,7 +372,7 @@ $$
 
 where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​. 
 
-Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (26). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
 \large{
 \begin{array}{l}
@@ -392,7 +385,7 @@ $$
 \end{array}
 }
 $$
- where we can now use the definition of the Softmax function (equation 28) again to simplify further to
+ where we can now use the definition of the Softmax function (equation 27) again to simplify further to
 $$
 \frac{\partial a^L_j}{\partial z^L_j} = a^L_j (1 - a^L_j).
 $$
@@ -419,7 +412,7 @@ $$
 }
 $$
 
-Using above expression, we can now fill in each component of (27) as follows
+Using above expression, we can now fill in each component of (26) as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -465,12 +458,14 @@ $$
 In order to represent the error of the previous layer $\boldsymbol{\delta}^{l-1}$​ in terms of the error in the current layer $\boldsymbol{\delta}^{l}$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
 $$
 \boldsymbol{\delta}^{l-1} \coloneqq 
-\frac{\partial L}{\partial \textbf{z}^{l-1}} = 
-\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}.
+\frac{\partial L}{\partial \textbf{z}^{l-1}}
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}
+= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}),
 $$
-Remembering from above that the derivative of a function yielding a scalar is defined as the gradient and that the derivative of a function yielding a vector w.r.t. another vector is defined as the Jacobian matrix, we can rewrite the above expression as
+which can be written out explicitly as
 $$
-\boldsymbol{\delta}^{l-1} = \left[
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
 	\matrix{
 		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}} 
 	}
@@ -484,120 +479,72 @@ $$
 	}
 \right].
 $$
-Multiplying out the above equation yields the $1 \times n^{l-1}$​ row vector
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-\matrix{
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_1} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_1} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1}, &
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_2} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_2} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2}, &
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
-}
-\right]
-,
-$$
-which can be simplified to
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-	\matrix{
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
-	}
-\right].
-$$
-Recall that p $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$, so we can simplify the above equation to
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-	\matrix{
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
-	}
-\right].
-$$
-Now, let's try to break down each $\frac{\partial z^l_j}{\partial z^{l-1}_k}$ (for $k = 1, 2, ..., n^{l-1}$​) of the above equation. Notice that 
-$$
-z^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ a^{l-1}_k \right) + b^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ f(z^{l-1}_k) \right) + b^l_j
-$$
-and therefore,
-$$
-\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
-$$
-Plugging (43) back into each element of (41) and rearranging a little bit yields 
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-	\matrix{
-		f'(z^{l-1}_1) \sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
-		f'(z^{l-1}_2) \sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}}) \sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
-	}
-\right].
-$$
-which can be split into the element-by-element vector multiplication
-$$
-\boldsymbol{\delta}^{l-1} = 
-\left[
-	\matrix{
-		f'(z^{l-1}_1) , &
-		f'(z^{l-1}_2) , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}})  
-	}
-\right] \odot
-\left[
-	\matrix{
-		\sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
-		\sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
-		..., &
-		\sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
-	}
-\right].
-$$
-Finally, we want to vectorize the sum in the RHS of the above equation, so that the actual implementation in code can harness optimized matrix multiplication libraries. This can be achieved as follows
-$$
-\boldsymbol{\delta}^{l-1} = 
-\left[
-	\matrix{
-		f'(z^{l-1}_1) , &
-		f'(z^{l-1}_2) , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}})  
-	}
-\right] \odot
-\left[
-	\matrix{
-		\delta^l_1, & \delta^l_2, &, ..., \delta^l_{n^l}
-	}
-\right]
-\left[
-	\matrix{
-		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
-		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
-	}
-\right],
-$$
-or written more compactly
-$$
-\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l,
-$$
-which represents BP2.1. 
+Again, without making explicit assumptions about the loss function and the activation function in layer $l-1$, we cannot simplify the above expression any further. 
 
 #### Example
 
-To see how this equation helps us to compute the error at each layer, notice that in the first iteration of backpropagation, we have that
+To work out (37), we will assume that we are using the categorical cross entropy loss function and that the activation function $f$ in layer $l-1$ is a function taking a scalar input and outputting a scalar as well, such as the sigmoid, tanh or ReLU functions which are common activation functions in the hidden layers. 
+
+In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by definition, 
 $$
-\boldsymbol{\delta}^{L-1} = \left( f'(\textbf{z}^{L-1}) \right)^T \odot (\boldsymbol{\delta}^L)^T \textbf{W}^L,
+\frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
-from which we already know how to compute $\boldsymbol{\delta}^L$ thanks to BP1.1. Still being in the first iteration of backpropagation, we will compute the actual values of $\boldsymbol{\delta}^{L-1}$ and cache the results. Then, being in the 2nd iteration of the backpropagation algorithm, we will iterate (47) backwards like this
+ In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that
 $$
-\boldsymbol{\delta}^{L-2} = \left( f'(\textbf{z}^{L-2}) \right)^T \odot (\boldsymbol{\delta}^{L-1})^T \textbf{W}^{L-1},
+\large
+\begin{array}{l}
+	z^l_j & = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j \\
+	& = \sum^{n^{l-1}}_{k=1} \left( f(z^{l-1}_k) \ w^l_{j, k} \right) + b^l_j
+\end{array}
 $$
-from which we computed $\boldsymbol{\delta}^{L-1}$​ in the previous iteration. This procedure, i.e. computing the value of the error and iterating backwards, will be repeated until we computed the values of $\boldsymbol{\delta}^1$. ​
+and therefore, 
+$$
+\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
+$$
+Using (38) and (40), we can fill in each component of (37) as follows
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
+	\matrix{
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} \ f'(z^{l-1}_1), & w^l_{1, 2} \ f'(z^{l-1}_2), & ..., & w^l_{1, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}}) \\
+		w^l_{2, 1} \ f'(z^{l-1}_1), & w^l_{2, 2} \ f'(z^{l-1}_2), & ..., & w^l_{2, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}}) \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1} \ f'(z^{l-1}_1), & w^l_{n^l, 2} \ f'(z^{l-1}_2), & ..., & w^l_{n^l, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}})
+	}
+\right],
+$$
+which can be decomposed into
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
+	\matrix{
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1}, & w^l_{1, 2}, & ..., & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1}, & w^l_{2, 2}, & ..., & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1}, & w^l_{n^l, 2}, & ..., & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\odot
+\left[
+	\matrix{f(z^{l-1}_1), & f(z^{l-1}_2), & ..., & f(z^{l-1}_{n^{l-1}})
+	}
+\right],
+$$
+or equivalently, 
+$$
+\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot f(\textbf{z}^{l-1})^T,
+$$
+where we used $\boldsymbol{\delta}^{l-1} \coloneqq \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$ to clarify that we ended up with a recursive equation. 
 
 ### BP3.1
 
