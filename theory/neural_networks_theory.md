@@ -552,9 +552,11 @@ After calculating the errors for each layer, we now want to relate them to the d
 
 With that in mind, we can express the derivative of the loss w.r.t the weights in layer $l$ as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}.
+\frac{\partial L}{\partial \textbf{w}^l} 
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l),
 $$
-We flattened the weight matrix into a long vector, because now, it is obvious that the term $\frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}$, i.e. the derivative of a vector w.r.t another vector, is defined as the Jacobi matrix. Writing out the above equation explicitly yields
+which can be written out explicitly as
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
 \left[
@@ -584,7 +586,7 @@ $$
 \right].
 $$
 
-Notice that $\frac{\partial z^l_j}{\partial w^l_{i, k}} = 0$​ if $j \neq i$​, because weight $w^l_{i,k}$ is not connected to (not a function of) $z^l_j$ and hence, the above expression becomes
+Notice that $\frac{\partial z^l_j}{\partial w^l_{i, k}} = 0$​ if $j \neq i$​, because weight $w^l_{i,k}$ is not connected to, and hence not a function of $z^l_j$. Therefore, the above expression becomes
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
 \left[
@@ -641,13 +643,11 @@ The $(j,k)$-th element of the above vector represents
 $$
 \frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}}.
 $$
-Recall that since $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, we know that $\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k$. Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (51) becomes
+Recall that since $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, we know that $\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k$. Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (48) becomes
 $$
-\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = 
-\frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}} =
-\delta^l_j \ a^{l-1}_k .
+\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \delta^l_j \ a^{l-1}_k.
 $$
-Plugging the result of equation (52) back into each element of equation (51) yields
+Plugging the result of equation (52) back into each element of equation (47) yields
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
 \left[
@@ -660,23 +660,22 @@ $$
 	}
 \right].
 $$
-Assume that we wanted to unflatten the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent it as
+Assume that we wanted to represent the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent the above equation as
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
-\left[
+\text{flatten} \left( \left[
 	\matrix{
 		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
 		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ... & \delta^l_2 a^{l-1}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
 		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
 	}
-\right].
+\right] \right),
 $$
-With that expression, we can now see that we can decompose it into the following vector by vector multiplication
+where $\text{flatten}$ is a function that flattens any 2 dimensional matrix into a 1 dimensional row vector row-wise. With (51), we can now see that we can decompose it into the following vector by vector multiplication
 $$
 \frac{\partial L}{\partial \textbf{w}^l} = 
-
-\left[
+\text{flatten} \left( \left[
 	\matrix{
 		\delta^l_1 \\
 		\delta^l_2 \\
@@ -688,12 +687,12 @@ $$
 	\matrix{
 		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
 	}
-\right] =
-\boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T.
+\right] \right) 
+= \text{flatten} \left( \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T \right).
 $$
 
 
-Equation (57) represents BP3.1. 
+The above equation represents BP3.1. 
 
 ### BP4.1 
 
