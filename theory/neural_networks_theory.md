@@ -812,73 +812,54 @@ which is easily computed, because we are given $\textbf{Y}$ (since we are talkin
 
 Recall from BP2.1 that 
 $$
-\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+\boldsymbol{\delta}^{l-1} = \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}).
 $$
-Again, we want to end up with an expression, where each column represents a different training example, so we will redefine the above expression as its transpose like so
+Again, we want to end up with an expression, where each column represents a different training example, so we will transpose both sides of the above equation giving us
 $$
-\boldsymbol{\delta}^{l-1} \coloneqq \left( \boldsymbol{\delta}^{l-1} \right)^T = f'(\textbf{z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\delta}^l,
-$$
-remembering that when transposing a matrix multiplication, we have to transpose each factor and reverse their orders (except for the Hadamard product, because it's an element-by-element multiplication). So, for each $1, 2, ...M$, we will stack (column-wise) the errors and weighted inputs of each training example as follows
-$$
-\left[
+\left( \boldsymbol{\delta}^{l-1} \right)^T 
+= \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})^T \ \nabla L(\textbf{z}^l)^T 
+= \left[
 	\matrix{
-		\boldsymbol{\delta}^{l-1, 1}, & \boldsymbol{\delta}^{l-1, 2}, & ..., & \boldsymbol{\delta}^{l-1, M}
-	}
-\right] =
-\left[
-	\matrix{
-		f'(\textbf{z}^{l-1, 1}), & f'(\textbf{z}^{l-1, 2}), & ..., & f'(\textbf{z}^{l-1, M}) 
-	}
-\right] \odot
-\left( \textbf{W}^l \right)^T
-\left[
-	\matrix{
-		\boldsymbol{\delta}^{l, 1}, & \boldsymbol{\delta}^{l, 2}, & ..., & \boldsymbol{\delta}^{l, M}
-	}
-\right].
-$$
-
-
-Writing out each element of the above equation, we will get
-$$
-\left[
-	\matrix{
-		\delta^{l-1, 1}_1, & \delta^{l-1, 2}_1, & ..., & \delta^{l-1, M}_1 \\
-		\delta^{l-1, 1}_2, & \delta^{l-1, 2}_2, & ..., & \delta^{l-1, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l-1, 1}_{n^{l-1}}, & \delta^{l-1, 2}_{n^{l-1}}, & ..., & \delta^{l-1, M}_{n^{l-1}} \\
-	}
-\right] = 
-\left[
-	\matrix{
-		f'(z^{l-1, 1}_1), & f'(z^{l-1, 2}_1), & ..., & f'(z^{l-1, M}_1) \\
-		f'(z^{l-1, 1}_2), & f'(z^{l-1, 2}_2), & ..., & f'(z^{l-1, M}_2) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		f'(z^{l-1, 1}_{n^{l-1}}), & f'(z^{l-1, 2}_{n^{l-1}}), & ..., & f'(z^{l-1, M}_{n^{l-1}})
-	}
-\right] \odot
-\left[
-	\matrix{
-		w^l_{1,1}, & w^l_{2,1}, & ..., & w^l_{n^l,1} \\ 
-		w^l_{1,2}, & w^l_{2,2}, & ..., & w^l_{n^l,2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1,n^{l-1}}, & w^l_{2,n^{l-1}}, & ..., & w^l_{n^l,n^{l-1}}
+		\frac{\partial z^l_1}{\partial z^{l-1}_1}, & \frac{\partial z^l_2}{\partial z^{l-1}_1}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1} \\
+        \frac{\partial z^l_1}{\partial z^{l-1}_2}, & \frac{\partial z^l_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}}, & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
 	}
 \right]
 \left[
 	\matrix{
-		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^{l}}, & \delta^{l, 2}_{n^{l}}, & ..., & \delta^{l, M}_{n^{l}} \\
+		\frac{\partial L}{\partial z^l_1} \\ 
+		\frac{\partial L}{\partial z^l_2} \\ 
+		\vdots \\ 
+		\frac{\partial L}{\partial z^l_{n^l}} 
 	}
-\right],
+\right].
 $$
- which we can write more compactly as
+Now, we want to stack each $\nabla L(\textbf{z}^{l, m})^T$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion where each column represents a different training example. Doing so will give us
 $$
-\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^{l},
+\boldsymbol{\Delta}^l
+= \left[
+	\matrix{
+		\frac{\partial z^l_1}{\partial z^{l-1}_1}, & \frac{\partial z^l_2}{\partial z^{l-1}_1}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1} \\
+        \frac{\partial z^l_1}{\partial z^{l-1}_2}, & \frac{\partial z^l_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}}, & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial L}{\partial z^{l, 1}_1}, & \frac{\partial L}{\partial z^{l, 2}_1}, & ..., & \frac{\partial L}{\partial z^{l, M}_1}\\ 
+		\frac{\partial L}{\partial z^{l, 1}_2}, & \frac{\partial L}{\partial z^{l, 2}_2}, & ..., & \frac{\partial L}{\partial z^{l, M}_2} \\ 
+		\vdots & \vdots & \ddots & \vdots \\ 
+		\frac{\partial L}{\partial z^{l, 1}_{n^l}}, & \frac{\partial L}{\partial z^{l, 2}_{n^l}}, & ..., & \frac{\partial L}{\partial z^{l, M}_{n^l}}  
+	}
+\right].
 $$
-which represents BP2.2.
+In its most general form, the above equation represents BP2.2. 
+
+#### Example
+
+Just like in the example of 
 
 ### BP3.2
 
