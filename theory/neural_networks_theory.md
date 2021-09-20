@@ -536,13 +536,13 @@ $$
 \right]
 \odot
 \left[
-	\matrix{f(z^{l-1}_1), & f(z^{l-1}_2), & ..., & f(z^{l-1}_{n^{l-1}})
+	\matrix{f'(z^{l-1}_1), & f'(z^{l-1}_2), & ..., & f'(z^{l-1}_{n^{l-1}})
 	}
 \right],
 $$
 or equivalently, 
 $$
-\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot f(\textbf{z}^{l-1})^T,
+\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot f'(\textbf{z}^{l-1})^T,
 $$
 where we used $\boldsymbol{\delta}^{l-1} \coloneqq \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$ to clarify that we ended up with a recursive equation. 
 
@@ -859,7 +859,70 @@ In its most general form, the above equation represents BP2.2.
 
 #### Example
 
-Just like in the example of 
+Recall from example in section BP2.2 that we ended up with the following equation
+$$
+\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta})^T \ \textbf{W}^l \odot f'(\textbf{z}^{l-1})^T.
+$$
+Again, we will transpose both sides of the equation first, yielding
+$$
+(\boldsymbol{\delta}^{l-1})^T = (\textbf{W}^l)^T \ \boldsymbol{\delta}^l \odot f(\textbf{z}^{l-1})
+= \left[
+	\matrix{
+		w^l_{1, 1}, & w^l_{2, 1}, & ..., & w^l_{n^l, 1} \\
+		w^l_{1, 2}, & w^l_{2, 2}, & ..., & w^l_{n^l, 2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1, n^{l-1}}, & w^l_{2, n^{l-1}}, & ..., & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		 \delta^l_1 \\ 
+		 \delta^l_2 \\
+         \vdots \\
+         \delta^l_{n^l}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		f'(z^{l-1}_1) \\ 
+		f'(z^{l-1}_2) \\
+		\vdots \\
+        f'(z^{l-1}_{n^{l-1}})
+	}
+\right].
+$$
+Now, we will stack all errors $\boldsymbol{\delta}^{l, m}$ and the weighted inputs of all training examples $f(\textbf{z}^{l, m})$ column-wise for all $m = 1, 2, ..., M$ training examples, so that we end up with
+$$
+\boldsymbol{\Delta}^{l-1} 
+= \left[
+	\matrix{
+		w^l_{1, 1}, & w^l_{2, 1}, & ..., & w^l_{n^l, 1} \\
+		w^l_{1, 2}, & w^l_{2, 2}, & ..., & w^l_{n^l, 2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1, n^{l-1}}, & w^l_{2, n^{l-1}}, & ..., & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		 \delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\ 
+		 \delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+         \vdots & \vdots & \ddots & \vdots \\
+         \delta^{l, 1}_{n^l}, & \delta^{l, 2}_{n^l}, & ..., & \delta^{l, M}_{n^l}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		f'(z^{l-1, 1}_1), & f'(z^{l-1, 2}_1), & ..., & f'(z^{l-1, M}_1) \\ 
+		f'(z^{l-1, 1}_2), & f'(z^{l-1, 2}_2), & ..., & f'(z^{l-1, M}_2) \\
+		\vdots & \vdots & \ddots & \vdots \\
+        f'(z^{l-1, 1}_{n^{l-1}}), & f'(z^{l-1, 2}_{n^{l-1}}), & ..., & f'(z^{l-1, M}_{n^{l-1}}) \\
+	}
+\right]
+= (\textbf{W}^l)^T \ \boldsymbol{\Delta}^{l} \odot f'(\textbf{Z}^{l-1})
+$$
+
 
 ### BP3.2
 
