@@ -745,69 +745,55 @@ In the previous section, we have derived equations which can help us to compute 
 
 Recall from BP1.1 that 
 $$
-\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
+\boldsymbol{\delta}^L = \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
-We want to end up with an expression where each column represents a different training example. In order to achieve that, we will redefine the above expression as its transpose like so
+In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will transpose both sides of (58), so that the result of BP1.2 is an expression where each column represents a different training example, i.e.
 $$
-\begin{array}{c}
-\boldsymbol{\delta}^L \coloneqq 
-\left( \boldsymbol{\delta}^L \right)^T \\
-= \left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
- = \left[
+(\boldsymbol{\delta}^L)^T 
+= \textbf{J}_{\textbf{a}^L}(\textbf{z}^L)^T \ \nabla L(\textbf{a}^L)^T
+= \left[
 	\matrix{
-		\frac{\partial L}{\partial a^L_1} \\
-		\frac{\partial L}{\partial a^L_2} \\
-		\vdots \\
-		\frac{\partial L}{\partial a^L_{n^L}}
-	}
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
 \right]
-\odot
 \left[
 	\matrix{
-		f'(z^L_1) \\
-		f'(z^L_2) \\
-		\vdots \\
-		f'(z^L_{n^L})
-	}
+    \frac{\partial L}{\partial a^{L}_1} \\ 
+    \frac{\partial L}{\partial a^{L}_2} \\ 
+    \vdots \\ 
+    \frac{\partial L}{\partial a^{L}_{n^L}}
+    }
 \right]
-\end{array}.
 $$
-To calculate $\boldsymbol{\delta}^L$​ for $m = 1, 2, ..., M$​ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$​ next to each other in a column wise fashion like this
+Next, we will simply stack the gradient of each training example $\nabla L(\textbf{a}^{L, m})^T$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion, so that we end up with the following expression
 $$
-\begin{array}{c}
-	\boldsymbol{\Delta}^L \coloneqq 
-	\left[
-		\matrix{\boldsymbol{\delta}^{L, 1}, & \boldsymbol{\delta}^{L, 2}, & ..., & \boldsymbol{\delta}^{L, M}}
-	\right] \\
-	= \left[
-		\matrix{
-			\frac{\partial L}{\partial a^{L, 1}_1}, & \frac{\partial L}{\partial a^{L, 2}_1}, & ..., & \frac{\partial L}{\partial a^{L, M}_1} \\
-			\frac{\partial L}{\partial a^{L, 1}_2}, & \frac{\partial L}{\partial a^{L, 2}_2}, & ..., & \frac{\partial L}{\partial a^{L, M}_2} \\
-			\vdots & \vdots & \ddots & \vdots \\
-			\frac{\partial L}{\partial a^{L, 1}_{n^L}}, & \frac{\partial L}{\partial a^{L, 2}_{n^L}}, & ..., & \frac{\partial L}{\partial a^{L, M}_{n^L}}
-		}
-	\right]
-	\odot
-	\left[
-		\matrix{
-			f'(z^{L, 1}_1), & f'(z^{L, 2}_1), & ..., & f'(z^{L, M}_1) \\
-			f'(z^{L, 1}_2), & f'(z^{L, 2}_2), & ..., & f'(z^{L, M}_2) \\
-			\vdots & \vdots & \ddots & \vdots \\
-			f'(z^{L, 1}_{n^L}), & f'(z^{L, 2}_{n^L}), & ..., & f'(z^{L, M}_{n^L})
-		}
-	\right]
-\end{array},
+\boldsymbol{\Delta}^L
+\coloneqq
+\left[
+	\matrix{
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
+\right]
+\left[
+	\matrix{
+    \frac{\partial L}{\partial a^{L, 1}_1} & \frac{\partial L}{\partial a^{L, 2}_1} & ... & \frac{\partial L}{\partial a^{L, M}_1} \\ 
+    \frac{\partial L}{\partial a^{L, 1}_2} & \frac{\partial L}{\partial a^{L, 2}_2} & ... & \frac{\partial L}{\partial a^{L, M}_2} \\ 
+    \vdots & \vdots & \ddots \\ 
+    \frac{\partial L}{\partial a^{L, 1}_{n^L}} & \frac{\partial L}{\partial a^{L, 2}_{n^L}} & ... & \frac{\partial L}{\partial a^{L, M}_{n^L}} 
+    }
+\right],
 $$
-or written more compactly as
-$$
-\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L),
-$$
-
-which represents BP1.2.
+where $\boldsymbol{\Delta}^L$ is an $n^L \times M$ matrix. In its most general form, the above equation represents BP1.2
 
 #### Example
 
-Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (66) as follows
+Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (35) and then stack the error of each training example in a different column. Having done so, we will end up with the following expression
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
