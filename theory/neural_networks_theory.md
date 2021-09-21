@@ -479,29 +479,15 @@ $$
 	}
 \right].
 $$
-Again, without making explicit assumptions about the loss function and the activation function in layer $l-1$, we cannot simplify the above expression any further. 
-
-#### Example
-
-To work out (37), we will assume that we are using the categorical cross entropy loss function and that the activation function $f$ in layer $l-1$ is a function taking a scalar input and outputting a scalar as well, such as the sigmoid, tanh or ReLU functions which are common activation functions in the hidden layers. 
-
 In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by definition, 
 $$
 \frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
- In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that
+ In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that $z^l_j = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j$ and therefore, 
 $$
-\large
-\begin{array}{l}
-	z^l_j & = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j \\
-	& = \sum^{n^{l-1}}_{k=1} \left( f(z^{l-1}_k) \ w^l_{j, k} \right) + b^l_j
-\end{array}
+\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \frac{\partial a^{l-1}_k}{\partial z^{l-1}_k}.
 $$
-and therefore, 
-$$
-\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
-$$
-Using (38) and (40), we can fill in each component of (37) as follows
+Using (38) and (39), we can fill in each component of (37) as follows
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
@@ -511,10 +497,10 @@ $$
 \right]
 \left[
 	\matrix{
-		w^l_{1, 1} \ f'(z^{l-1}_1), & w^l_{1, 2} \ f'(z^{l-1}_2), & ..., & w^l_{1, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}}) \\
-		w^l_{2, 1} \ f'(z^{l-1}_1), & w^l_{2, 2} \ f'(z^{l-1}_2), & ..., & w^l_{2, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}}) \\
+		w^l_{1, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{1, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{1, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} \\
+		w^l_{2, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{2, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{2, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{n^l, 1} \ f'(z^{l-1}_1), & w^l_{n^l, 2} \ f'(z^{l-1}_2), & ..., & w^l_{n^l, n^{l-1}} \ f'(z^{l-1}_{n^{l-1}})
+		w^l_{n^l, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{n^l, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{n^l, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
 	}
 \right],
 $$
@@ -536,15 +522,46 @@ $$
 \right]
 \odot
 \left[
-	\matrix{f'(z^{l-1}_1), & f'(z^{l-1}_2), & ..., & f'(z^{l-1}_{n^{l-1}})
+	\matrix{\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
 	}
 \right],
 $$
-or equivalently, 
+or
 $$
-\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot f'(\textbf{z}^{l-1})^T,
+\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot \text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right),
 $$
-where we used $\boldsymbol{\delta}^{l-1} \coloneqq \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$ to clarify that we ended up with a recursive equation. 
+where we used $\boldsymbol{\delta}^{l-1} \coloneqq \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$ to clarify that we ended up with a recursive equation and where $\text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right)$ are the diagonal elements of the Jacobi matrix $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ flattened into a row vector. (TODO: is there a better way to notate this?) 
+
+#### Example
+
+Assuming we used the softmax activation function in layer $l-1$ (maybe not a common choice for activation functions in the hidden layers, but we'll still use it here to show that the above equations also hold for vector valued functions), we can deduce expressions for $\text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right)$ in (42) by using (32) as follows
+$$
+\frac{\partial a^{l-1}_k}{\partial z^{l-1}_k} = a^{l-1}_k (1 - a^{l-1}_k),
+$$
+where we simply interchanged the indices $j$ and $k$. With this, we can explicitly write out (41) as 
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
+	\matrix{
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1}, & w^l_{1, 2}, & ..., & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1}, & w^l_{2, 2}, & ..., & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1}, & w^l_{n^l, 2}, & ..., & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		a^{l-1}_1 (1 - a^{l-1}_1), & a^{l-1}_2 (1 - a^{l-1}_2), & ..., & a^{l-1}_{n^{l-1}} (1 - a^{l-1}_{n^{l-1}})
+	}
+\right].
+$$
+
 
 ### BP3.1
 
