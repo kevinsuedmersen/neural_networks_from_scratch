@@ -483,10 +483,12 @@ In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, 
 $$
 \frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
- In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that $z^l_j = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j$ and therefore, 
+In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that $z^l_j = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j$ and therefore, 
 $$
-\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \frac{\partial a^{l-1}_k}{\partial z^{l-1}_k}.
+\frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
 $$
+where we need to use the total differential, because TODO: Use Email to AK for further explanation...
+
 Using (38) and (39), we can fill in each component of (37) as follows
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
@@ -497,14 +499,26 @@ $$
 \right]
 \left[
 	\matrix{
-		w^l_{1, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{1, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{1, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} \\
-		w^l_{2, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{2, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{2, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} \\
+		\sum^{n^{l-1}}_{i=1} w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{1, n^{l-1}} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
+		
+		\sum^{n^{l-1}}_{i=1} w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{2, n^{l-1}} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
+		
 		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{n^l, 1} \frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & w^l_{n^l, 2} \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & w^l_{n^l, n^{l-1}} \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
+		
+		\sum^{n^{l-1}}_{i=1} w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, n^{l-1}} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
 	}
 \right],
 $$
-which can be decomposed into
+which can be decomposed into (TODO: Use matrix decomposition from my notes!)
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
