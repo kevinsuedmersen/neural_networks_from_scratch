@@ -830,7 +830,8 @@ Next, we will simply stack the gradient of each training example $(\nabla L(\tex
 $$
 \boldsymbol{\Delta}^L
 \coloneqq
-\left[
+(\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T
+= \left[
 	\matrix{
     	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
         \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
@@ -1046,11 +1047,13 @@ which represents equation **BP3.2**.
 
 Finally, the other real quantity of interest is the gradient of the cost function w.r.t. the biases. Again, using the fact that the cost is an average over $M$​ training examples, we can deduce that
 $$
-\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
+\frac{\partial C}{\partial \textbf{b}^l}
+= \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
 $$
 Remember from BP4.1 that 
 $$
-\frac{\partial L}{\partial \textbf{b}^{l}} = \left[
+\frac{\partial L}{\partial \textbf{b}^{l}}
+= \left[
 	\matrix{
 		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
 	}
@@ -1058,7 +1061,7 @@ $$
 $$
 First of all, we will transpose both sides of the above equation in order to remain conform with the notations used from BP1.2 to BP3.2, i.e.
 $$
-\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T = 
+\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T= 
 \left[
 	\matrix{
 		\delta^l_1 \\ 
@@ -1087,14 +1090,14 @@ $$
 $$
 which represents equation **BP4.2**. 
 
-### Summary (TODO)
+### Summary
 
 To summarize, in our backpropagation module, we want to implement the following 4 equations:
 
-- BP1.2: $\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L)$ 
-- BP2.2: $\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^l$ 
-- BP3.2: $\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$ 
-- BP4.2: $\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
+- BP1.2: $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
+- BP2.2: $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
+- BP3.2: $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
+- BP4.2: $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
 
 ## Why Backpropagation?
 
