@@ -333,14 +333,21 @@ Most of the work will go into deriving equations BP1.1-BP4.1 and applying these 
 
 ### BP1.1
 
-The error at the output layer $\boldsymbol{\delta}^L$​​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​​, can be expressed as follows (remembering the chain rule from calculus)
+In order to conveniently represent the error at any layer $l$, will introduce the following notation, which will prove to be convenient later on,
 $$
-\boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} 
+(\boldsymbol{\delta}^l)^T \coloneqq \frac{\partial L}{\partial \textbf{z}^l}.
+$$
+Notice that the transposition $T$ must be used, because the derivative of a scalar ($L$) w.r.t a vector ($\textbf{z}^l$) is defined as a row vector. 
+
+The error at the output layer can be expressed as follows (remembering the chain rule from calculus)
+$$
+(\boldsymbol{\delta}^L)^T 
+= \frac{\partial L}{\partial \textbf{z}^L} 
 = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
 = \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
 
-Remember that the derivative of a function yielding a scalar, the loss function, w.r.t. a vector is defined as a row vector, i.e. the *gradient* $\nabla L(\textbf{a}^L)$, and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$. So, writing out every component of the above expression produces
+The above equation shows us that the error at the output layer can be decomposed into the *gradient* $\nabla L(\textbf{a}^L)$, and the *Jacobi* matrix $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$, from which the latter represents the derivative of a vector w.r.t. another vector. So, writing out every component of the above expression produces
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
@@ -372,7 +379,7 @@ $$
 
 where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​. 
 
-Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (26). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
 \large{
 \begin{array}{l}
@@ -385,34 +392,31 @@ $$
 \end{array}
 }
 $$
- where we can now use the definition of the Softmax function (equation 27) again to simplify further to
+ where we can now use the definition of the Softmax function (equation 28) again to simplify further to
 $$
 \frac{\partial a^L_j}{\partial z^L_j} = a^L_j (1 - a^L_j).
 $$
 The second case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​, where $k \neq j$​​, so that
 $$
-\large{
-	\begin{array}{l}
-		\frac{\partial a^L_j}{\partial z^L_k}
-		= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-		= \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-		= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
-		= -a^L_j \ a^L_k.
-	\end{array}
-}
+\large
+\begin{array}{l}
+	\frac{\partial a^L_j}{\partial z^L_k}
+	= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
+	= -a^L_j \ a^L_k.
+\end{array}
 $$
 So, summarizing, 
 $$
 \frac{\partial a^L_j}{\partial z^L_k} = 
-\large{
 	\begin{cases}
 		a^L_j(1-a^L_j) & \text{if} & j=k \\
         -a^L_j \ a^L_k & \text{if} & j \neq k
 	\end{cases}
-}
 $$
 
-Using above expression, we can now fill in each component of (26) as follows
+Using (29) and (33), we can now fill in each component of (27) as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -442,7 +446,7 @@ $$
 	}
 \right].
 $$
- Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ always due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
+ Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -455,12 +459,12 @@ $$
 
 ### BP2.1
 
-In order to represent the error of the previous layer $\boldsymbol{\delta}^{l-1}$​ in terms of the error in the current layer $\boldsymbol{\delta}^{l}$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
 $$
-\boldsymbol{\delta}^{l-1} \coloneqq 
-\frac{\partial L}{\partial \textbf{z}^{l-1}}
+(\boldsymbol{\delta}^{l-1})^T
+= \frac{\partial L}{\partial \textbf{z}^{l-1}}
 = \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}
-= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}),
+= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) ,
 $$
 which can be written out explicitly as
 $$
@@ -479,7 +483,7 @@ $$
 	}
 \right].
 $$
-In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by definition, 
+In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (25), 
 $$
 \frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
@@ -487,9 +491,16 @@ In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}
 $$
 \frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
 $$
-where we need to use the total differential, because TODO: Use Email to AK for further explanation...
+where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to dedetermine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
 
-Using (38) and (39), we can fill in each component of (37) as follows
+![total_differential_intuition](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\total_differential_intuition.png) 
+
+When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order to $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
+
+1. A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is multiplied by $w^l_{1, 2}$.
+2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is multiplied by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
+
+Using (39) and (40), we can fill in each component of (37) as follows
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
@@ -518,7 +529,7 @@ $$
 	}
 \right],
 $$
-which can be decomposed into (TODO: Use matrix decomposition from my notes!)
+which can be decomposed into
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
@@ -528,25 +539,28 @@ $$
 \right]
 \left[
 	\matrix{
-		w^l_{1, 1}, & w^l_{1, 2}, & ..., & w^l_{1, n^{l-1}} \\
-		w^l_{2, 1}, & w^l_{2, 2}, & ..., & w^l_{2, n^{l-1}} \\
+		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{n^l, 1}, & w^l_{n^l, 2}, & ..., & w^l_{n^l, n^{l-1}}
+		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
 	}
 \right]
-\odot
 \left[
-	\matrix{\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1}, & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
+	\matrix{
+		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} \\
+		\frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_{n^{l-1}}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
 	}
 \right],
 $$
-or
+or in short,
 $$
-\boldsymbol{\delta}^{l-1} = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \odot \text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right),
+(\boldsymbol{\delta}^{l-1})^T 
+= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
+= (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-where we used $\boldsymbol{\delta}^{l-1} \coloneqq \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$ to clarify that we ended up with a recursive equation and where $\text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right)$ are the diagonal elements of the Jacobi matrix $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ flattened into a row vector. (TODO: is there a better way to notate this?) 
-
-#### Example
+#### Example (TO)
 
 Assuming we used the softmax activation function in layer $l-1$ (maybe not a common choice for activation functions in the hidden layers, but we'll still use it here to show that the above equations also hold for vector valued functions), we can deduce expressions for $\text{diag}\left(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})\right)$ in (42) by using (32) as follows
 $$
