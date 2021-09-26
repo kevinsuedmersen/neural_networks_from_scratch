@@ -603,17 +603,16 @@ $$
 
 ### BP3.1
 
-After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights. To find an expression for the derivative of the loss w.r.t. the weights in layer $l$, it might help to view weight matrix $\textbf{W}^l$ as a long, flattened vector $\textbf{w}^l$, whose, $(i,j)$-th element represents (or came from) the weight in the $i$-th row and $j$-th column of $\textbf{W}^l$, such that $\textbf{W}^l[i, j] = \textbf{w}^l[(i,j)]$​​. 
+After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can do as follows
 
-With that in mind, we can express the derivative of the loss w.r.t the weights in layer $l$ as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} 
-= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}
-= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l),
+\frac{\partial L}{\partial \textbf{W}^l} 
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{W}^l}
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l),
 $$
 which can be written out explicitly as
 $$
-\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
     	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -638,10 +637,12 @@ $$
         & ..., & 
         \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
     }
-\right].
+\right],
 $$
 
-Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{w}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{w}^l)$, we need to consider two cases again. 
+where $J_{\textbf{z}^l}(\textbf{W}^l)$ is a $n^l \times (n^l \times n^{l-1})$ matrix, since there are $n^l$ components in $\textbf{z}^l$ and $n^l \times n^{l-1}$ components in $\textbf{W}^l$. 
+
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
 
 First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
@@ -661,7 +662,7 @@ $$
 $$
 Using (25) and (50), we can now fill in each value of (47) as follows
 $$
-\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
     	\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
@@ -690,7 +691,7 @@ $$
 $$
 Multiplying out the above expression yields the following $1 \times (n^l \times n^{l-1})$ row vector
 $$
-\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l)
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l)
 = \left[
 	\matrix{
 		\delta^l_1 \ a^{l-1}_1, & \delta^l_1 \ a^{l-1}_2, & ..., & \delta^l_1 \ a^{l-1}_{n^{l-1}}, &
@@ -700,22 +701,22 @@ $$
 	}
 \right],
 $$
-which can also be represented as
+which we want to stack as
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
-\text{flatten} \left( \left[
+\left[
 	\matrix{
 		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
 		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ... & \delta^l_2 a^{l-1}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
 		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
 	}
-\right] \right),
+\right],
 $$
-where $\text{flatten}$ is a function that flattens any 2 dimensional matrix into a 1 dimensional row vector in row-major order. Finally, we can decompose the above equation into the following vector by vector multiplication
+because now, we can decompose the above equation into two quantities we have already computed, i.e. 
 $$
-\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
-\text{flatten} \left( \left[
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
+\left[
 	\matrix{
 		\delta^l_1 \\
 		\delta^l_2 \\
@@ -727,8 +728,8 @@ $$
 	\matrix{
 		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
 	}
-\right] \right) 
-= \text{flatten} \left( \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T \right),
+\right] 
+= \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T,
 $$
 
 
@@ -948,14 +949,13 @@ $$
 
 Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{w}^l},
+\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{W}^l},
 $$
-where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$​ and $L^m$ is the loss associated with the $m$-th training example. 
+where $L^m$ is the loss associated with the $m$-th training example. 
 
 From BP3.1, we know that 
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-\text{flatten} \left(
+\frac{\partial L}{\partial \textbf{W}^l} = 
 \left[
 	\matrix{
 		\delta^l_1 \\
@@ -968,14 +968,12 @@ $$
 	\matrix{
 		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}
 	}
-\right]
-\right),
+\right],
 $$
 so, using that, we can rewrite (69) as follows
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
-\text{flatten} \left(
 \left[
 	\matrix{
 		\delta^{l, m}_1 \\
@@ -988,14 +986,12 @@ $$
 	\matrix{
 		a^{l-1, m}_1, & a^{l-1, m}_2, & ..., & a^{l-1, m}_{n^{l-1}}
 	}
-\right]
-\right).
+\right].
 $$
 Working out the above matrix multiplication yields
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
-\text{flatten} \left(
 \left[
 	\matrix{
 		\delta^{l, m}_1 a^{l-1, m}_1, & \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
@@ -1003,14 +999,12 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\delta^{l, m}_{n^l} a^{l-1, m}_1, & \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
 	}
-\right]
-\right).
+\right].
 $$
 Moving the summation inwards gives us 
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M}
-\text{flatten} \left(
 \left[
 	\matrix{
 		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
@@ -1018,14 +1012,12 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
 	}
-\right]
-\right),
+\right],
 $$
 which can be decomposed into the following matrix multiplication
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M}
-\text{flatten} \left(
 \left[
 	\matrix{
 		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
@@ -1041,13 +1033,12 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		a^{l-1, M}_1, & a^{l-1, M}_2, & ..., & a^{l-1, M}_{n^{l-1}}
 	}
-\right]
-\right),
+\right],
 $$
 or written more compactly as
 $$
-\frac{\partial C}{\partial \textbf{w}^l} 
-= \frac{1}{M} \text{flatten} \left( \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T \right),
+\frac{\partial C}{\partial \textbf{W}^l} 
+= \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
 $$
 which represents equation **BP3.2**. 
 
