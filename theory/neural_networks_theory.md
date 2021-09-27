@@ -14,7 +14,7 @@ In this section, we will start by explaining the forward pass, i.e. forward prop
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
-![neural_network_pic](resources/drawings/neural_network_pic.png)
+![neural_network_pic](../resources/drawings/neural_network_pic.png)
 
 Figure 1: Example neural network
 
