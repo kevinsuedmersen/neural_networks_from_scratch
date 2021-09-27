@@ -14,7 +14,7 @@ In this section, we will start by explaining the forward pass, i.e. forward prop
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
-![neural_network_pic](resources/drawings/neural_network_pic.png)
+![neural_network_pic](../resources/drawings/neural_network_pic.png)
 
 Figure 1: Example neural network
 
@@ -158,33 +158,29 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (7). 
 
-Having computed $\textbf{a}^L$, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problem involving $n^L$ classes, a good[^3] choice for a loss function is the *cross entropy* which is calculated as follows
-
-[^3]: "good" in the sense that, unlike e.g. the squared error, it avoids a learning slowdown, because its gradient with respect to (w.r.t.) the weights and biases is independent of the derivative of the activation function in the output layer CITATION: http://neuralnetworksanddeeplearning.com/chap3.html#introducing_the_cross-entropy_cost_function
+Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problems where *exactly* one of  $n^L$​ classes must be predicted, a commonly used cost function is the *categorical cross entropy*, which is defined as follows
 
 
 $$
-L(\textbf{y}, \hat{\textbf{y}}) = -|| \textbf{y} log(\hat{\textbf{y}}) + (1-\textbf{y}) log(1-\hat{\textbf{y}})) ||^2 
-= -\sum_{i=1}^{n^L} y_i log(\hat{y}_i) + (1-y_i) log(1-\hat{y_i}),
+L(\textbf{y}, \hat{\textbf{y}}) 
+= -|| \textbf{y} \ log(\hat{\textbf{y}}) ||^2 
+= -\sum_{i=1}^{n^L} y_i \ log(\hat{y}_i),
 $$
-where $\textbf{y}$ is the ground truth vector where element $y_i = 1$ if the current training example belongs to class $i$ and $y_i = 0$ otherwise. 
+where $\textbf{y}$ is the ground truth vector (containing the target values) where element $y_i = 1$ and all other elements are zero if the current training example belongs to class $i$, i.e. where $\textbf{y}$ is *one-hot-encoded*. 
 
-In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$ is far away from $y_i$, and low values for good predictions, i.e. when $\hat{y}_i$ is very close to $y_i$. Let's see if component $i$ of (15) fulfills these requirements by considering the following 4 edge cases:
+In general, we want a loss function which has high values for bad predictions, i.e. when $\hat{y}_i$​​ is far away from $y_i$​​, and low values for good predictions, i.e. when $\hat{y}_i$​​ is very close to $y_i$​​. Let's see if component $i$​​ of (15) fulfills these requirements by considering the following example of a multi-class classificaton problem with 2 classes:
 
 - Bad predictions
 
-  - If $y_i = 1$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = -\infty$ and $(1-y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = \infty$  
-  - If $y_i = 0$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = -\infty$, so $L(y_i, \hat{y}_i) = \infty$  
+  - If $\textbf{y} = [1, 0]^T$ and $\hat{\textbf{y}} = [0, 1]^T$, then $L(y_i, \hat{y}_i)= -(1 \times log(0) + 0 \times log(1)) = -(-\infty + 0) = \infty$
+  - If $\textbf{y} = [0, 1]^T$ and $\hat{\textbf{y}} = [1, 0]^T$, then $L(y_i, \hat{y}_i)= -(0 \times log(1) + 1 \times log(0)) = -(0 -\infty) = \infty$
 
 - Good predictions
 
-  - If $y_i = 1$ and $\hat{y} = 1$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$ 
+  - If $\textbf{y} = [1, 1]^T$ and $\hat{\textbf{y}} = [1, 1]^T$, then $L(y_i, \hat{y}_i)= -(1 \times log(1) + 1 \times log(1)) = -(0 + 0) = 0$
+- If $\textbf{y} = [0, 0]^T$ and $\hat{\textbf{y}} = [0, 0]^T$, then $L(y_i, \hat{y}_i)= -(0 \times log(0) + 0 \times log(0)) = -(0 + 0) = 0$
 
-  - If $y_i = 0$ and $\hat{y} = 0$, then  $y_i log(\hat{y}_i) = 0$ and $(1 - y_i) log(1 - \hat{y}_i) = 0$, so $L(y_i, \hat{y}_i) = 0$  
-
-in all of the 4 above cases, we get the desired result. Also, we need the loss function to be differentiable in order to compute gradients during back propagation and it should be derivable using probability theory[^4].
-
-[^4]: E.g. the loss function in linear regression, the squared error, is derivable by using the Maximum Likelihood theory assuming that the distribution of the training examples follows a Gaussian distribution (CITATION)
+in all of the 4 above cases, we get the desired result. 
 
 ## Forward Propagation for a Batch of  Training Examples
 
@@ -299,14 +295,15 @@ $$
 
 where each element $m = 1, 2, ..., M$ of the above loss vector represents the loss we have already defined in equation (15), i.e.
 $$
-L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m).
+L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m).
 $$
 
 Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all `batch_size` training examples
 $$
-C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m) + (1-y_i^m) log(1-\hat{y}_i^m),
+C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
+= -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation, because the average is independent of the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$​​​ training examples. When computing the cost for $M$​​​ training examples, it makes sense to choose the average as an aggregation, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
 
 # Backward Propagation
 
@@ -314,20 +311,21 @@ Neural networks learn by iteratively adjusting their weights and biases such tha
 
 The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
-The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The final results these derivations will assume that the activation functions only depend on a scalar input (e.g. Sigmoid function) and not on a vector input (e.g. Softmax function), but we will explicitly tell you when we are making these assumptions. The four key equations are as follows:
+The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The four key equations are as follows:
 
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
   - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
-- BP2.x: A recursive equation relating the error at layer $l+1$​​ to the error at layer $l$​​​​​​​, needed for recursively calculating the error at each layer. Note that in the first backward iteration, `error_at_layer_l = error_at_layer_L` and `error_al_layer_L` is something we already computed before, i.e. BP1.
+- BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
-  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$, which is a matrix where each column contains the error for a different training example.
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​, which is a matrix where each column contains the error for a different training example.
+  - Note that in the first iteration, we must set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^L$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​After that, we can recursively substitute the error all the way back to layer index $0$. 
 - BP3.x: An equation relating the error at layer $l$ to:
-  - The derivative of the *loss* function w.r.t the weights in layer $l$ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$. We'll refer to this equation as BP3.1
-  - The derivative of the *cost* function w.r.t. the weights in layer $l$ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​.We'll refer to this equation as BP3.2
+  - The derivative of the *loss* function w.r.t the weights in layer $l$​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$​. We'll refer to this equation as BP3.1
+  - The derivative of the *cost* function w.r.t. the weights in layer $l$​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​​.We'll refer to this equation as BP3.2
 - BP4.x: An equation relating the error at layer $l$ to:
-  - The derivative of the *loss* function w.r.t the biases in layer $l$​​ when considering a single training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​. We'll refer to this equation as BP4.1
-  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​ when considering a batch of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​.We'll refer to this equation as BP4.2
+  - The derivative of the *loss* function w.r.t the biases in layer $l$​​​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​​. We'll refer to this equation as BP4.1
+  - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​​.We'll refer to this equation as BP4.2
 
 Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` equations at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
@@ -335,178 +333,145 @@ Most of the work will go into deriving equations BP1.1-BP4.1 and applying these 
 
 ### BP1.1
 
-The error at the output layer $\boldsymbol{\delta}^L$​​​, which represents $\frac{\partial L}{\partial \textbf{z}^L}$​​, can be expressed as follows (remembering the chain rule from calculus)
+In order to conveniently represent the error at any layer $l$, will introduce the following notation
 $$
-\boldsymbol{\delta}^L \coloneqq \frac{\partial L}{\partial \textbf{z}^L} = \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}.
+(\boldsymbol{\delta}^l)^T \coloneqq \frac{\partial L}{\partial \textbf{z}^l}.
+$$
+Notice that the transposition $T$ must be used, because the derivative of a scalar ($L$) w.r.t a vector ($\textbf{z}^l$) is defined as a row vector[^derivative_notation].
+
+[^derivative_notation]: Notice that some authors define the derivative of a scalar w.r.t. a vector as a column vector. No matter which notation is used, the results of both notation should be equal to the transpositions of each other. 
+
+The error at the output layer can be expressed as follows (remembering the chain rule from calculus)
+$$
+(\boldsymbol{\delta}^L)^T 
+\coloneqq \frac{\partial L}{\partial \textbf{z}^L} 
+= \frac{\partial L}{\partial \textbf{a}^L} \frac{\partial \textbf{a}^L}{\partial \textbf{z}^L}
+= \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
 
-Remember that the derivative of a function yielding a scalar, e.g. the loss function, w.r.t. a vector is defined as a row vector and that the derivative of a function yielding a vector w.r.t. another vector is defined as a matrix, i.e. the *Jacobi* matrix. So, working out the above equation will produce the following result
+The above equation shows us that the error at the output layer can be decomposed into the *gradient* $\nabla L(\textbf{a}^L)$, and the *Jacobi* matrix $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$, from which the latter represents the derivative of a vector w.r.t. another vector. So, writing out every component of the above expression produces
 $$
-\boldsymbol{\delta}^L = 
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
 	\matrix{
-		\frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
-	}
-\right]
-\left[
-	\matrix{
-		\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
-	\frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
-	\vdots & \vdots & \ddots & \vdots \\
-	\frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-	}
-\right]
-$$
-
-which we can multiply out as follows
-$$
-\boldsymbol{\delta}^L = \\
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_1} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_1}, &
-
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_2} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_2}, &
-
-		..., &
-
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_{n^L}} + 
-    	\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_{n^L}} + ... + 
-    	\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    \frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
     }
 \right]
-$$
- and which can be simplified to
-$$
-\boldsymbol{\delta}^L = 
 \left[
 	\matrix{
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_1}, & 
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_2}, &
-		..., &
-		\sum_{j=1}^{n^L} \frac{\partial L}{\partial a^L_j} \frac{\partial a^L_j}{\partial z^L_{n^L}}
-	}
-\right].
-$$
-If $a^L_j$​​​​​ depends on each $z^L_k$​​​​​ for all $j$​​​​​ and all $k$​​​​​ (e.g. when using the Softmax activation function), then the above equation cannot be simplified any further. However, if $a^L_j$​​​​ only depends on $z^L_j$ (e.g. when using the Sigmoid activation function)​​​​, such that $\frac{\partial a^L_j}{\partial z^L_k} = 0$​​​​ if $j \ne k$​​​​​​​, we can simplify the above expression to
-$$
-\boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1} \frac{\partial a^L_1}{\partial z^L_1}, &
-		\frac{\partial L}{\partial a^L_2} \frac{\partial a^L_2}{\partial z^L_2}, &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}} \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-	}
-\right].
-$$
-
-Finally, remember that $a^L_j = f(z^L_j)$, so $\frac{\partial a^L_j}{\partial z^L_j} = f'(z^L_j)$, so the above expression may be rewritten as 
-$$
-\boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1} f'(z^L_1), &
-		\frac{\partial L}{\partial a^L_2} f'(z^L_2), &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}} f'(z^L_{n^L})
-	}
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
+        \frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
 \right],
 $$
-which can be decomposed into the following Hadamard (element by element) product
-$$
-\boldsymbol{\delta}^L =
-\left[
-	\matrix{
-		\frac{\partial L}{\partial a^L_1}, &
-		\frac{\partial L}{\partial a^L_2}, &
-		..., &
-		\frac{\partial L}{\partial a^L_{n^L}}
-	}
-\right]
-\odot
-\left[
-	\matrix{
-		f'(z^L_1), &
-		f'(z^L_2), &
-		..., &
-		f'(z^L_{n^L})
-	}
-\right],
-$$
-
-or written more compactly as 
-$$
-\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
-$$
-
-
-This is the equation for the error at the output layer, i.e. BP1.1. Notice that we don't need the transpose sign around $\frac{\partial L}{\partial \textbf{a}^L}$​, because the derivative of a scalar w.r.t. a vector is already defined as a row vector. 
+which ends up as a $1 \times n^L$ row vector. In its most general form, the above vector matrix product represents **BP1.1**, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer $a^L$​​, the above equation cannot be simplified any further. In the next section, we will show how to further specify this equation by choosing a specific loss and activation function. 
 
 #### Example
 
-While BP1 will hold for any cost and any activation function, we will now provide a concrete example if the cost function is the categorical cross entropy and the activation function is the sigmoid function.
-
-From the categorical cross entropy loss function in equation (15), we can see that​ for $i = 1, 2, ..., n^L$,​
+For multi-class classification problems, a common choice for the loss function is the categorical cross entropy (see equation 15) and a common choice for the activation function in the output layer is the *softmax* function, which unlike e.g. the sigmoid activation function, takes a vector as input and also outputs a vector, whose $j$​-th component is defined as follows 
 $$
-\frac{\partial L}{\partial a^{L}_i} = - \left( \frac{y_i}{a^{L}_i} - \frac{1 - y_i}{1 - a^{L}_i} \right),
+a^l_j = f([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
 $$
-
-where we used the definition $\hat{y}_i \coloneqq a^{L}_i$​​​​. We can now do a little algebra to simplify the above expression. First, we want to create a common denominator which we can achieve as follows
+First, we will try to find concrete expressions for each component of $\nabla L(\textbf{a}^L)$ in (27). From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$,
 $$
-\frac{\partial L}{\partial a^{L}_i} = - 
-\left( 
-	\frac{y_i}{a^{L}_i} \frac{{1 - a^{L}_i}}{{1 - a^{L}_i}} - 
-    \frac{1 - y_i}{1 - a^{L}_i} \frac{a^{L}_i}{a^{L}_i} 
-\right) =
-
-- \left( \frac{y_i - a^{L}_i}{a^{L} (1 - a^{L}_i)} \right).
+\frac{\partial L}{\partial a^{L}_j} = - \frac{y_j}{a^{L}_j},
 $$
 
-Notice that $a^{L}_i = f(z^{L}_i)$​​​​​​ and that in the case of the sigmoid function, $f'(z^{L}_i) = f(z^{L}_i) (1 - f(z^{L}_i)) = a^L_i (1 - a^L_i)$​​​​​​. We can use that, to simplify the above expression to
+where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​. 
+
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
-\frac{\partial L}{\partial a^{L}_i} = 
-- \left( \frac{y_i - a^{L}_i}{f'(z^{L}_i)} \right).
+\large{
+\begin{array}{l}
+	\frac{\partial a^L_j}{\partial z^L_j}
+	= \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
+	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
+\end{array}
+}
 $$
-Now finally, we plug this interim result back into each element of BP1.1 while noticing that the two $f'(z^{L}_i)$​​​​ terms will cancel out, yielding
+ where we can now use the definition of the Softmax function (equation 28) again to simplify further to
 $$
-\begin{array}{c}
-\boldsymbol{\delta}^L = 
-\left[
-	\matrix{
-		- \left( y_1 - a^{L}_1 \right), &
-		- \left( y_2 - a^{L}_2 \right), &
-		..., &
-		- \left( y_{n^L} - a^{L}_{n^L} \right)
-	}
-\right] \\
-= - \left[
-	\matrix{
-		\left( y_1 - a^{L}_1 \right), &
-		\left( y_2 - a^{L}_2 \right), &
-		..., &
-		\left( y_{n^L} - a^{L}_{n^L} \right)
-	}
-\right]
+\frac{\partial a^L_j}{\partial z^L_j} = a^L_j (1 - a^L_j).
+$$
+The second case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​, where $k \neq j$​​, so that
+$$
+\large
+\begin{array}{l}
+	\frac{\partial a^L_j}{\partial z^L_k}
+	= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
+	= -a^L_j \ a^L_k.
 \end{array}
 $$
+So, summarizing, 
+$$
+\frac{\partial a^L_j}{\partial z^L_k} = 
+	\begin{cases}
+		a^L_j(1-a^L_j) & \text{if} & j=k \\
+        -a^L_j \ a^L_k & \text{if} & j \neq k
+	\end{cases}
+$$
 
-The above expression has the particularly nice property that $\boldsymbol{\delta}^L$​ is not dependent on $f'(z^{L}_i)$​​​​, which in case of the sigmoid function, may have caused a *learning slowdown*, because the derivative of the sigmoid function is very small for large inputs. 
+Using (29) and (33), we can now fill in each component of (27) as follows
+$$
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+- \left[
+	\matrix{
+    	\frac{y_1}{a^L_1}, & \frac{y_2}{a^L_2}, & ..., & \frac{y_{n^L}}{a^L_{n^L}}
+    }
+\right]
+\left[
+	\matrix{
+    	a^L_1 (1 - a^L_1), & -a^L_1 \ a^L_2, & ..., & -a^L_1 \ a^L_{n^L} \\
+        -a^L_2 \ a^L_1, & a^L_2 (1 - a^L_2), & ..., & -a^L_2 \ a^L_{n^L} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        -a^L_{n^L} \ a^L_1, & -a^L_{n^L} \ a^L_2, & ..., & a^L_{n^L} (1 - a^L_{n^L})
+    }
+\right],
+$$
+
+which, when multiplied out, yields
+$$
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+\left[
+	\matrix{
+		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L}), 
+		& -y_2 + a^L_2(y_1 + y_2 + ... + y_{n^L}), 
+		& ..., 
+		& -y_{n^L} + a^L_{n^L}(y_1 + y_2 + ... + y_{n^L}) 
+	}
+\right].
+$$
+ Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
+$$
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+- \left[
+	\matrix{
+		(y_1 - a^L_1), & (y_2 - a^L_2), ..., & (y_{n^L} - a^L_{n^L})
+	}
+\right].
+$$
+
 
 ### BP2.1
 
-In order to represent the error of the previous layer $\boldsymbol{\delta}^{l-1}$​ in terms of the error in the current layer $\boldsymbol{\delta}^{l}$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
 $$
-\boldsymbol{\delta}^{l-1} \coloneqq 
-\frac{\partial L}{\partial \textbf{z}^{l-1}} = 
-\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}.
+(\boldsymbol{\delta}^{l-1})^T
+\coloneqq \frac{\partial L}{\partial \textbf{z}^{l-1}}
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}
+= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) ,
 $$
-Remembering from above that the derivative of a function yielding a scalar is defined as a row vector and that the derivative of a vector w.r.t. another vector is defined as the Jacobian matrix, we can rewrite the above expression as
+which can be written out explicitly as
 $$
-\boldsymbol{\delta}^{l-1} = \left[
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
 	\matrix{
 		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}} 
 	}
@@ -520,132 +485,134 @@ $$
 	}
 \right].
 $$
-Multiplying out the above equation yields the $1 \times n^{l-1}$​ row vector
+In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (25), 
 $$
-\boldsymbol{\delta}^{l-1} = \left[
-\matrix{
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_1} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_1} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1}, &
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_2} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_2} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2}, &
-    \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} + \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} + ... + \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
-}
-\right]
-,
+\frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
-which can be simplified to
+In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that $z^l_j = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j$ and therefore, 
 $$
-\boldsymbol{\delta}^{l-1} = \left[
+\frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
+$$
+where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to dedetermine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
+
+![total_differential_intuition](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\total_differential_intuition.png) 
+
+When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
+
+1. A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
+2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
+
+Using (39) and (40), we can fill in each component of (38) as follows
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
 	\matrix{
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
-	}
-\right].
-$$
-Recall that $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$, so we can simplify the above equation to
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-	\matrix{
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_1}, &
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \delta^l_j \frac{\partial z^l_j}{\partial z^{l-1}_{n^{l-1}}}
-	}
-\right].
-$$
-Now, let's try to break down each $\frac{\partial z^l_j}{\partial z^{l-1}_k}$ (for $k = 1, 2, ..., n^{l-1}$​) of the above equation. Notice that 
-$$
-z^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ a^{l-1}_k \right) + b^l_j = \sum^{n^{l-1}}_{k=1} \left( w^l_{j, k} \ f(z^{l-1}_k) \right) + b^l_j
-$$
-and therefore,
-$$
-\frac{\partial z^l_j}{\partial z^{l-1}_k} = w^l_{j, k} \ f'(z^{l-1}_k).
-$$
-Plugging (43) back into each element of (41) and rearranging a little bit yields 
-$$
-\boldsymbol{\delta}^{l-1} = \left[
-	\matrix{
-		f'(z^{l-1}_1) \sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
-		f'(z^{l-1}_2) \sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}}) \sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
-	}
-\right].
-$$
-which can be split into the element-by-element vector multiplication
-$$
-\boldsymbol{\delta}^{l-1} = 
-\left[
-	\matrix{
-		f'(z^{l-1}_1) , &
-		f'(z^{l-1}_2) , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}})  
-	}
-\right] \odot
-\left[
-	\matrix{
-		\sum^{n^l}_{j=1} w^l_{j, 1} \ \delta^l_j , &
-		\sum^{n^l}_{j=1} w^l_{j, 2} \ \delta^l_j , &
-		..., &
-		\sum^{n^l}_{j=1} w^l_{j, {n^{l-1}}} \ \delta^l_j 
-	}
-\right].
-$$
-Finally, we want to vectorize the sum in the RHS of the above equation, so that the actual implementation in code can harness optimized matrix multiplication libraries. This can be achieved as follows
-$$
-\boldsymbol{\delta}^{l-1} = 
-\left[
-	\matrix{
-		f'(z^{l-1}_1) , &
-		f'(z^{l-1}_2) , &
-		..., &
-		f'(z^{l-1}_{n^{l-1}})  
-	}
-\right] \odot
-\left[
-	\matrix{
-		\delta^l_1, & \delta^l_2, &, ..., \delta^l_{n^l}
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
 	}
 \right]
 \left[
 	\matrix{
-		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
-		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
+		\sum^{n^{l-1}}_{i=1} w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
+		
+		\sum^{n^{l-1}}_{i=1} w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
+		
 		\vdots & \vdots & \ddots & \vdots \\
-		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
+		
+		\sum^{n^{l-1}}_{i=1} w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
+		& ..., 
+		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
 	}
 \right],
 $$
-or written more compactly
+which can be decomposed into
 $$
-\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l,
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
+	\matrix{
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} \\
+		\frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_{n^{l-1}}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
+	}
+\right],
 $$
-which represents BP2.1. 
+or in short,
+$$
+(\boldsymbol{\delta}^{l-1})^T 
+= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
+= (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
+$$
+The above equation represents **BP2.1** in its most general form. 
 
-#### Example
+#### Example 
 
-To see how this equation helps us to compute the error at each layer, notice that in the first iteration of backpropagation, we have that
+A common choice for activation functions in the hidden layers is the Sigmoid function (see equation 5), whose derivative is defined as follows
 $$
-\boldsymbol{\delta}^{L-1} = \left( f'(\textbf{z}^{L-1}) \right)^T \odot (\boldsymbol{\delta}^L)^T \textbf{W}^L,
+\frac{\partial a^l_j}{\partial z^l_k} =
+\begin{cases}
+	a^l_j(1 - a^l_k) & \text{if} \ j=k \\
+	0 & \text{if} \ j \neq k
+\end{cases}
 $$
-from which we already know how to compute $\boldsymbol{\delta}^L$ thanks to BP1.1. Still being in the first iteration of backpropagation, we will compute the actual values of $\boldsymbol{\delta}^{L-1}$ and cache the results. Then, being in the 2nd iteration of the backpropagation algorithm, we will iterate (47) backwards like this
+Using the above result, we can write out (42) as follows
 $$
-\boldsymbol{\delta}^{L-2} = \left( f'(\textbf{z}^{L-2}) \right)^T \odot (\boldsymbol{\delta}^{L-1})^T \textbf{W}^{L-1},
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
+= \left[
+	\matrix{
+		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\left[
+	\matrix{
+		a^{l-1}_1(1 - a^{l-1}_1) & 0 & ... & 0 \\
+		0 & a^{l-1}_2(1 - a^{l-1}_2) & ... & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
+	}
+\right].
 $$
-from which we computed $\boldsymbol{\delta}^{L-1}$​ in the previous iteration. This procedure, i.e. computing the value of the error and iterating backwards, will be repeated until we computed the values of $\boldsymbol{\delta}^1$. ​
+
 
 ### BP3.1
 
-After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights (and later the biases as well). To find an expression for the derivative of the loss w.r.t. the weights in layer $l$, it might help to view weight matrix $\textbf{W}^l$ as a long, flattened vector $\textbf{w}^l$, whose, $(i,j)$-th element represents (or came from) the weight in the $i$-th row and $j$-th column of $\textbf{W}^l$, such that $\textbf{W}^l[i, j] = \textbf{w}^l[(i,j)]$​​. 
+After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can do as follows
 
-With that in mind, we can express the derivative of the loss w.r.t the weights in layer $l$ as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}.
+\frac{\partial L}{\partial \textbf{W}^l} 
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{W}^l}
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l),
 $$
-We flattened the weight matrix into a long vector, because now, it is obvious that the term $\frac{\partial \textbf{z}^l}{\partial \textbf{w}^l}$, i.e. the derivative of a vector w.r.t another vector, is defined as the Jacobi matrix. Writing out the above equation explicitly yields
+which can be written out explicitly as
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
     	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -670,26 +637,46 @@ $$
         & ..., & 
         \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
     }
-\right].
+\right],
 $$
 
-Notice that $\frac{\partial z^l_j}{\partial w^l_{i, k}} = 0$​ if $j \neq i$​, because weight $w^l_{i,k}$ is not connected to (not a function of) $z^l_j$ and hence, the above expression becomes
+where $J_{\textbf{z}^l}(\textbf{W}^l)$ is a $n^l \times (n^l \times n^{l-1})$ matrix, since there are $n^l$ components in $\textbf{z}^l$ and $n^l \times n^{l-1}$ components in $\textbf{W}^l$. 
+
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
+
+First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
+$$
+Next, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j \neq i$. In that case, the weight $w^l_{i, k}$ is not connected to neuron $j$ in layer $l$, so 
+$$
+\frac{\partial z^l_j}{\partial w^l_{i,k}} = 0.
+$$
+Summarizing, we have that 
+$$
+\frac{\partial z^l_j}{\partial w^l_{i,k}} =
+\begin{cases}
+	a^{l-1}_k & \text{if} \ j=i \\
+	0 & \text{if} \ j \neq i \\
+\end{cases}
+$$
+Using (25) and (50), we can now fill in each value of (47) as follows
+$$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
-    	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+    	\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
         }
 \right]
 \left[
 	\matrix{
-    	\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
+    	a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
         & 0, & 0, & ..., & 0, 
         & ..., & 
         0, & 0, & ..., & 0 \\
 
 		0, & 0, & ..., & 0, 
-        & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
+        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
         & ..., & 
         0, & 0, & ..., & 0 \\
 
@@ -697,61 +684,26 @@ $$
 
 		0, & 0, & ..., & 0, 
         & 0, & 0, & ..., & 0, 
-        & ..., & 
-        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+        & ..., 
+        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
     }
 \right].
 $$
-The above expression yields the following $1 \times (n^l \times n^{l-1})$​ row vector
+Multiplying out the above expression yields the following $1 \times (n^l \times n^{l-1})$ row vector
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-\left[
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l)
+= \left[
 	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 1}}, &
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, &
-		
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 1}}, &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, &
-		
-		..., &
-		
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 1}}, &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, 2}}, &
-		..., &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial w^l_{{n^l}, n^{l-1}}}
+		\delta^l_1 \ a^{l-1}_1, & \delta^l_1 \ a^{l-1}_2, & ..., & \delta^l_1 \ a^{l-1}_{n^{l-1}}, &
+		\delta^l_2 \ a^{l-1}_1, & \delta^l_2 \ a^{l-1}_2, & ..., & \delta^l_2 \ a^{l-1}_{n^{l-1}}, &
+		... &
+		\delta^l_{n^l} \ a^{l-1}_1, & \delta^l_{n^l} \ a^{l-1}_2, & ..., & \delta^l_{n^l} \ a^{l-1}_{n^{l-1}}, &
 	}
-\right]
+\right],
 $$
-The $(j,k)$-th element of the above vector represents
+which we want to stack as
 $$
-\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}}.
-$$
-Recall that since $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, we know that $\frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k$. Also recall that we have defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$ earlier, so equation (51) becomes
-$$
-\frac{\partial L}{\partial \textbf{w}^l}[(j,k)] = 
-\frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial w^l_{j,k}} =
-\delta^l_j \ a^{l-1}_k .
-$$
-Plugging the result of equation (52) back into each element of equation (51) yields
-$$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-\left[
-	\matrix{
-		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ..., & \delta^l_1 a^{l-1}_{n^{l-1}}, &
-		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ..., & \delta^l_2 a^{l-1}_{n^{l-1}}, &
-		..., &
-		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ..., & \delta^l_{n^l} a^{l-1}_{n^{l-1}}
-		
-	}
-\right].
-$$
-Assume that we wanted to unflatten the above $1 \times (n^l \times n^{l-1})$ row vector into a $n^l \times n^{l-1}$ matrix. Then, we could represent it as
-$$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \left[
 	\matrix{
 		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
@@ -759,12 +711,11 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
 	}
-\right].
+\right],
 $$
-With that expression, we can now see that we can decompose it into the following vector by vector multiplication
+because now, we can decompose the above equation into two quantities we have already computed, i.e. 
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
-
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
 		\delta^l_1 \\
@@ -777,19 +728,24 @@ $$
 	\matrix{
 		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
 	}
-\right] =
-\boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T.
+\right] 
+= \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T,
 $$
 
 
-Equation (57) represents BP3.1. 
+which represents **BP3.1**. 
 
 ### BP4.1 
 
 Now, we want to relate the errors of each layer to the derivative of the loss w.r.t. the biases. The derivative of the loss w.r.t the biases can be expressed as follows
 $$
-\frac{\partial L}{\partial \textbf{b}^l} = 
-\frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{b}^l} = 
+\frac{\partial L}{\partial \textbf{b}^l} 
+= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{b}^l} 
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{b}^l),
+$$
+which can be written out explicitly as
+$$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
 	\matrix{
 		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
@@ -802,144 +758,101 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\frac{\partial z^l_{n^l}}{\partial b^l_1}, & \frac{\partial z^l_{n^l}}{\partial b^l_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}} \\
 	}
+\right]
+$$
+Again, the components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see that 
+$$
+\frac{\partial z^l_j}{\partial z^l_k} = 
+\begin{cases}
+	1 & \text{if} \ j = k \\
+	0 & \text{if} \ j \neq k
+\end{cases}
+$$
+So, using (25) and (57), we can re-write equation (56) as follows
+$$
+\nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
+\left[
+	\matrix{
+		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		1, & 0, & ..., & 0 \\
+		0, & 1, & ..., & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0, & 0, & ..., & 1 \\
+	}
 \right],
 $$
-which we can multiply out as follows
+which simply means that 
 $$
-\frac{\partial L}{\partial \textbf{b}^l} = \left[
-	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_1} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_1}, &
-        
-        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_2} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_2}, &
-        
-        ..., &
-        
-        \frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_{n^l}} +
-        \frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_{n^l}} + 
-        ... + 
-        \frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
-	}
-\right],
+\frac{\partial L}{\partial \textbf{b}^l}  
+= \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) 
+= (\boldsymbol{\delta}^l)^T.
 $$
-which can be simplified to
-$$
-\frac{\partial L}{\partial \textbf{b}^l} = 
-\left[
-	\matrix{
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_1}, &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_2}, &
-		..., &
-		\sum^{n^l}_{j=1} \frac{\partial L}{\partial z^l_j} \frac{\partial z^l_j}{\partial b^l_{n^l}}
-	}
-\right].
-$$
-Notice that $\frac{\partial z^l_j}{\partial b^l_k} = 0$ if $j \neq k$, so we can simplify the above expression to 
-$$
-\frac{\partial L}{\partial \textbf{b}^l} =
-\left[
-	\matrix{
-		\frac{\partial L}{\partial z^l_1} \frac{\partial z^l_1}{\partial b^l_1}, &
-		\frac{\partial L}{\partial z^l_2} \frac{\partial z^l_2}{\partial b^l_2}, &
-		..., &
-		\frac{\partial L}{\partial z^l_{n^l}} \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}}
-	}
-\right].
-$$
-
-
-
-
-Furthermore, notice that we have already defined $\frac{\partial L}{\partial z^l_j} \coloneqq \delta^l_j$​ and notice that since, $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j, k} \ a^{l-1}_k + b^l_j$​, we know that $\frac{\partial z^l_j}{\partial b^l_j} = 1$​​. Using these insights, we can simplify equation (59) to
-$$
-\frac{\partial L}{\partial \textbf{b}^l} =
-\left[
-	\matrix{
-		\delta^l_1 , & \delta^l_2, & ..., & \delta^l_{n^l}
-	}
-\right] =
-\left( \boldsymbol{\delta}^l \right)^T.
-$$
-The above equation represents BP4.1.
+The above equation represents **BP4.1**. 
 
 
 
 ## Backpropagation for batch_size Training Examples at once
 
-In the previous section, we have derived equations which can help us to compute the gradients of a single training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
+In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
 
 ### BP1.2
 
 Recall from BP1.1 that 
 $$
-\boldsymbol{\delta}^L = \frac{\partial L}{\partial \textbf{a}^L} \odot \left( f'(\textbf{z}^L) \right)^T.
+(\boldsymbol{\delta}^L)^T = \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
-We want to end up with an expression where each column represents a different training example. In order to achieve that, we will redefine the above expression as its transpose like so
+In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will transpose both sides of the above equation, so that the result of BP1.2 is an expression where each column represents a different training example, i.e.
 $$
-\begin{array}{c}
-\boldsymbol{\delta}^L \coloneqq 
-\left( \boldsymbol{\delta}^L \right)^T \\
-= \left(\frac{\partial L}{\partial \textbf{a}^L} \right)^T \odot f'(\textbf{z}^L) \\
- = \left[
+\boldsymbol{\delta}^L
+= (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{a}^L))^T
+= \left[
 	\matrix{
-		\frac{\partial L}{\partial a^L_1} \\
-		\frac{\partial L}{\partial a^L_2} \\
-		\vdots \\
-		\frac{\partial L}{\partial a^L_{n^L}}
-	}
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
 \right]
-\odot
 \left[
 	\matrix{
-		f'(z^L_1) \\
-		f'(z^L_2) \\
-		\vdots \\
-		f'(z^L_{n^L})
-	}
+    \frac{\partial L}{\partial a^{L}_1} \\ 
+    \frac{\partial L}{\partial a^{L}_2} \\ 
+    \vdots \\ 
+    \frac{\partial L}{\partial a^{L}_{n^L}}
+    }
 \right]
-\end{array}.
 $$
-To calculate $\boldsymbol{\delta}^L$​ for $m = 1, 2, ..., M$​ training examples at once, stack each $\boldsymbol{\delta}^{L, m}$​ next to each other in a column wise fashion like this
+Next, we will simply stack the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion, so that we end up with the following expression
 $$
-\begin{array}{c}
-	\boldsymbol{\Delta}^L \coloneqq 
-	\left[
-		\matrix{\boldsymbol{\delta}^{L, 1}, & \boldsymbol{\delta}^{L, 2}, & ..., & \boldsymbol{\delta}^{L, M}}
-	\right] \\
-	= \left[
-		\matrix{
-			\frac{\partial L}{\partial a^{L, 1}_1}, & \frac{\partial L}{\partial a^{L, 2}_1}, & ..., & \frac{\partial L}{\partial a^{L, M}_1} \\
-			\frac{\partial L}{\partial a^{L, 1}_2}, & \frac{\partial L}{\partial a^{L, 2}_2}, & ..., & \frac{\partial L}{\partial a^{L, M}_2} \\
-			\vdots & \vdots & \ddots & \vdots \\
-			\frac{\partial L}{\partial a^{L, 1}_{n^L}}, & \frac{\partial L}{\partial a^{L, 2}_{n^L}}, & ..., & \frac{\partial L}{\partial a^{L, M}_{n^L}}
-		}
-	\right]
-	\odot
-	\left[
-		\matrix{
-			f'(z^{L, 1}_1), & f'(z^{L, 2}_1), & ..., & f'(z^{L, M}_1) \\
-			f'(z^{L, 1}_2), & f'(z^{L, 2}_2), & ..., & f'(z^{L, M}_2) \\
-			\vdots & \vdots & \ddots & \vdots \\
-			f'(z^{L, 1}_{n^L}), & f'(z^{L, 2}_{n^L}), & ..., & f'(z^{L, M}_{n^L})
-		}
-	\right]
-\end{array},
+\boldsymbol{\Delta}^L
+\coloneqq
+(\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T
+= \left[
+	\matrix{
+    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+    }
+\right]
+\left[
+	\matrix{
+    \frac{\partial L}{\partial a^{L, 1}_1} & \frac{\partial L}{\partial a^{L, 2}_1} & ... & \frac{\partial L}{\partial a^{L, M}_1} \\ 
+    \frac{\partial L}{\partial a^{L, 1}_2} & \frac{\partial L}{\partial a^{L, 2}_2} & ... & \frac{\partial L}{\partial a^{L, M}_2} \\ 
+    \vdots & \vdots & \ddots \\ 
+    \frac{\partial L}{\partial a^{L, 1}_{n^L}} & \frac{\partial L}{\partial a^{L, 2}_{n^L}} & ... & \frac{\partial L}{\partial a^{L, M}_{n^L}} 
+    }
+\right],
 $$
-or written more compactly as
-$$
-\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L),
-$$
-
-which represents BP1.2.
+where $\boldsymbol{\Delta}^L$ is an $n^L \times M$ matrix. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
-Like in the example of BP1.2, we will assume that we use the categorical cross entropy loss function and the sigmoid activation function. Then, using equation (35), we can explicitly write out equation (66) as follows
+Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (36) and then stack the error of each training example in a different column. Having done so, we will end up with the following expression
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
@@ -958,85 +871,92 @@ which is easily computed, because we are given $\textbf{Y}$ (since we are talkin
 
 Recall from BP2.1 that 
 $$
-\boldsymbol{\delta}^{l-1} = \left( f'(\textbf{z}^{l-1}) \right)^T \odot (\boldsymbol{\delta}^l)^T \textbf{W}^l.
+(\boldsymbol{\delta}^{l-1})^T = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-Again, we want to end up with an expression, where each column represents a different training example, so we will redefine the above expression as its transpose like so
+Again, we want to end up with an expression, where each column represents a different training example, so we will transpose both sides of the above equation giving us
 $$
-\boldsymbol{\delta}^{l-1} \coloneqq \left( \boldsymbol{\delta}^{l-1} \right)^T = f'(\textbf{z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\delta}^l,
+\boldsymbol{\delta}^{l-1} 
+= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l
 $$
-remembering that when transposing a matrix multiplication, we have to transpose each factor and reverse their orders (except for the Hadamard product, because it's an element-by-element multiplication). So, for each $1, 2, ...M$, we will stack (column-wise) the errors and weighted inputs of each training example as follows
+Now, we want to stack each $\boldsymbol{\delta}^{l, m}$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion where each column represents a different training example. Doing so will give us
 $$
+\boldsymbol{\Delta}^{l-1}
+= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l,
+$$
+which can be written out explicitly as
+$$
+\boldsymbol{\Delta}^{l-1} = 
 \left[
 	\matrix{
-		\boldsymbol{\delta}^{l-1, 1}, & \boldsymbol{\delta}^{l-1, 2}, & ..., & \boldsymbol{\delta}^{l-1, M}
+		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} \\
+		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_{n^{l-1}}} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} 
 	}
-\right] =
+\right]
 \left[
 	\matrix{
-		f'(\textbf{z}^{l-1, 1}), & f'(\textbf{z}^{l-1, 2}), & ..., & f'(\textbf{z}^{l-1, M}) 
+		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
+		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
 	}
-\right] \odot
-\left( \textbf{W}^l \right)^T
+\right]
 \left[
 	\matrix{
-		\boldsymbol{\delta}^{l, 1}, & \boldsymbol{\delta}^{l, 2}, & ..., & \boldsymbol{\delta}^{l, M}
+		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
+		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
+	}
+\right].
+$$
+Notice that, $(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T$ is a $n^{l-1} \times n^{l-1}$ matrix (see equation 42), $(\textbf{W}^l)^T$ is a $n^{l-1} \times n^l$ matrix and $\boldsymbol{\Delta}^l$ is a $n^l \times M$ matrix and therefore, $\boldsymbol{\Delta}^{l-1}$ is a $n^{l-1} \times M$ matrix, where each column represents the error of a different training example - just like we wanted. In its most general form, equation (66) represents **BP2.2**. 
+
+#### Example
+
+Using the sigmoid activation function in layer $l-1$, (67) can be specified as follows
+$$
+\boldsymbol{\Delta}^{l-1} = 
+\left[
+	\matrix{
+		a^{l-1}_1(1 - a^{l-1}_1) & 0 & ... & 0 \\
+		0 & a^{l-1}_2(1 - a^{l-1}_2) & ... & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
+		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
+	}
+\right]
+\left[
+	\matrix{
+		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
+		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
 	}
 \right].
 $$
 
 
-Writing out each element of the above equation, we will get
-$$
-\left[
-	\matrix{
-		\delta^{l-1, 1}_1, & \delta^{l-1, 2}_1, & ..., & \delta^{l-1, M}_1 \\
-		\delta^{l-1, 1}_2, & \delta^{l-1, 2}_2, & ..., & \delta^{l-1, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l-1, 1}_{n^{l-1}}, & \delta^{l-1, 2}_{n^{l-1}}, & ..., & \delta^{l-1, M}_{n^{l-1}} \\
-	}
-\right] = 
-\left[
-	\matrix{
-		f'(z^{l-1, 1}_1), & f'(z^{l-1, 2}_1), & ..., & f'(z^{l-1, M}_1) \\
-		f'(z^{l-1, 1}_2), & f'(z^{l-1, 2}_2), & ..., & f'(z^{l-1, M}_2) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		f'(z^{l-1, 1}_{n^{l-1}}), & f'(z^{l-1, 2}_{n^{l-1}}), & ..., & f'(z^{l-1, M}_{n^{l-1}})
-	}
-\right] \odot
-\left[
-	\matrix{
-		w^l_{1,1}, & w^l_{2,1}, & ..., & w^l_{n^l,1} \\ 
-		w^l_{1,2}, & w^l_{2,2}, & ..., & w^l_{n^l,2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1,n^{l-1}}, & w^l_{2,n^{l-1}}, & ..., & w^l_{n^l,n^{l-1}}
-	}
-\right]
-\left[
-	\matrix{
-		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^{l}}, & \delta^{l, 2}_{n^{l}}, & ..., & \delta^{l, M}_{n^{l}} \\
-	}
-\right],
-$$
- which we can write more compactly as
-$$
-\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^{l},
-$$
-which represents BP2.2.
 
 ### BP3.2
 
-Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, we know that 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{w}^l},
+\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{W}^l},
 $$
-where $\textbf{w}^l$ is the aforementioned flattened weight matrix in layer $l$​ and $L^m$ is the loss associated with the $m$-th training example. 
+where $L^m$ is the loss associated with the $m$-th training example. 
 
 From BP3.1, we know that 
 $$
-\frac{\partial L}{\partial \textbf{w}^l} = 
+\frac{\partial L}{\partial \textbf{W}^l} = 
 \left[
 	\matrix{
 		\delta^l_1 \\
@@ -1051,9 +971,9 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite equation (73) as follows
+so, using that, we can rewrite (69) as follows
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
 \left[
 	\matrix{
@@ -1071,7 +991,7 @@ $$
 $$
 Working out the above matrix multiplication yields
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
 \left[
 	\matrix{
@@ -1084,7 +1004,7 @@ $$
 $$
 Moving the summation inwards gives us 
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M}
 \left[
 	\matrix{
@@ -1093,11 +1013,11 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
 	}
-\right].
+\right],
 $$
-Notice that each cell contains a scalar product, which should ring a bell, because when multiplying two matrices with each other, each cell in the resulting matrix is a scalar product of a row of the left matrix and a column of the right matrix. Using this insight, we can decompose the above equation into the following matrix multiplication
+which can be decomposed into the following matrix multiplication
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = 
+\frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M}
 \left[
 	\matrix{
@@ -1118,28 +1038,30 @@ $$
 $$
 or written more compactly as
 $$
-\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
+\frac{\partial C}{\partial \textbf{W}^l} 
+= \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
 $$
-which represents equation BP3.2. 
+which represents equation **BP3.2**. 
 
 ### BP4.2
 
 Finally, the other real quantity of interest is the gradient of the cost function w.r.t. the biases. Again, using the fact that the cost is an average over $M$​ training examples, we can deduce that
 $$
-\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
+\frac{\partial C}{\partial \textbf{b}^l}
+= \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{b}^{l}}.
 $$
 Remember from BP4.1 that 
 $$
-\frac{\partial L}{\partial \textbf{b}^{l}} = \left[
+\frac{\partial L}{\partial \textbf{b}^{l}}
+= \left[
 	\matrix{
 		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
 	}
-\right],
+\right].
 $$
-which, first of all, we will redefine as its transpose to remain conform with the notations used from BP1.2 to BP3.2, i.e.
+First of all, we will transpose both sides of the above equation in order to remain conform with the notations used from BP1.2 to BP3.2, i.e.
 $$
-\frac{\partial L}{\partial \textbf{b}^{l}} \coloneqq
-\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T = 
+\left( \frac{\partial L}{\partial \textbf{b}^{l}} \right)^T= 
 \left[
 	\matrix{
 		\delta^l_1 \\ 
@@ -1149,9 +1071,9 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Plugging (82) back into (80) yields
+From here on out, it is really straight forward. Plugging (78) back into (76) yields
 $$
-\frac{\partial C}{\partial \textbf{b}^l} = 
+\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
 \left[
 	\matrix{
@@ -1164,18 +1086,18 @@ $$
 $$
 or written more compactly as
 $$
-\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
+\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
 $$
-which represents equation BP4.2. 
+which represents equation **BP4.2**. 
 
 ### Summary
 
 To summarize, in our backpropagation module, we want to implement the following 4 equations:
 
-- BP1.2: $\boldsymbol{\Delta}^L = \frac{\partial L}{\partial \textbf{A}^L} \odot f'(\textbf{Z}^L)$ 
-- BP2.2: $\boldsymbol{\Delta}^{l-1} = f'(\textbf{Z}^{l-1}) \odot \left( \textbf{W}^l \right)^T \boldsymbol{\Delta}^l$ 
-- BP3.2: $\frac{\partial C}{\partial \textbf{w}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$ 
-- BP4.2: $\frac{\partial C}{\partial \textbf{b}^l} = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
+- BP1.2: $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
+- BP2.2: $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
+- BP3.2: $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
+- BP4.2: $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
 
 ## Why Backpropagation?
 
@@ -1209,7 +1131,7 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 # Activation and Loss Functions
 
-As we could see from the forward and backward propagation sections, we need to compute the values of certain loss and activations as well as their corresponding derivatives. In this section, we will start by outlining common activation functions (and their derivatives) and then we will continue with common loss functions (and their derivatives).
+In the previous sections, we used some specific loss and activation functions and in this section we want to show some other common choices. 
 
 ## Activation Functions
 
