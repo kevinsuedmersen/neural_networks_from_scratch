@@ -1,6 +1,6 @@
 # Neural Networks from Scratch
 
-This repository aims to derive and implement equations for training neural networks from scratch, which consist of an arbitrary number of fully connected, dense layers. First, we will attempt to derive equations for forward- as well as backward propagation in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend it to a matrix-based approach for processing `batch_size` examples at once. After implementing the necessary Python code, we will test the network's performance on the MNIST hand-written digits dataset and compare its performance with famous deep learning libraries such as TensorFlow. 
+This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. neural networks consisting of fully connected, dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for forward- as well as backward propagation algorithm in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend it to a matrix-based approach for a batch of training examples.  
 
 # Table of contents
 
@@ -795,7 +795,7 @@ The above equation represents **BP4.1**.
 
 
 
-## Backpropagation for batch_size Training Examples at once
+## Backpropagation for a Batch of Training Examples
 
 In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
 
