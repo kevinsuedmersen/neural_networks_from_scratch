@@ -305,9 +305,9 @@ Note that the loss function represents an error over a *single* training example
 
 # Backward Propagation
 
-Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. The next sections will start by describing the backward propagation for a single training example and then extend this procedure for `batch_size` training examples at once. 
+Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. This section will describe how to calculate (1), the gradient using the backpropagation algorithm which is a very cost efficient algorithm. First, the backpropagation algorithm is explained for a single training example and then extended to a whole batch of training examples. 
 
-The backpropagation algorithm works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
+The backpropagation algorithm generally works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
 The backpropagation algorithm is based on 4 key equations which we will derive in detail in the following sections. The four key equations are as follows:
 
@@ -315,9 +315,9 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
   - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
 - BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
-  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$
-  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​, which is a matrix where each column contains the error for a different training example.
-  - Note that in the first iteration, we must set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^L$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​After that, we can recursively substitute the error all the way back to layer index $0$. 
+  - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$ or BP2.1
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​ or BP2.2, which again, is a matrix where each column contains the error for a different training example.
+  - Note that in the first iteration, we must set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^L$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​After that, we can recursively substitute the error all the way back to the input layer. 
 - BP3.x: An equation relating the error at layer $l$ to:
   - The derivative of the *loss* function w.r.t the weights in layer $l$​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$​. We'll refer to this equation as BP3.1
   - The derivative of the *cost* function w.r.t. the weights in layer $l$​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{W}^l}$​​.We'll refer to this equation as BP3.2
@@ -325,7 +325,7 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
   - The derivative of the *loss* function w.r.t the biases in layer $l$​​​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​​. We'll refer to this equation as BP4.1
   - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​​.We'll refer to this equation as BP4.2
 
-Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` equations at once is just a little overhead in math but will save a lot of time when running the actual code.  
+Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` training examples at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
 ## Backpropagation for a Single Training Example
 
@@ -335,9 +335,9 @@ In order to conveniently represent the error at any layer $l$, will introduce th
 $$
 (\boldsymbol{\delta}^l)^T \coloneqq \frac{\partial L}{\partial \textbf{z}^l}.
 $$
-Notice that the transposition $T$ must be used, because the derivative of a scalar ($L$) w.r.t a vector ($\textbf{z}^l$) is defined as a row vector[^derivative_notation].
+Notice that the transposition $T$ must be used, because the derivative of a scalar ($L$) w.r.t a vector ($\textbf{z}^l$) is defined as a row vector[^1].
 
-[^derivative_notation]: Notice that some authors define the derivative of a scalar w.r.t. a vector as a column vector. No matter which notation is used, the results of both notation should be equal to the transpositions of each other. 
+[^1]: Notice that some authors define the derivative of a scalar w.r.t. a vector as a column vector. No matter which notation is used, the results of one notation should be equal to the transposition of the other notation. 
 
 The error at the output layer can be expressed as follows (remembering the chain rule from calculus)
 $$
@@ -370,7 +370,7 @@ which ends up as a $1 \times n^L$ row vector. In its most general form, the abov
 
 For multi-class classification problems, a common choice for the loss function is the categorical cross entropy (see equation 15) and a common choice for the activation function in the output layer is the *softmax* function, which unlike e.g. the sigmoid activation function, takes a vector as input and also outputs a vector, whose $j$​-th component is defined as follows 
 $$
-a^l_j = f([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
+a^l_j = \textbf{f}([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
 $$
 First, we will try to find concrete expressions for each component of $\nabla L(\textbf{a}^L)$ in (27). From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$,
 $$
@@ -381,16 +381,15 @@ where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​.
 
 Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
-\large{
+\large
 \begin{array}{l}
-	\frac{\partial a^L_j}{\partial z^L_j}
-	= \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-	= \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
-	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
-	= \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
+	\frac{\partial a^L_j}{\partial z^L_j} 
+	& = \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	& = \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
+	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
+	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
 \end{array}
-}
 $$
  where we can now use the definition of the Softmax function (equation 28) again to simplify further to
 $$
@@ -401,10 +400,10 @@ $$
 \large
 \begin{array}{l}
 	\frac{\partial a^L_j}{\partial z^L_k}
-	= \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-	= \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
-	= - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
-	= -a^L_j \ a^L_k.
+	& = \frac{0 \times \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	& = \frac{- e^{z^L_j} e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
+	& = - \frac{e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \frac{e^{z^L_k}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)} \\
+	& = -a^L_j \ a^L_k.
 \end{array}
 $$
 So, summarizing, 
@@ -446,7 +445,7 @@ $$
 	}
 \right].
 $$
- Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
+Notice that $(y_1 + y_2 + ... + y_{n^L}) = 1$ due to the one hot encoded target vector $\textbf{y}$. So, we can simplify the above expression to
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -498,7 +497,7 @@ where we need to use the total differential. To add a little more intuition why 
 When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
 
 1. A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
-2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
+2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if e.g. the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
 
 Using (39) and (40), we can fill in each component of (38) as follows
 $$
@@ -560,7 +559,7 @@ $$
 = \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
 = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-The above equation represents **BP2.1** in its most general form. 
+The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its Jacobi matrix for the backpropagation algorithm. 
 
 #### Example 
 
@@ -601,7 +600,7 @@ $$
 
 ### BP3.1
 
-After calculating the errors for each layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can do as follows
+After calculating the errors at a certain layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can be done as follows
 
 $$
 \frac{\partial L}{\partial \textbf{W}^l} 
@@ -758,9 +757,9 @@ $$
 	}
 \right]
 $$
-Again, the components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see that 
+Again, the components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see from (3) that 
 $$
-\frac{\partial z^l_j}{\partial z^l_k} = 
+\frac{\partial z^l_j}{\partial b^l_k} = 
 \begin{cases}
 	1 & \text{if} \ j = k \\
 	0 & \text{if} \ j \neq k
@@ -883,7 +882,14 @@ $$
 $$
 which can be written out explicitly as
 $$
-\boldsymbol{\Delta}^{l-1} = 
+\left[
+	\matrix{
+		\delta^{{l-1}, 1}_1 & \delta^{{l-1}, 2}_1 & ... & \delta^{{l-1}, M}_1 \\
+		\delta^{{l-1}, 1}_2 & \delta^{{l-1}, 2}_2 & ... & \delta^{{l-1}, M}_2 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		\delta^{{l-1}, 1}_{n^{l-1}} & \delta^{{l-1}, 2}_{n^{l-1}} & ... & \delta^{{l-1}, M}_{n^{l-1}}
+	}
+\right] = 
 \left[
 	\matrix{
 		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} \\
@@ -909,7 +915,7 @@ $$
 	}
 \right].
 $$
-Notice that, $(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T$ is a $n^{l-1} \times n^{l-1}$ matrix (see equation 42), $(\textbf{W}^l)^T$ is a $n^{l-1} \times n^l$ matrix and $\boldsymbol{\Delta}^l$ is a $n^l \times M$ matrix and therefore, $\boldsymbol{\Delta}^{l-1}$ is a $n^{l-1} \times M$ matrix, where each column represents the error of a different training example - just like we wanted. In its most general form, equation (66) represents **BP2.2**. 
+Notice that, $(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T$ is a $n^{l-1} \times n^{l-1}$ matrix, $(\textbf{W}^l)^T$ is a $n^{l-1} \times n^l$ matrix and $\boldsymbol{\Delta}^l$ is a $n^l \times M$ matrix and therefore, $\boldsymbol{\Delta}^{l-1}$ is a $n^{l-1} \times M$ matrix, where each column represents the error of a different training example - just like we wanted. In its most general form, equation (66) represents **BP2.2**. 
 
 #### Example
 
@@ -1069,7 +1075,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Plugging (78) back into (76) yields
+From here on out, it is really straight forward. Transpose both sides of (76) and plug (78) back into (76) yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -1097,7 +1103,7 @@ To summarize, in our backpropagation module, we want to implement the following 
 - BP3.2: $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
 - BP4.2: $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
 
-## Why Backpropagation?
+## Why Backpropagation
 
 You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
 $$
