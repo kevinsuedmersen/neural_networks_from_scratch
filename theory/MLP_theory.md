@@ -327,6 +327,16 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
 
 Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` training examples at once is just a little overhead in math but will save a lot of time when running the actual code.  
 
+## Why Backpropagation
+
+You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_{j}$ as follows[^2]
+$$
+\frac{\partial L}{\partial w_{j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_{j}, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
+$$
+where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​​ is a infinitesimal scalar and where $\textbf{e}_j$​​ is the unit vector being $1$​​ at position $j$​​ and $0$​​ elsewhere. Assuming that our network has one million parameters, we would need to calculate $L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$​ a million times (once for each $j$​), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$​ once, summing up to a total of $1,000,001$​ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network, so the backpropagation algorithm is a very efficient way of computing the gradients.
+
+[^2]: For simplicity reasons we left out the layer and column indices of the weight matrices, because this has no influence on the point we want to make. 
+
 ## Backpropagation for a Single Training Example
 
 ### BP1.1
@@ -352,15 +362,15 @@ $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
 	\matrix{
-    \frac{\partial L}{\partial a^L_1}, & \frac{\partial L}{\partial a^L_2}, & ..., & \frac{\partial L}{\partial a^L_{n^L}}
+    \frac{\partial L}{\partial a^L_1} & \frac{\partial L}{\partial a^L_2} & ... & \frac{\partial L}{\partial a^L_{n^L}}
     }
 \right]
 \left[
 	\matrix{
-    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_1}{\partial z^L_2}, & ..., & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
-        \frac{\partial a^L_2}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
+    	\frac{\partial a^L_1}{\partial z^L_1} & \frac{\partial a^L_1}{\partial z^L_2} & ... & \frac{\partial a^L_1}{\partial z^L_{n^L}} \\
+        \frac{\partial a^L_2}{\partial z^L_1} & \frac{\partial a^L_2}{\partial z^L_2} & ... & \frac{\partial a^L_2}{\partial z^L_{n^L}} \\
         \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^L_{n^L}}{\partial z^L_1}, & \frac{\partial a^L_{n^L}}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+        \frac{\partial a^L_{n^L}}{\partial z^L_1} & \frac{\partial a^L_{n^L}}{\partial z^L_2} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
     }
 \right],
 $$
@@ -420,15 +430,15 @@ $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
 	\matrix{
-    	\frac{y_1}{a^L_1}, & \frac{y_2}{a^L_2}, & ..., & \frac{y_{n^L}}{a^L_{n^L}}
+    	\frac{y_1}{a^L_1} & \frac{y_2}{a^L_2} & ... & \frac{y_{n^L}}{a^L_{n^L}}
     }
 \right]
 \left[
 	\matrix{
-    	a^L_1 (1 - a^L_1), & -a^L_1 \ a^L_2, & ..., & -a^L_1 \ a^L_{n^L} \\
-        -a^L_2 \ a^L_1, & a^L_2 (1 - a^L_2), & ..., & -a^L_2 \ a^L_{n^L} \\
+    	a^L_1 (1 - a^L_1), & -a^L_1 \ a^L_2 & ... & -a^L_1 \ a^L_{n^L} \\
+        -a^L_2 \ a^L_1, & a^L_2 (1 - a^L_2) & ... & -a^L_2 \ a^L_{n^L} \\
         \vdots & \vdots & \ddots & \vdots \\
-        -a^L_{n^L} \ a^L_1, & -a^L_{n^L} \ a^L_2, & ..., & a^L_{n^L} (1 - a^L_{n^L})
+        -a^L_{n^L} \ a^L_1, & -a^L_{n^L} \ a^L_2 & ... & a^L_{n^L} (1 - a^L_{n^L})
     }
 \right],
 $$
@@ -438,9 +448,9 @@ $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 \left[
 	\matrix{
-		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L}), 
-		& -y_2 + a^L_2(y_1 + y_2 + ... + y_{n^L}), 
-		& ..., 
+		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L})
+		& -y_2 + a^L_2(y_1 + y_2 + ... + y_{n^L})
+		& ...
 		& -y_{n^L} + a^L_{n^L}(y_1 + y_2 + ... + y_{n^L}) 
 	}
 \right].
@@ -450,7 +460,7 @@ $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
 	\matrix{
-		(y_1 - a^L_1), & (y_2 - a^L_2), ..., & (y_{n^L} - a^L_{n^L})
+		(y_1 - a^L_1) & (y_2 - a^L_2) & ... & (y_{n^L} - a^L_{n^L})
 	}
 \right].
 $$
@@ -470,15 +480,15 @@ $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
 	\matrix{
-		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}} 
+		\frac{\partial L}{\partial z^l_1} & \frac{\partial L}{\partial z^l_2} & ... & \frac{\partial L}{\partial z^l_{n^l}} 
 	}
 \right]
 \left[
 	\matrix{
-		\frac{\partial z^l_1}{\partial z^{l-1}_1}, & \frac{\partial z^l_1}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} \\
-        \frac{\partial z^l_2}{\partial z^{l-1}_1}, & \frac{\partial z^l_2}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} \\
+		\frac{\partial z^l_1}{\partial z^{l-1}_1} & \frac{\partial z^l_1}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} \\
+        \frac{\partial z^l_2}{\partial z^{l-1}_1} & \frac{\partial z^l_2}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} \\
         \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1}, & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
+        \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1} & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
 	}
 \right].
 $$
@@ -504,26 +514,26 @@ $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
 	\matrix{
-		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
 \right]
 \left[
 	\matrix{
-		\sum^{n^{l-1}}_{i=1} w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
-		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
-		& ..., 
+		\sum^{n^{l-1}}_{i=1} w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
+		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
+		& ...
 		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
 		
-		\sum^{n^{l-1}}_{i=1} w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
-		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
-		& ..., 
+		\sum^{n^{l-1}}_{i=1} w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
+		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
+		& ...
 		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
 		
 		\vdots & \vdots & \ddots & \vdots \\
 		
-		\sum^{n^{l-1}}_{i=1} w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}, 
-		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}, 
-		& ..., 
+		\sum^{n^{l-1}}_{i=1} w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
+		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
+		& ...
 		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
 	}
 \right],
@@ -533,7 +543,7 @@ $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
 	\matrix{
-		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
 \right]
 \left[
@@ -576,7 +586,7 @@ $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
 	\matrix{
-		 \delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
 \right]
 \left[
@@ -612,27 +622,27 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
-    	\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+    	\frac{\partial L}{\partial z^l_1} & \frac{\partial L}{\partial z^l_2} & ... & \frac{\partial L}{\partial z^l_{n^l}}
         }
 \right]
 \left[
 	\matrix{
-    	\frac{\partial z^l_1}{\partial w^l_{1, 1}}, & \frac{\partial z^l_1}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}, 
-        & \frac{\partial z^l_1}{\partial w^l_{2, 1}}, & \frac{\partial z^l_1}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{2, n^{l-1}}}, 
+    	\frac{\partial z^l_1}{\partial w^l_{1, 1}} & \frac{\partial z^l_1}{\partial w^l_{1, 2}} & ... & \frac{\partial z^l_1}{\partial w^l_{1, n^{l-1}}}
+        & \frac{\partial z^l_1}{\partial w^l_{2, 1}} & \frac{\partial z^l_1}{\partial w^l_{2, 2}} & ... & \frac{\partial z^l_1}{\partial w^l_{2, n^{l-1}}}
         & ..., & 
-        \frac{\partial z^l_1}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_1}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_1}{\partial w^l_{n^l, n^{l-1}}} \\
+        \frac{\partial z^l_1}{\partial w^l_{n^l, 1}} & \frac{\partial z^l_1}{\partial w^l_{n^l, 2}} & ... & \frac{\partial z^l_1}{\partial w^l_{n^l, n^{l-1}}} \\
 
-		\frac{\partial z^l_2}{\partial w^l_{1, 1}}, & \frac{\partial z^l_2}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{1, n^{l-1}}}, 
-        & \frac{\partial z^l_2}{\partial w^l_{2, 1}}, & \frac{\partial z^l_2}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}, 
-        & ..., & 
-        \frac{\partial z^l_2}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_2}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_2}{\partial w^l_{n^l, n^{l-1}}} \\
+		\frac{\partial z^l_2}{\partial w^l_{1, 1}} & \frac{\partial z^l_2}{\partial w^l_{1, 2}} & ... & \frac{\partial z^l_2}{\partial w^l_{1, n^{l-1}}}
+        & \frac{\partial z^l_2}{\partial w^l_{2, 1}} & \frac{\partial z^l_2}{\partial w^l_{2, 2}} & ... & \frac{\partial z^l_2}{\partial w^l_{2, n^{l-1}}}
+        & ... & 
+        \frac{\partial z^l_2}{\partial w^l_{n^l, 1}} & \frac{\partial z^l_2}{\partial w^l_{n^l, 2}} & ... & \frac{\partial z^l_2}{\partial w^l_{n^l, n^{l-1}}} \\
 
 		\vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
 
-		\frac{\partial z^l_{n^l}}{\partial w^l_{1, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{1, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{1, n^{l-1}}}, 
-        & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{2, n^{l-1}}}, 
-        & ..., & 
-        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}}, & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}}, & ..., & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
+		\frac{\partial z^l_{n^l}}{\partial w^l_{1, 1}} & \frac{\partial z^l_{n^l}}{\partial w^l_{1, 2}} & ... & \frac{\partial z^l_{n^l}}{\partial w^l_{1, n^{l-1}}}
+        & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 1}} & \frac{\partial z^l_{n^l}}{\partial w^l_{2, 2}} & ... & \frac{\partial z^l_{n^l}}{\partial w^l_{2, n^{l-1}}}
+        & ... & 
+        \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 1}} & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, 2}} & ... & \frac{\partial z^l_{n^l}}{\partial w^l_{n^l, n^{l-1}}}
     }
 \right],
 $$
@@ -662,27 +672,27 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
 	\matrix{
-    	\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+    	\delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
         }
 \right]
 \left[
 	\matrix{
-    	a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
-        & 0, & 0, & ..., & 0, 
-        & ..., & 
-        0, & 0, & ..., & 0 \\
+    	a^{l-1}_1 & a^{l-1}_2 & ... & a^{l-1}_{n^{l-1}}
+        & 0 & 0 & ... & 0 
+        & ... & 
+        0 & 0 & ... & 0 \\
 
-		0, & 0, & ..., & 0, 
-        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}, 
-        & ..., & 
-        0, & 0, & ..., & 0 \\
+		0 & 0 & ... & 0 
+        & a^{l-1}_1 & a^{l-1}_2 & ... & a^{l-1}_{n^{l-1}} 
+        & ... & 
+        0 & 0 & ... & 0 \\
 
 		\vdots & \vdots & \ddots & \vdots & \vdots & \vdots & \ddots & \vdots & \ddots & \vdots & \vdots & \ddots & \vdots \\
 
-		0, & 0, & ..., & 0, 
-        & 0, & 0, & ..., & 0, 
-        & ..., 
-        & a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
+		0 & 0 & ... & 0 
+        & 0 & 0 & ... & 0 
+        & ... 
+        & a^{l-1}_1 & a^{l-1}_2 & ... & a^{l-1}_{n^{l-1}} 
     }
 \right].
 $$
@@ -691,10 +701,10 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l)
 = \left[
 	\matrix{
-		\delta^l_1 \ a^{l-1}_1, & \delta^l_1 \ a^{l-1}_2, & ..., & \delta^l_1 \ a^{l-1}_{n^{l-1}}, &
-		\delta^l_2 \ a^{l-1}_1, & \delta^l_2 \ a^{l-1}_2, & ..., & \delta^l_2 \ a^{l-1}_{n^{l-1}}, &
+		\delta^l_1 \ a^{l-1}_1 & \delta^l_1 \ a^{l-1}_2 & ... & \delta^l_1 \ a^{l-1}_{n^{l-1}} &
+		\delta^l_2 \ a^{l-1}_1 & \delta^l_2 \ a^{l-1}_2 & ... & \delta^l_2 \ a^{l-1}_{n^{l-1}} &
 		... &
-		\delta^l_{n^l} \ a^{l-1}_1, & \delta^l_{n^l} \ a^{l-1}_2, & ..., & \delta^l_{n^l} \ a^{l-1}_{n^{l-1}}, &
+		\delta^l_{n^l} \ a^{l-1}_1 & \delta^l_{n^l} \ a^{l-1}_2 & ... & \delta^l_{n^l} \ a^{l-1}_{n^{l-1}}
 	}
 \right],
 $$
@@ -703,10 +713,10 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \left[
 	\matrix{
-		\delta^l_1 a^{l-1}_1, & \delta^l_1 a^{l-1}_2, & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
-		\delta^l_2 a^{l-1}_1, & \delta^l_2 a^{l-1}_2, & ... & \delta^l_2 a^{l-1}_{n^{l-1}} \\
+		\delta^l_1 a^{l-1}_1 & \delta^l_1 a^{l-1}_2 & ... & \delta^l_1 a^{l-1}_{n^{l-1}} \\
+		\delta^l_2 a^{l-1}_1 & \delta^l_2 a^{l-1}_2 & ... & \delta^l_2 a^{l-1}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		\delta^l_{n^l} a^{l-1}_1, & \delta^l_{n^l} a^{l-1}_2, & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
+		\delta^l_{n^l} a^{l-1}_1 & \delta^l_{n^l} a^{l-1}_2 & ... & \delta^l_{n^l} a^{l-1}_{n^{l-1}} \\
 	}
 \right],
 $$
@@ -723,7 +733,7 @@ $$
 \right]
 \left[
 	\matrix{
-		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}} 
+		a^{l-1}_1 & a^{l-1}_2 & ... & a^{l-1}_{n^{l-1}} 
 	}
 \right] 
 = \boldsymbol{\delta}^l \ (\textbf{a}^{l-1})^T,
@@ -745,15 +755,15 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
 	\matrix{
-		\frac{\partial L}{\partial z^l_1}, & \frac{\partial L}{\partial z^l_2}, & ..., & \frac{\partial L}{\partial z^l_{n^l}}
+		\frac{\partial L}{\partial z^l_1} & \frac{\partial L}{\partial z^l_2} & ... & \frac{\partial L}{\partial z^l_{n^l}}
 	}
 \right]
 \left[
 	\matrix{
-		\frac{\partial z^l_1}{\partial b^l_1}, & \frac{\partial z^l_1}{\partial b^l_2}, & ..., & \frac{\partial z^l_1}{\partial b^l_{n^l}} \\
-		\frac{\partial z^l_2}{\partial b^l_1}, & \frac{\partial z^l_2}{\partial b^l_2}, & ..., & \frac{\partial z^l_2}{\partial b^l_{n^l}} \\
+		\frac{\partial z^l_1}{\partial b^l_1} & \frac{\partial z^l_1}{\partial b^l_2} & ... & \frac{\partial z^l_1}{\partial b^l_{n^l}} \\
+		\frac{\partial z^l_2}{\partial b^l_1} & \frac{\partial z^l_2}{\partial b^l_2} & ... & \frac{\partial z^l_2}{\partial b^l_{n^l}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		\frac{\partial z^l_{n^l}}{\partial b^l_1}, & \frac{\partial z^l_{n^l}}{\partial b^l_2}, & ..., & \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}} \\
+		\frac{\partial z^l_{n^l}}{\partial b^l_1} & \frac{\partial z^l_{n^l}}{\partial b^l_2} & ... & \frac{\partial z^l_{n^l}}{\partial b^l_{n^l}} \\
 	}
 \right]
 $$
@@ -770,15 +780,15 @@ $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
 	\matrix{
-		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+		\delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
 \right]
 \left[
 	\matrix{
-		1, & 0, & ..., & 0 \\
-		0, & 1, & ..., & 0 \\
+		1 & 0 & ... & 0 \\
+		0 & 1 & ... & 0 \\
 		\vdots & \vdots & \ddots & \vdots \\
-		0, & 0, & ..., & 1 \\
+		0 & 0 & ... & 1 \\
 	}
 \right],
 $$
@@ -808,10 +818,10 @@ $$
 = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{a}^L))^T
 = \left[
 	\matrix{
-    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
-        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+    	\frac{\partial a^L_1}{\partial z^L_1} & \frac{\partial a^L_2}{\partial z^L_1} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2} & \frac{\partial a^L_2}{\partial z^L_2} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
         \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+        \frac{\partial a^L_1}{\partial z^L_{n^L}} & \frac{\partial a^L_2}{\partial z^L_{n^L}} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
     }
 \right]
 \left[
@@ -830,10 +840,10 @@ $$
 (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T
 = \left[
 	\matrix{
-    	\frac{\partial a^L_1}{\partial z^L_1}, & \frac{\partial a^L_2}{\partial z^L_1}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
-        \frac{\partial a^L_1}{\partial z^L_2}, & \frac{\partial a^L_2}{\partial z^L_2}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
+    	\frac{\partial a^L_1}{\partial z^L_1} & \frac{\partial a^L_2}{\partial z^L_1} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
+        \frac{\partial a^L_1}{\partial z^L_2} & \frac{\partial a^L_2}{\partial z^L_2} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
         \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^L_1}{\partial z^L_{n^L}}, & \frac{\partial a^L_2}{\partial z^L_{n^L}}, & ..., & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
+        \frac{\partial a^L_1}{\partial z^L_{n^L}} & \frac{\partial a^L_2}{\partial z^L_{n^L}} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
     }
 \right]
 \left[
@@ -853,10 +863,10 @@ Assuming we are using the categorical cross entropy cost function from equation 
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
-		\left( y_1^1 - a^{L, 1}_1 \right), & \left( y_1^2 - a^{L, 2}_1 \right), & ..., & \left( y_1^M - a^{L, M}_1 \right) \\
-		\left( y_2^1 - a^{L, 1}_2 \right), & \left( y_2^2 - a^{L, 2}_2 \right), & ..., & \left( y_2^M - a^{L, M}_2 \right) \\
+		\left( y_1^1 - a^{L, 1}_1 \right) & \left( y_1^2 - a^{L, 2}_1 \right) & ... & \left( y_1^M - a^{L, M}_1 \right) \\
+		\left( y_2^1 - a^{L, 1}_2 \right) & \left( y_2^2 - a^{L, 2}_2 \right) & ... & \left( y_2^M - a^{L, M}_2 \right) \\
 		\vdots & \vdots & \ddots & \vdots \\
-		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right), & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right), & ..., & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
+		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right) & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right) & ... & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
 	}
 \right]
 = \textbf{Y} - \textbf{A}^L,
@@ -971,7 +981,7 @@ $$
 \right]
 \left[
 	\matrix{
-		a^{l-1}_1, & a^{l-1}_2, & ..., & a^{l-1}_{n^{l-1}}
+		a^{l-1}_1 & a^{l-1}_2 & ... & a^{l-1}_{n^{l-1}}
 	}
 \right],
 $$
@@ -989,7 +999,7 @@ $$
 \right]
 \left[
 	\matrix{
-		a^{l-1, m}_1, & a^{l-1, m}_2, & ..., & a^{l-1, m}_{n^{l-1}}
+		a^{l-1, m}_1 & a^{l-1, m}_2 & ... & a^{l-1, m}_{n^{l-1}}
 	}
 \right].
 $$
@@ -999,10 +1009,10 @@ $$
 \frac{1}{M} \sum^M_{m=1} 
 \left[
 	\matrix{
-		\delta^{l, m}_1 a^{l-1, m}_1, & \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\delta^{l, m}_2 a^{l-1, m}_1, & \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\delta^{l, m}_1 a^{l-1, m}_1 & \delta^{l, m}_1 a^{l-1, m}_2 & ... & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\delta^{l, m}_2 a^{l-1, m}_1 & \delta^{l, m}_2 a^{l-1, m}_2 & ... & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, m}_{n^l} a^{l-1, m}_1, & \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+		\delta^{l, m}_{n^l} a^{l-1, m}_1 & \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
 	}
 \right].
 $$
@@ -1012,10 +1022,10 @@ $$
 \frac{1}{M}
 \left[
 	\matrix{
-		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
+		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
+		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1, & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2, & ..., & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
+		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
 	}
 \right],
 $$
@@ -1025,18 +1035,18 @@ $$
 \frac{1}{M}
 \left[
 	\matrix{
-		\delta^{l, 1}_1, & \delta^{l, 2}_1, & ..., & \delta^{l, M}_1 \\
-        \delta^{l, 1}_2, & \delta^{l, 2}_2, & ..., & \delta^{l, M}_2 \\
+		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
+        \delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
         \vdots & \vdots & \ddots & \vdots \\
-        \delta^{l, 1}_{n^l}, & \delta^{l, 2}_{n^l}, & ..., & \delta^{l, M}_{n^l}
+        \delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
 	}
 \right]
 \left[
 	\matrix{
-		a^{l-1, 1}_1, & a^{l-1, 1}_2, & ..., & a^{l-1, 1}_{n^{l-1}} \\
-		a^{l-1, 2}_1, & a^{l-1, 2}_2, & ..., & a^{l-1, 2}_{n^{l-1}} \\
+		a^{l-1, 1}_1 & a^{l-1, 1}_2 & ... & a^{l-1, 1}_{n^{l-1}} \\
+		a^{l-1, 2}_1 & a^{l-1, 2}_2 & ... & a^{l-1, 2}_{n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		a^{l-1, M}_1, & a^{l-1, M}_2, & ..., & a^{l-1, M}_{n^{l-1}}
+		a^{l-1, M}_1 & a^{l-1, M}_2 & ... & a^{l-1, M}_{n^{l-1}}
 	}
 \right],
 $$
@@ -1059,7 +1069,7 @@ $$
 \frac{\partial L}{\partial \textbf{b}^{l}}
 = \left[
 	\matrix{
-		\delta^l_1, & \delta^l_2, & ..., & \delta^l_{n^l}
+		\delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
 \right].
 $$
@@ -1094,44 +1104,44 @@ $$
 $$
 which represents equation **BP4.2**. 
 
-### Summary
+## Summary
 
-To summarize, in our backpropagation module, we want to implement the following 4 equations:
+To summarize, in our backpropagation module, we want to implement the following 4 equations for an arbitrary network topology and activation functions:
 
-- BP1.2: $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
-- BP2.2: $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
-- BP3.2: $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
-- BP4.2: $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
-
-## Why Backpropagation
-
-You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_j$ as follows
-$$
-\frac{\partial{L}}{\partial{w_j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
-$$
-where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​​ is a infinitesimal scalar and where $\textbf{e}_j$​​ is the unit vector being $1$​​ at position $j$​​ and $0$​​ elsewhere. Assuming that our network has one million parameters, we would need to calculate $L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$​ a million times (once for each $j$​), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$​ once, summing up to a total of $1,000,001$​ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just one forward- and one backward pass through the network!
+- BP1.2: 
+  - $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
+  - Shape: $n^L \times M$ 
+- BP2.2: 
+  - $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
+  - Shape: $n^{l-1} \times M$ 
+- BP3.2: 
+  - $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
+  - Shape: $n^l \times n^{l-1}$ 
+- BP4.2: 
+  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
+  - Shape: $n^l \times 1$ 
 
 # Gradient Descent
 
 In the previous section, we described how to compute the gradients, which mathematically speaking, point into the *direction* of the steepest ascent of the cost function. In this section, we will describe how to use the gradients in order to *update* the weights and biases such that the cost decreases. 
 
-We will use a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2, we can perform the weight updates as
+We will describe a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2, we can perform the weight updates as
 $$
-\textbf{w}^{l}_{s} = \textbf{w}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{w}^l} \right)_{s-1},
+\textbf{W}^{l}_{s} = \textbf{W}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{W}^l} \right)_{s-1},
 $$
 and similarly, the bias updates as
 $$
-\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)_{s-1},
+\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T_{s-1},
 $$
 for update steps $i = 1, 2, ..., S$. Notice that $\textbf{w}^{l}_{s=0}$ and $\textbf{b}^{l}_{s=0}$ are initialized randomly, $S$ represents the number of update steps and $\lambda$ represents the *learning rate* controlling the step size toward the local (and hopefully global) minimum of the cost function. 
 
-Assuming that we divided our dataset into batches with $M$ training examples each, we will end up with $S$ batches, where $S$ is computed as 
+Assuming that we divided our dataset into batches with at most $M$ training examples each, we will end up with $S$ batches, where $S$ is computed as 
 $$
 S = \text{round\_up}(N/M),
 $$
-where $\text{round\_up}$​ is a function that always rounds a floating point number *up* to the nearest integer and where $N$ represents the number of all training examples in total. Notice that $S$ always needs to be rounded up in order to make sure that during one *epoch*[^epoch], all training examples have been forward- and backward propagated through the network. 
+where $\text{round\_up}$​ is a function that always rounds a floating point number *up* to the nearest integer and where $N$ represents the number of all training examples in total. Notice that $S$ always needs to be rounded up in order to make sure that during one *epoch*[^3], all training examples have been forward- and backward propagated through the network. If we rounded down, some training examples might be skipped. 
 
-[^epoch]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
+[^3]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
 # Activation and Loss Functions
 
