@@ -1189,64 +1189,105 @@ $$
 
 ### Sigmoid
 
-We have already taken a sneak peek at the sigmoid function during the forward propagation, so that the reader has a general idea what we are talking about, but now, we will delve into more depth. The sigmoid function can be expressed as
+Recall from (5) that
 $$
-f(z) = \frac{1}{1 + e^{-z}}.
+a^l_i = f(z^l_i) = \frac{1}{1 + e^{-z^l_i}}.
 $$
 
-Notice that for very large positive inputs, $f(z) \rightarrow 1$​ and that for very large negative inputs, $f(z) \rightarrow 0$ and that $f(z) = 0.5$ if $z=0$. 
-
-The corresponding derivative is
+ From (45) and 46), we can infer that the Jacobian of the Sigmoid function is
 $$
-f'(z) = f(z) \times (1 - f(z)),
+\textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
+= \left[
+	\matrix{
+		a^{l}_1(1 - a^{l}_1) & 0 & ... & 0 \\
+		0 & a^{l}_2(1 - a^{l}_2) & ... & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0 & 0 & 0 & a^{l}_{n^{l}}(1 - a^{l}_{n^{l}})
+	}
+\right].
 $$
-from which we can see that for very large inputs (positive as well as negative), $f'(z) \rightarrow 0$ and that $f'(z) = 0.25$ if $z=0$​​​. The fact that the sigmoid function's derivative is close to 0 for very large inputs causes the errors (at each layer where the sigmoid activation function is used) to be very small, which in turn causes the gradients to contain very small values. This problem is called *learning slowdown* (briefly mentioned earlier) and when calculating the error at the output layer, this problem can be solved by using the categorical cross entropy cost function as we have shown in the examples for equations BP1.1 and BP1.2. 
 
 ### ReLU
 
 The Rectified Linear Unit (ReLU) is defined as
 $$
-f(z) = max(0, z),
+a^l_i = f(z^l_i) = max(0, z^l_i).
 $$
 Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
 $$
-f'(z) = 
+\frac{\partial a^l_i}{\partial z^l_i}
+= f'(z^l_i) 
+= \begin{cases}
+z^l_i & \text{if} & z^l_i > 0 \\
+0 & \text{if} & z^l_i \leq 0
+\end{cases}.
+$$
+Since like the Sigmoid function, ReLU function also just depends on a single scalar, we can know that
+$$
+\frac{\partial a^l_i}{\partial z^l_j} =
 \begin{cases}
-z & \text{if} & z > 0 \\
-0 & \text{if} & z \leq 0
-\end{cases}
+	f'(z^l_i) & \text{if} \ i=j \\
+	0 & \text{if} \ i \neq k
+\end{cases},
 $$
-Notice from equation (31), that if e.g. $f'(z^L_1) = 0$​​, $\delta^L_1 = 0$​​. Then, by looking at equation (57), we know that 
+where $f'(z^l_i)$ was already defined in (92). Using (93), we can construct Jacobian of the ReLU as follows 
 $$
-\begin{array}{c}
-\delta^L_1 a^{L-1}_1 = 0, \\
-\delta^L_1 a^{L-1}_2 = 0, \\
-\vdots \\
-\delta^L_1 a^{L-1}_{n^{l-1}} = 0,
-\end{array}
+\textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
+= \left[
+	\matrix{
+		f'(z^l_1) & 0 & ... & 0 \\
+		0 & f'(z^l_2) & ... & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0 & 0 & 0 & f'(z^l_{n^l})
+	}
+\right].
 $$
 
-
-which in turn means that 
-$$
-\frac{\partial L}{\partial \textbf{w}^L}[1, 2, ..., n^{l-1}] = 0,
-$$
-namely that elements $1$​ to $n^{l-1}$​ of the flattened weight gradient are zero. Simply put, this means that for a particular training example, all weights connected to neuron $1$​ in layer $L$​​​ won't get updated if $f'(z^L_1) = 0$. 
 
 ### tanh
 
-TODO
+The tanh function is defined as follows
+$$
+a^l_i = f(z^L_i) = \frac{e^x - e^{-x}}{e^x + e^{-x}}
+$$
+and one can show that its derivative is
+$$
+\frac{\partial a^l_i}{\partial z^l_j} = 
+\begin{cases}
+	1 - (a^l_i)^2 & \text{if} \ i = j \\
+	0 & \text{if} \ i \neq j
+\end{cases}. 
+$$
+Hence, its Jacobian is
+$$
+\textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
+= \left[
+	\matrix{
+		1 - (a^l_1)^2 & 0 & ... & 0 \\
+		0 & 1 - (a^l_2)^2 & ... & 0 \\
+		\vdots & \vdots & \ddots & \vdots \\
+		0 & 0 & 0 & 1 - (a^l_{n^l})^2
+	}
+\right].
+$$
 
 ### Softmax
 
-Unlike all other activation functions discussed so far, the softmax function takes a vector as input and outputs a vector whose elements sum up to $1$. It is defined as follows
+Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (29) that the Softmax function is defined as
 $$
-f(\textbf{z}^l) = 
+a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \frac{e^{z^l_i}}{\sum_{k=1}^{n^l} e^{z^l_k}}
+$$
+and recall from (35), that its Jacobian is
+$$
+\textbf{J}_{\textbf{a}^l}(\textbf{z}^l) = 
 \left[
 	\matrix{
-		\frac{e^{z_1}}{\sum^{n^l}_{j=1} e^{z_j}}, & \frac{e^{z_2}}{\sum^{n^l}_{j=1} e^{z_j}}, & ..., & \frac{e^{z_{n^l}}}{\sum^{n^l}_{j=1} e^{z_j}}
-	}
-\right]
+    	a^l_1 (1 - a^l_1), & -a^l_1 \ a^l_2 & ... & -a^l_1 \ a^l_{n^l} \\
+        -a^l_2 \ a^l_1, & a^l_2 (1 - a^l_2) & ... & -a^l_2 \ a^l_{n^l} \\
+        \vdots & \vdots & \ddots & \vdots \\
+        -a^l_{n^l} \ a^l_1, & -a^l_{n^l} \ a^l_2 & ... & a^l_{n^l} (1 - a^l_{n^l})
+    }
+\right].
 $$
 
 # Optimization Methods
