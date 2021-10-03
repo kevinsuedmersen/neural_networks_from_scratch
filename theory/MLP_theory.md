@@ -1143,9 +1143,47 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 [^3]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
-# Activation and Loss Functions
+# Loss and activation Functions
 
-In the previous sections, we used some specific loss and activation functions and in this section we want to show some other common choices. 
+In this section, we will show equations for the forward and backward pass of all loss and activation functions which we want to implement.  
+
+## Loss functions
+
+### Categorical Crossentropy
+
+Recall from (15) that
+$$
+L = - \sum^{n^L}_{i=1} y_i \ log(a^{L}_i),
+$$
+where we used that $\hat{\textbf{y}}^m = \textbf{a}^{L, m}$. From BP1.1 and BP1.2, we know that for the backward pass, we need the derivative of the loss function w.r.t. the activations, i.e.
+$$
+\frac{\partial L}{\partial \textbf{a}^{L}}
+= - \frac{\textbf{y}}{\textbf{a}^L}
+= - \left[
+	\matrix{
+		\frac{y_1}{a^L_1} & \frac{y_2}{a^L_2} & ... & \frac{y_{n^L}}{a^L_{n^L}}
+	}
+\right]
+$$
+
+
+### Sum of Squared Errors
+
+The Sum of Squared Errors loss is defined as
+$$
+L = \frac{1}{2} \sum^{n^L}_{i=1} \left( y_i - a^L_i \right)^2
+$$
+and its derivative w.r.t. the activations is
+$$
+\frac{\partial L}{\partial \textbf{a}^{L}}
+= - (\textbf{y} - \textbf{a}^L)
+= - \left[
+	\matrix{
+		(y_1 - a^L_1) & (y_2 - a^L_2) & ... & (y_{n^L} - a^L_{n^L})
+	}
+\right]
+$$
+
 
 ## Activation Functions
 
@@ -1210,19 +1248,6 @@ f(\textbf{z}^l) =
 	}
 \right]
 $$
-
-
-## Loss functions
-
-TODO
-
-### Categorical Crossentropy
-
-TODO
-
-### Mean Squared Error
-
-TODO
 
 # Optimization Methods
 
