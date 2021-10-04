@@ -1290,10 +1290,15 @@ $$
 \right].
 $$
 
-# Optimization Methods
+# Implementation
+
+https://docs.google.com/presentation/d/1wCjKdm0nKziiIHnJ44MVc61e6UgrhkvKI6R-owc4a-k/edit#slide=id.p
+
+## Forward and Backward Pass
 
 TODO
 
 ## Weight Initialization
 
 TODO
+
