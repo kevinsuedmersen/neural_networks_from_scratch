@@ -1218,7 +1218,7 @@ $$
 \frac{\partial a^l_i}{\partial z^l_i}
 = f'(z^l_i) 
 = \begin{cases}
-z^l_i & \text{if} & z^l_i > 0 \\
+1 & \text{if} & z^l_i > 0 \\
 0 & \text{if} & z^l_i \leq 0
 \end{cases}.
 $$
