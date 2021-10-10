@@ -1292,7 +1292,11 @@ $$
 
 # Implementation
 
-https://docs.google.com/presentation/d/1wCjKdm0nKziiIHnJ44MVc61e6UgrhkvKI6R-owc4a-k/edit#slide=id.p
+The following diagram shows how we will implement a the neural network with its individual components:
+
+![implementation](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\implementation.png)
+
+Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
 
 ## Forward and Backward Pass
 
