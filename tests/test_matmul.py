@@ -12,11 +12,11 @@ class Test3DMatmul:
 
     @pytest.fixture
     def left(self) -> np.ndarray(shape=(n, k)):
-        return np.random.randint(0, 3, size=(self.batch_size, self.n, self.k))
+        return np.random.randint(0, 10, size=(self.batch_size, self.n, self.k))
 
     @pytest.fixture
     def right(self) -> np.ndarray(shape=(k, m)):
-        return np.random.randint(0, 3, size=(1, self.k, self.m))
+        return np.random.randint(0, 10, size=(1, self.k, self.m))
 
     def test_batch_wise_matmul(self, left, right):
         # Use np.matmul to compute batch_size matrix multiplications in parallel
@@ -32,7 +32,7 @@ class Test3DMatmul:
             current_left = left[batch_idx, ...]
             current_right = right_broadcasted[batch_idx, ...]
             current_result = np.matmul(current_left, current_right)
-            # Add batch dimenstion to current result
+            # Add batch dimension to current result
             current_result = current_result[np.newaxis, ...]
             interim_results.append(current_result)
         result_2 = np.concatenate(interim_results, axis=0)
