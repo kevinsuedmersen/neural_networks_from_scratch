@@ -182,31 +182,48 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-We will conclude this section by showing how to compute the complete forward propagation for a batch of training examples at once. It starts by defining your input data matrix as follows
-$$
-\textbf{X} = \textbf{A}^0,
-$$
-where the feature vectors of each training examples are stacked horizontally next to each other in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (16) can be written out explicitly as
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3D matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each slice along the first dimension looks as follows
 $$
 \left[
 \matrix{
-	x_1^1 & x_1^2 & \ldots & x_1^M \\
-	x_2^1 & x_2^2 & \ldots & x_2^M \\
-	\vdots & \vdots & \ddots & \vdots \\
-	x_{n^0}^1 & x_{n^0}^2 & \ldots & x_{n^0}^M
+	x_1^m \\
+	x_2^m\\
+	\vdots\\
+	x_{n^0}^m
 }
 \right] = 
 \left[ 
 	\matrix{
-	a_1^{0, 1} & a_1^{0, 2} & \ldots & a_1^{0, M} \\
-	a_2^{0, 1} & a_2^{0, 2} & \ldots & a_2^{0, M} \\
-	\vdots & \vdots & \ddots & \vdots \\
-	a_{n^0}^{0, 1} & a_{n^0}^{0, 2} & \ldots & a_{n^0}^{0, M}
+	a_1^{0, m}\\
+	a_2^{0, m}\\
+	\vdots\\
+	a_{n^0}^{0, m}
 }
-\right],
+\right]
+\text{ for }  m = 1, 2, ..., M
+,
 $$
 
-where $x_i^m = a_i^{0, m}$ both refer to the value of the $i$-th feature of the $m$-th training example in layer $0$, i.e. the input layer. 
+which we could also visualize as the following 3D object, where we chose to represent the the batch dimension as the depth dimension. 
+
+TODO: Visualize the above.
+
+Often enough we will encounter datasets where each row represents a different example and each feature represents a different column. In those cases, we just need to add a third dimension to the dataset as follows:
+
+ ```python
+ X = np.loadtxt("/path/to/2D_data.txt")  # X.shape == (n_samples, n_features)
+ X = X[..., np.newaxis]  # X.shape == (n_samples, n_features, 1)
+ ```
+
+ 
+
+
+
+
+
+
+
+
 
 Next, equation (9) becomes
 $$
