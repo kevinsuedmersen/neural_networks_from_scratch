@@ -206,31 +206,18 @@ where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have b
 - $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently
 - $\textbf{B}^l: M \times n^{l} \times 1$
 
-so the dimensions are conform. Note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $N$ dimensional arrays where $N>2$, and because it is easier to draw that way. 
+so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $N$ dimensional arrays where $N>2$, and because it is easier to draw that way. 
 
-Then, the activation function is applied as before and independent of training example
+Then, like before, the activation function is applied independently to each training example
 $$
 \textbf{A}^l = f(\textbf{Z}^l),
 $$
 which, in case of the sigmoid function is equal to
-$$
-\left[ 
-	\matrix{
-		a_1^{l, 1} & a_1^{l, 2} & \ldots & a_1^{l, M} \\
-		a_2^{l, 1} & a_2^{l, 2} & \ldots & a_2^{l, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a_{n^{l}}^{l, 1} & a_{n^{l}}^{l, 2} & \ldots & a_{n^{l}}^{l, M}
-	}
-\right] =
-\left[
-	\matrix{
-		f(z_1^{l, 1}) & f(z_1^{l, 2}) & \ldots & f(z_1^{l, M}) \\
-		f(z_2^{l, 1}) & f(z_2^{l, 2}) & \ldots & f(z_2^{l, M}) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		f(z_{n^l}^{l, 1}) & f(z_{n^l}^{l, 2}) & \ldots & f(z_{n^l}^{l, M})
-	}
-\right].
-$$
+
+![Al](Al.png)
+
+Figure 5
+
 Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
 $$
 L(\textbf{Y}, \hat{\textbf{Y}}) = 
