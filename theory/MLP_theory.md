@@ -14,7 +14,7 @@ The forward propagation algorithm propagates inputs through the layers of the ne
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
-![neural_network_pic](../resources/drawings/neural_network_pic.png)
+![neural_network_pic](neural_network_pic.png)
 
 Figure 1: Example neural network
 
@@ -517,9 +517,9 @@ In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}
 $$
 \frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
 $$
-where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to dedetermine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
+where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to determine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
 
-![total_differential_intuition](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\total_differential_intuition.png) 
+![total_differential_intuition](total_differential_intuition.png) 
 
 When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
 
@@ -1309,9 +1309,9 @@ $$
 
 # Implementation
 
-The following diagram shows how we will implement a the neural network with its individual components:
+The following diagram shows the flow of data through the neural network:
 
-![implementation](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\implementation.png)
+![data_flow](data_flow.png)
 
 Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
 
