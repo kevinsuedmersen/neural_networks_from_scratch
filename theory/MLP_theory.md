@@ -186,80 +186,27 @@ Assuming that we have $M$ training examples in our current batch and $n^0$ input
 
 ![X_and_A0](X_and_A0.png)
 
-Figure 2: A 3 dimensional data storage
-
-For notational ease, the following notation should convey the same 3 dimensional object like in Figure 2 
-$$
-\left[
-\matrix{
-	x_1^m \\
-	x_2^m\\
-	\vdots\\
-	x_{n^0}^m
-}
-\right] = 
-\left[ 
-	\matrix{
-	a_1^{0, m}\\
-	a_2^{0, m}\\
-	\vdots\\
-	a_{n^0}^{0, m}
-}
-\right]
-\text{ for }  m = 1, 2, ..., M
-,
-$$
-so that we can use both notations interchangeably. 
+Figure 2 
 
 Next, equation (9) becomes
 $$
 \textbf{Z}^l = \textbf{W}^l \textbf{A}^{l-1} + \textbf{B}^l,
 $$
 or written out explicitly
-$$
-\left[
-	\matrix{
-		z_1^{l, 1} & z_1^{l, 2} & \ldots & z_1^{l, M} \\
-		z_2^{l, 1} & z_2^{l, 2} & \ldots & z_2^{l, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		z_{n^l}^{l, 1} & z_{n^l}^{l, 2} & \ldots & z_{n^l}^{l, M}
-	}
-\right] =
-\left[
-	\matrix{
-		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
-		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
-	}
-\right]
-\left[ 
-	\matrix{
-		a_1^{l-1, 1} & a_1^{l-1, 2} & \ldots & a_1^{l-1, M} \\
-		a_2^{l-1, 1} & a_2^{l-1, 2} & \ldots & a_2^{l-1, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a_{n^{l-1}}^{l-1, 1} & a_{n^{l-1}}^{l-1, 2} & \ldots & a_{n^{l-1}}^{l-1, M}
-	}
-\right] +
-\left[
-	\matrix{
-		b_1^{l} & b_1^{l} & \ldots & b_1^{l} \\
-		b_2^{l} & b_2^{l} & \ldots & b_2^{l} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		b_{n^l}^{l} & b_{n^l}^{l} & \ldots & b_{n^l}^{l}
-	}
-\right],
-$$
 
-where $\textbf{Z}^l$ simply contains $M$ columns (one for each $\textbf{z}^{l, m}$), $\textbf{A}^{l-1}$ contains $M$ columns (one for each $\textbf{a}^{l-1}$), where $\textbf{W}^l$ remains unchanged and where $\textbf{B}^l$ needs to be repeated or *broadcasted* horizontally $M$ times to make its addition operation conform. The dimensions of each component are as follows
+![Zl](Zl.png)
 
-- $\textbf{Z}^l \rightarrow n^l \times M$
-- $\textbf{W}^l \rightarrow n^l \times n^{l-1}$
-- $\textbf{A}^{l-1} \rightarrow n^{l-1} \times M$
-- $\textbf{W}^l \textbf{A}^{l-1} \rightarrow n^{l} \times M$
-- $\textbf{B}^l \rightarrow n^{l} \times M$
+Figure 4
 
-so the dimensions are conform. 
+where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to remain compatible. The dimensions of each component are as follows
+
+- $\textbf{Z}^l: M \times n^l \times 1$
+- $\textbf{W}^l: M \times n^l \times n^{l-1}$
+- $\textbf{A}^{l-1}: M \times n^{l-1} \times 1$
+- $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently
+- $\textbf{B}^l: M \times n^{l} \times 1$
+
+so the dimensions are conform. Note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $N$ dimensional arrays where $N>2$, and because it is easier to draw that way. 
 
 Then, the activation function is applied as before and independent of training example
 $$
