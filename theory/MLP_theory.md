@@ -182,7 +182,7 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each depth dimension belongs to a different training example: 
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each depth dimension belongs to a different training example: 
 
 ![X_and_A0](X_and_A0.png)
 
@@ -206,7 +206,7 @@ where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have b
 - $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently
 - $\textbf{B}^l: M \times n^{l} \times 1$
 
-so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $N$ dimensional arrays where $N>2$, and because it is easier to draw that way. 
+so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $ND$ arrays where $N>2$, and because it is easier to draw that way. 
 
 Then, like before, the activation function is applied independently to each training example
 $$
@@ -219,26 +219,22 @@ which, in case of the sigmoid function is equal to
 Figure 5
 
 Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
-$$
-L(\textbf{Y}, \hat{\textbf{Y}}) = 
-\left[
-	\matrix{
-		L(\textbf{y}^1, \hat{\textbf{y}}^1) & L(\textbf{y}^2, \hat{\textbf{y}}^2) & \ldots & L(\textbf{y}^M, \hat{\textbf{y}}^M)
-	\matrix}
-\right],
-$$
 
-where each element $m = 1, 2, ..., M$ of the above loss vector represents the loss we have already defined in equation (15), i.e.
+![L](L.png)
+
+Figure 6
+
+where each element of the above 3D loss array represents the loss we have already defined in equation (15), i.e.
 $$
 L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m).
 $$
 
-Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training in the current batch xamples
+Having computed the loss array $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training in the current batch
 $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$​​​ training examples. When computing the cost for $M$​​​ training examples, it makes sense to choose the average as an aggregation, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for over-fitting.
 
 # Backward Propagation
 
