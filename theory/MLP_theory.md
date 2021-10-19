@@ -182,7 +182,13 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3D matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each slice along the first dimension looks as follows
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each depth dimension belongs to a different training example: 
+
+![X_and_A0](X_and_A0.png)
+
+Figure 2: A 3 dimensional data storage
+
+For notational ease, the following notation should convey the same 3 dimensional object like in Figure 2 
 $$
 \left[
 \matrix{
@@ -203,27 +209,7 @@ $$
 \text{ for }  m = 1, 2, ..., M
 ,
 $$
-
-which we could also visualize as the following 3D object, where we chose to represent the the batch dimension as the depth dimension. 
-
-TODO: Visualize the above.
-
-Often enough we will encounter datasets where each row represents a different example and each feature represents a different column. In those cases, we just need to add a third dimension to the dataset as follows:
-
- ```python
- X = np.loadtxt("/path/to/2D_data.txt")  # X.shape == (n_samples, n_features)
- X = X[..., np.newaxis]  # X.shape == (n_samples, n_features, 1)
- ```
-
- 
-
-
-
-
-
-
-
-
+so that we can use both notations interchangeably. 
 
 Next, equation (9) becomes
 $$
