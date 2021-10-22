@@ -778,18 +778,11 @@ where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. In its most g
 
 #### Example
 
-Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (36) and then stack the error of each training example in a a separate element of the dep. Having done so, we will end up with the following expression
-$$
-\boldsymbol{\Delta}^L = - \left[
-	\matrix{
-		\left( y_1^1 - a^{L, 1}_1 \right) & \left( y_1^2 - a^{L, 2}_1 \right) & ... & \left( y_1^M - a^{L, M}_1 \right) \\
-		\left( y_2^1 - a^{L, 1}_2 \right) & \left( y_2^2 - a^{L, 2}_2 \right) & ... & \left( y_2^M - a^{L, M}_2 \right) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right) & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right) & ... & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
-	}
-\right]
-= \textbf{Y} - \textbf{A}^L,
-$$
+Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
+
+![Delta_L_example](Delta_L_example.png)
+
+Figure 9
 
 which is easily computed, because we are given $\textbf{Y}$ (since we are talking about a supervised learning problem here) and we already computed $\textbf{A}^L$ during the forward propagation. 
 
