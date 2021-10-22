@@ -182,11 +182,11 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each depth dimension belongs to a different training example: 
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each element in the depth dimension belongs to a different training example: 
 
 ![X_and_A0](X_and_A0.png)
 
-Figure 2 
+Figure 2
 
 Next, equation (9) becomes
 $$
@@ -198,12 +198,12 @@ or written out explicitly
 
 Figure 4
 
-where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to remain compatible. The dimensions of each component are as follows
+where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to make the whole operation compatible. The dimensions of each component are as follows
 
 - $\textbf{Z}^l: M \times n^l \times 1$
 - $\textbf{W}^l: M \times n^l \times n^{l-1}$
 - $\textbf{A}^{l-1}: M \times n^{l-1} \times 1$
-- $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently
+- $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently and in parallel
 - $\textbf{B}^l: M \times n^{l} \times 1$
 
 so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $ND$ arrays where $N>2$, and because it is easier to draw that way. 
@@ -229,7 +229,7 @@ $$
 L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m).
 $$
 
-Having computed the loss array $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training in the current batch
+Having computed the loss array $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training examples in the current batch
 $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
@@ -435,7 +435,9 @@ $$
 $$
 where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to determine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
 
-![total_differential_intuition](total_differential_intuition.png) 
+![total_differential_intuition](total_differential_intuition.png)
+
+Figure 7 
 
 When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
 
@@ -766,33 +768,17 @@ $$
     }
 \right]
 $$
-Next, we will simply stack the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion, so that we end up with the following expression
-$$
-\boldsymbol{\Delta}^L
-\coloneqq
-(\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T
-= \left[
-	\matrix{
-    	\frac{\partial a^L_1}{\partial z^L_1} & \frac{\partial a^L_2}{\partial z^L_1} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
-        \frac{\partial a^L_1}{\partial z^L_2} & \frac{\partial a^L_2}{\partial z^L_2} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^L_1}{\partial z^L_{n^L}} & \frac{\partial a^L_2}{\partial z^L_{n^L}} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-    }
-\right]
-\left[
-	\matrix{
-    \frac{\partial L}{\partial a^{L, 1}_1} & \frac{\partial L}{\partial a^{L, 2}_1} & ... & \frac{\partial L}{\partial a^{L, M}_1} \\ 
-    \frac{\partial L}{\partial a^{L, 1}_2} & \frac{\partial L}{\partial a^{L, 2}_2} & ... & \frac{\partial L}{\partial a^{L, M}_2} \\ 
-    \vdots & \vdots & \ddots \\ 
-    \frac{\partial L}{\partial a^{L, 1}_{n^L}} & \frac{\partial L}{\partial a^{L, 2}_{n^L}} & ... & \frac{\partial L}{\partial a^{L, M}_{n^L}} 
-    }
-\right],
-$$
-where $\boldsymbol{\Delta}^L$ is an $n^L \times M$ matrix. In its most general form, the above equation represents **BP1.2**.
+Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to represent as the depth dimension, i.e.
+
+![Delta_L](Delta_L.png)
+
+Figure 8
+
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
-Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (36) and then stack the error of each training example in a different column. Having done so, we will end up with the following expression
+Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (36) and then stack the error of each training example in a a separate element of the dep. Having done so, we will end up with the following expression
 $$
 \boldsymbol{\Delta}^L = - \left[
 	\matrix{
