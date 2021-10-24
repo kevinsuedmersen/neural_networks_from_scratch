@@ -747,7 +747,7 @@ Recall from BP1.1 that
 $$
 (\boldsymbol{\delta}^L)^T = \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
-In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will transpose both sides of the above equation, so that the result of BP1.2 is an expression where each column represents a different training example, i.e.
+In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will first transpose both sides of the above equation to
 $$
 \boldsymbol{\delta}^L
 = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{a}^L))^T
@@ -768,13 +768,13 @@ $$
     }
 \right]
 $$
-Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to represent as the depth dimension, i.e.
+Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
 
 ![Delta_L](Delta_L.png)
 
 Figure 8
 
-where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. In its most general form, the above equation represents **BP1.2**.
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
@@ -792,52 +792,18 @@ Recall from BP2.1 that
 $$
 (\boldsymbol{\delta}^{l-1})^T = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-Again, we want to end up with an expression, where each column represents a different training example, so we will transpose both sides of the above equation giving us
+Again, we will first transpose both sides of the above equation giving us
 $$
 \boldsymbol{\delta}^{l-1} 
 = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l
 $$
-Now, we want to stack each $\boldsymbol{\delta}^{l, m}$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion where each column represents a different training example. Doing so will give us
-$$
-\boldsymbol{\Delta}^{l-1}
-= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l,
-$$
-which can be written out explicitly as
-$$
-\left[
-	\matrix{
-		\delta^{{l-1}, 1}_1 & \delta^{{l-1}, 2}_1 & ... & \delta^{{l-1}, M}_1 \\
-		\delta^{{l-1}, 1}_2 & \delta^{{l-1}, 2}_2 & ... & \delta^{{l-1}, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{{l-1}, 1}_{n^{l-1}} & \delta^{{l-1}, 2}_{n^{l-1}} & ... & \delta^{{l-1}, M}_{n^{l-1}}
-	}
-\right] = 
-\left[
-	\matrix{
-		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} \\
-		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_{n^{l-1}}} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} 
-	}
-\right]
-\left[
-	\matrix{
-		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
-		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
-	}
-\right]
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right].
-$$
-Notice that, $(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T$ is a $n^{l-1} \times n^{l-1}$ matrix, $(\textbf{W}^l)^T$ is a $n^{l-1} \times n^l$ matrix and $\boldsymbol{\Delta}^l$ is a $n^l \times M$ matrix and therefore, $\boldsymbol{\Delta}^{l-1}$ is a $n^{l-1} \times M$ matrix, where each column represents the error of a different training example - just like we wanted. In its most general form, equation (66) represents **BP2.2**. 
+As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
+
+![Delta_l_1.png](Delta_l_1.png)
+
+Figure 10
+
+where $\Delta^{l-1}$ is a $M \times n^{l-1} \times 1$ dimensional array. Again, the matrix-matrix-vector multiplication for each training example is done independently. In its most general form, Figure 10 represents **BP2.2**. 
 
 #### Example
 
