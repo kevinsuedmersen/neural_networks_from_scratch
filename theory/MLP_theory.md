@@ -862,7 +862,7 @@ Using the same notation as before, we can represent the above equation such that
 
 Figure 12
 
-which can be multiplied out as
+where $np.mean$ refers to the `mean` function of `numpy` . Figure 12 can be multiplied out as
 
  ![dC_dW_l_2](dC_dW_l_2.png)
 
@@ -924,17 +924,17 @@ where again, we take the average across all training examples for each element o
 To summarize, in our backpropagation module, we want to implement the following 4 equations for an arbitrary network topology and activation functions:
 
 - BP1.2: 
-  - $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
-  - Shape: $n^L \times M$ 
+  - $\boldsymbol{\Delta}^L$ from figure 8
+  - Shape: $M \times n^L \times 1$ 
 - BP2.2: 
-  - $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
-  - Shape: $n^{l-1} \times M$ 
+  - $\boldsymbol{\Delta}^{l-1}$ from figure 10
+  - Shape: $M \times n^{l-1} \times 1$ 
 - BP3.2: 
-  - $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
-  - Shape: $n^l \times n^{l-1}$ 
+  - $\frac{\partial C}{\partial \textbf{W}^l}$ from figure 12
+  - Shape: $M \times n^l \times n^{l-1}$ 
 - BP4.2: 
-  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
-  - Shape: $n^l \times 1$ 
+  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ from figure 14
+  - Shape: $M \times n^l \times 1$ 
 
 # Gradient Descent
 
