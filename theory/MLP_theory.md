@@ -14,7 +14,7 @@ The forward propagation algorithm propagates inputs through the layers of the ne
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
-![neural_network_pic](../resources/drawings/neural_network_pic.png)
+![neural_network_pic](neural_network_pic.png)
 
 Figure 1: Example neural network
 
@@ -182,126 +182,59 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-We will conclude this section by showing how to compute the complete forward propagation for a batch of training examples at once. It starts by defining your input data matrix as follows
-$$
-\textbf{X} = \textbf{A}^0,
-$$
-where the feature vectors of each training examples are stacked horizontally next to each other in a column-wise fashion. Assuming that we have $M$ training examples in our current batch and $n^0$ input features, equation (16) can be written out explicitly as
-$$
-\left[
-\matrix{
-	x_1^1 & x_1^2 & \ldots & x_1^M \\
-	x_2^1 & x_2^2 & \ldots & x_2^M \\
-	\vdots & \vdots & \ddots & \vdots \\
-	x_{n^0}^1 & x_{n^0}^2 & \ldots & x_{n^0}^M
-}
-\right] = 
-\left[ 
-	\matrix{
-	a_1^{0, 1} & a_1^{0, 2} & \ldots & a_1^{0, M} \\
-	a_2^{0, 1} & a_2^{0, 2} & \ldots & a_2^{0, M} \\
-	\vdots & \vdots & \ddots & \vdots \\
-	a_{n^0}^{0, 1} & a_{n^0}^{0, 2} & \ldots & a_{n^0}^{0, M}
-}
-\right],
-$$
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each element in the depth dimension belongs to a different training example: 
 
-where $x_i^m = a_i^{0, m}$ both refer to the value of the $i$-th feature of the $m$-th training example in layer $0$, i.e. the input layer. 
+![X_and_A0](X_and_A0.png)
+
+Figure 2
 
 Next, equation (9) becomes
 $$
 \textbf{Z}^l = \textbf{W}^l \textbf{A}^{l-1} + \textbf{B}^l,
 $$
 or written out explicitly
-$$
-\left[
-	\matrix{
-		z_1^{l, 1} & z_1^{l, 2} & \ldots & z_1^{l, M} \\
-		z_2^{l, 1} & z_2^{l, 2} & \ldots & z_2^{l, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		z_{n^l}^{l, 1} & z_{n^l}^{l, 2} & \ldots & z_{n^l}^{l, M}
-	}
-\right] =
-\left[
-	\matrix{
-		w_{1, 1}^l & w_{1, 2}^l & \ldots & w_{1, n^{l-1}}^l \\
-		w_{2, 1}^l & w_{2, 2}^l & \ldots & w_{2, n^{l-1}}^l \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w_{n^l, 1}^l & w_{n^l, 2}^l & \ldots & w_{n^l, n^{l-1}}^l 
-	}
-\right]
-\left[ 
-	\matrix{
-		a_1^{l-1, 1} & a_1^{l-1, 2} & \ldots & a_1^{l-1, M} \\
-		a_2^{l-1, 1} & a_2^{l-1, 2} & \ldots & a_2^{l-1, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a_{n^{l-1}}^{l-1, 1} & a_{n^{l-1}}^{l-1, 2} & \ldots & a_{n^{l-1}}^{l-1, M}
-	}
-\right] +
-\left[
-	\matrix{
-		b_1^{l} & b_1^{l} & \ldots & b_1^{l} \\
-		b_2^{l} & b_2^{l} & \ldots & b_2^{l} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		b_{n^l}^{l} & b_{n^l}^{l} & \ldots & b_{n^l}^{l}
-	}
-\right],
-$$
 
-where $\textbf{Z}^l$ simply contains $M$ columns (one for each $\textbf{z}^{l, m}$), $\textbf{A}^{l-1}$ contains $M$ columns (one for each $\textbf{a}^{l-1}$), where $\textbf{W}^l$ remains unchanged and where $\textbf{B}^l$ needs to be repeated or *broadcasted* horizontally $M$ times to make its addition operation conform. The dimensions of each component are as follows
+![Zl](Zl.png)
 
-- $\textbf{Z}^l \rightarrow n^l \times M$
-- $\textbf{W}^l \rightarrow n^l \times n^{l-1}$
-- $\textbf{A}^{l-1} \rightarrow n^{l-1} \times M$
-- $\textbf{W}^l \textbf{A}^{l-1} \rightarrow n^{l} \times M$
-- $\textbf{B}^l \rightarrow n^{l} \times M$
+Figure 4
 
-so the dimensions are conform. 
+where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to make the whole operation compatible. The dimensions of each component are as follows
 
-Then, the activation function is applied as before and independent of training example
+- $\textbf{Z}^l: M \times n^l \times 1$
+- $\textbf{W}^l: M \times n^l \times n^{l-1}$
+- $\textbf{A}^{l-1}: M \times n^{l-1} \times 1$
+- $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently and in parallel
+- $\textbf{B}^l: M \times n^{l} \times 1$
+
+so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $ND$ arrays where $N>2$, and because it is easier to draw that way. 
+
+Then, like before, the activation function is applied independently to each training example
 $$
 \textbf{A}^l = f(\textbf{Z}^l),
 $$
 which, in case of the sigmoid function is equal to
-$$
-\left[ 
-	\matrix{
-		a_1^{l, 1} & a_1^{l, 2} & \ldots & a_1^{l, M} \\
-		a_2^{l, 1} & a_2^{l, 2} & \ldots & a_2^{l, M} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a_{n^{l}}^{l, 1} & a_{n^{l}}^{l, 2} & \ldots & a_{n^{l}}^{l, M}
-	}
-\right] =
-\left[
-	\matrix{
-		f(z_1^{l, 1}) & f(z_1^{l, 2}) & \ldots & f(z_1^{l, M}) \\
-		f(z_2^{l, 1}) & f(z_2^{l, 2}) & \ldots & f(z_2^{l, M}) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		f(z_{n^l}^{l, 1}) & f(z_{n^l}^{l, 2}) & \ldots & f(z_{n^l}^{l, M})
-	}
-\right].
-$$
-Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
-$$
-L(\textbf{Y}, \hat{\textbf{Y}}) = 
-\left[
-	\matrix{
-		L(\textbf{y}^1, \hat{\textbf{y}}^1) & L(\textbf{y}^2, \hat{\textbf{y}}^2) & \ldots & L(\textbf{y}^M, \hat{\textbf{y}}^M)
-	\matrix}
-\right],
-$$
 
-where each element $m = 1, 2, ..., M$ of the above loss vector represents the loss we have already defined in equation (15), i.e.
+![Al](Al.png)
+
+Figure 5
+
+Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
+
+![L](L.png)
+
+Figure 6
+
+where each element of the above 3D loss array represents the loss we have already defined in equation (15), i.e.
 $$
 L(\textbf{y}^m, \hat{\textbf{y}}^m) = -\sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m).
 $$
 
-Having computed the loss vector $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training in the current batch xamples
+Having computed the loss array $L(\textbf{Y}, \hat{\textbf{Y}})$, we can now aggregate over all $M$ training examples to compute a certain *cost*, which is just the average over all training examples in the current batch
 $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$​​​ training examples. When computing the cost for $M$​​​ training examples, it makes sense to choose the average as an aggregation, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for overfitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for over-fitting.
 
 # Backward Propagation
 
@@ -500,9 +433,11 @@ In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}
 $$
 \frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
 $$
-where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to dedetermine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
+where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to determine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
 
-![total_differential_intuition](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\total_differential_intuition.png) 
+![total_differential_intuition](total_differential_intuition.png)
+
+Figure 7 
 
 When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
 
@@ -812,7 +747,7 @@ Recall from BP1.1 that
 $$
 (\boldsymbol{\delta}^L)^T = \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L).
 $$
-In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will transpose both sides of the above equation, so that the result of BP1.2 is an expression where each column represents a different training example, i.e.
+In order to remain conform with the notation we used when describing the forward propagation for `batch_size` training examples at once, we will first transpose both sides of the above equation to
 $$
 \boldsymbol{\delta}^L
 = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{a}^L))^T
@@ -833,44 +768,21 @@ $$
     }
 \right]
 $$
-Next, we will simply stack the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion, so that we end up with the following expression
-$$
-\boldsymbol{\Delta}^L
-\coloneqq
-(\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T
-= \left[
-	\matrix{
-    	\frac{\partial a^L_1}{\partial z^L_1} & \frac{\partial a^L_2}{\partial z^L_1} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_1} \\
-        \frac{\partial a^L_1}{\partial z^L_2} & \frac{\partial a^L_2}{\partial z^L_2} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_2} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^L_1}{\partial z^L_{n^L}} & \frac{\partial a^L_2}{\partial z^L_{n^L}} & ... & \frac{\partial a^L_{n^L}}{\partial z^L_{n^L}}
-    }
-\right]
-\left[
-	\matrix{
-    \frac{\partial L}{\partial a^{L, 1}_1} & \frac{\partial L}{\partial a^{L, 2}_1} & ... & \frac{\partial L}{\partial a^{L, M}_1} \\ 
-    \frac{\partial L}{\partial a^{L, 1}_2} & \frac{\partial L}{\partial a^{L, 2}_2} & ... & \frac{\partial L}{\partial a^{L, M}_2} \\ 
-    \vdots & \vdots & \ddots \\ 
-    \frac{\partial L}{\partial a^{L, 1}_{n^L}} & \frac{\partial L}{\partial a^{L, 2}_{n^L}} & ... & \frac{\partial L}{\partial a^{L, M}_{n^L}} 
-    }
-\right],
-$$
-where $\boldsymbol{\Delta}^L$ is an $n^L \times M$ matrix. In its most general form, the above equation represents **BP1.2**.
+Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
+
+![Delta_L](Delta_L.png)
+
+Figure 8
+
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
-Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (36) and then stack the error of each training example in a different column. Having done so, we will end up with the following expression
-$$
-\boldsymbol{\Delta}^L = - \left[
-	\matrix{
-		\left( y_1^1 - a^{L, 1}_1 \right) & \left( y_1^2 - a^{L, 2}_1 \right) & ... & \left( y_1^M - a^{L, M}_1 \right) \\
-		\left( y_2^1 - a^{L, 1}_2 \right) & \left( y_2^2 - a^{L, 2}_2 \right) & ... & \left( y_2^M - a^{L, M}_2 \right) \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\left( y_{n^L}^1 - a^{L, 1}_{n^L} \right) & \left( y_{n^L}^2 - a^{L, 2}_{n^L} \right) & ... & \left( y_{n^L}^M - a^{L, M}_{n^L} \right)
-	}
-\right]
-= \textbf{Y} - \textbf{A}^L,
-$$
+Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
+
+![Delta_L_example](Delta_L_example.png)
+
+Figure 9
 
 which is easily computed, because we are given $\textbf{Y}$ (since we are talking about a supervised learning problem here) and we already computed $\textbf{A}^L$ during the forward propagation. 
 
@@ -880,85 +792,26 @@ Recall from BP2.1 that
 $$
 (\boldsymbol{\delta}^{l-1})^T = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-Again, we want to end up with an expression, where each column represents a different training example, so we will transpose both sides of the above equation giving us
+Again, we will first transpose both sides of the above equation giving us
 $$
 \boldsymbol{\delta}^{l-1} 
 = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l
 $$
-Now, we want to stack each $\boldsymbol{\delta}^{l, m}$ for all $m = 1, 2, ..., M$ training examples in a column-wise fashion where each column represents a different training example. Doing so will give us
-$$
-\boldsymbol{\Delta}^{l-1}
-= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l,
-$$
-which can be written out explicitly as
-$$
-\left[
-	\matrix{
-		\delta^{{l-1}, 1}_1 & \delta^{{l-1}, 2}_1 & ... & \delta^{{l-1}, M}_1 \\
-		\delta^{{l-1}, 1}_2 & \delta^{{l-1}, 2}_2 & ... & \delta^{{l-1}, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{{l-1}, 1}_{n^{l-1}} & \delta^{{l-1}, 2}_{n^{l-1}} & ... & \delta^{{l-1}, M}_{n^{l-1}}
-	}
-\right] = 
-\left[
-	\matrix{
-		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_1} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} \\
-		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} & \frac{\partial a^{l-1}_2}{\partial z^{l-1}_{n^{l-1}}} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}} 
-	}
-\right]
-\left[
-	\matrix{
-		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
-		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
-	}
-\right]
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right].
-$$
-Notice that, $(\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T$ is a $n^{l-1} \times n^{l-1}$ matrix, $(\textbf{W}^l)^T$ is a $n^{l-1} \times n^l$ matrix and $\boldsymbol{\Delta}^l$ is a $n^l \times M$ matrix and therefore, $\boldsymbol{\Delta}^{l-1}$ is a $n^{l-1} \times M$ matrix, where each column represents the error of a different training example - just like we wanted. In its most general form, equation (66) represents **BP2.2**. 
+As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
+
+![Delta_l_1.png](Delta_l_1.png)
+
+Figure 10
+
+where $\Delta^{l-1}$ is a $M \times n^{l-1} \times 1$ dimensional array. Again, the matrix-matrix-vector multiplication for each training example is done independently. In its most general form, Figure 10 represents **BP2.2**. 
 
 #### Example
 
-Using the sigmoid activation function in layer $l-1$, (67) can be specified as follows
-$$
-\boldsymbol{\Delta}^{l-1} = 
-\left[
-	\matrix{
-		a^{l-1}_1(1 - a^{l-1}_1) & 0 & ... & 0 \\
-		0 & a^{l-1}_2(1 - a^{l-1}_2) & ... & 0 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
-	}
-\right]
-\left[
-	\matrix{
-		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
-		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
-	}
-\right]
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right].
-$$
+Using the sigmoid activation function in layer $l-1$, figure 10 can be specified as follows
 
+![Delta_l_1_example](Delta_l_1_example.png)
 
+Figure 11
 
 ### BP3.2
 
@@ -985,7 +838,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (69) as follows
+so, using that, we can rewrite (64) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -1003,59 +856,19 @@ $$
 	}
 \right].
 $$
-Working out the above matrix multiplication yields
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M} \sum^M_{m=1} 
-\left[
-	\matrix{
-		\delta^{l, m}_1 a^{l-1, m}_1 & \delta^{l, m}_1 a^{l-1, m}_2 & ... & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\delta^{l, m}_2 a^{l-1, m}_1 & \delta^{l, m}_2 a^{l-1, m}_2 & ... & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, m}_{n^l} a^{l-1, m}_1 & \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
-	}
-\right].
-$$
-Moving the summation inwards gives us 
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M}
-\left[
-	\matrix{
-		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
-	}
-\right],
-$$
-which can be decomposed into the following matrix multiplication
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M}
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-        \delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right]
-\left[
-	\matrix{
-		a^{l-1, 1}_1 & a^{l-1, 1}_2 & ... & a^{l-1, 1}_{n^{l-1}} \\
-		a^{l-1, 2}_1 & a^{l-1, 2}_2 & ... & a^{l-1, 2}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a^{l-1, M}_1 & a^{l-1, M}_2 & ... & a^{l-1, M}_{n^{l-1}}
-	}
-\right],
-$$
-or written more compactly as
-$$
-\frac{\partial C}{\partial \textbf{W}^l} 
-= \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
-$$
-which represents equation **BP3.2**. 
+Using the same notation as before, we can represent the above equation such that each training example belongs to a different element of the depth dimension
+
+![dC_dW_l](dC_dW_l_1.png)
+
+Figure 12
+
+where $np.mean$ refers to the `mean` function of `numpy` . Figure 12 can be multiplied out as
+
+ ![dC_dW_l_2](dC_dW_l_2.png)
+
+Figure 13
+
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
 
 ### BP4.2
 
@@ -1085,7 +898,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (76) and plug (78) back into (76) yielding
+From here on out, it is really straight forward. Transpose both sides of (70) and plug (72) back into the transpose of (70) yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -1096,30 +909,32 @@ $$
         \vdots \\
         \delta^{l, m}_{n^l}
 	}
-\right],
+\right].
 $$
-or written more compactly as
-$$
-\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
-$$
-which represents equation **BP4.2**. 
+Representing (73) such that each training example refers to a separate element of the depth dimension, we will get
+
+![dC_db_l](dC_db_l.png)
+
+Figure 14
+
+where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
 
 ## Summary
 
 To summarize, in our backpropagation module, we want to implement the following 4 equations for an arbitrary network topology and activation functions:
 
 - BP1.2: 
-  - $\boldsymbol{\Delta}^L = (\textbf{J}_{\textbf{a}^L}(\textbf{z}^L))^T \ (\nabla L(\textbf{A}^L))^T$
-  - Shape: $n^L \times M$ 
+  - $\boldsymbol{\Delta}^L$ from figure 8
+  - Shape: $M \times n^L \times 1$ 
 - BP2.2: 
-  - $\boldsymbol{\Delta}^{l-1} = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\Delta}^l$
-  - Shape: $n^{l-1} \times M$ 
+  - $\boldsymbol{\Delta}^{l-1}$ from figure 10
+  - Shape: $M \times n^{l-1} \times 1$ 
 - BP3.2: 
-  - $\frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T$
-  - Shape: $n^l \times n^{l-1}$ 
+  - $\frac{\partial C}{\partial \textbf{W}^l}$ from figure 12
+  - Shape: $M \times n^l \times n^{l-1}$ 
 - BP4.2: 
-  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m}$
-  - Shape: $n^l \times 1$ 
+  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ from figure 14
+  - Shape: $M \times n^l \times 1$ 
 
 # Gradient Descent
 
@@ -1292,9 +1107,9 @@ $$
 
 # Implementation
 
-The following diagram shows how we will implement a the neural network with its individual components:
+The following diagram shows the flow of data through the neural network:
 
-![implementation](C:\Users\kevin\dev_windows\uni\neural_networks_from_scratch\resources\drawings\implementation.png)
+![data_flow](data_flow.png)
 
 Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
 
