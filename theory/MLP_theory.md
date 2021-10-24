@@ -807,36 +807,11 @@ where $\Delta^{l-1}$ is a $M \times n^{l-1} \times 1$ dimensional array. Again, 
 
 #### Example
 
-Using the sigmoid activation function in layer $l-1$, (67) can be specified as follows
-$$
-\boldsymbol{\Delta}^{l-1} = 
-\left[
-	\matrix{
-		a^{l-1}_1(1 - a^{l-1}_1) & 0 & ... & 0 \\
-		0 & a^{l-1}_2(1 - a^{l-1}_2) & ... & 0 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
-	}
-\right]
-\left[
-	\matrix{
-		w^l_{1, 1} & w^l_{2, 1} & ... & w^l_{n^l, 1} \\
-		w^l_{1, 2} & w^l_{2, 2} & ... & w^l_{n^l, 2} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{1, {n^{l-1}}} & w^l_{2, {n^{l-1}}} & ... & w^l_{n^l, {n^{l-1}}} \\
-	}
-\right]
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-		\delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right].
-$$
+Using the sigmoid activation function in layer $l-1$, figure 10 can be specified as follows
 
+![Delta_l_1_example](Delta_l_1_example.png)
 
+Figure 11
 
 ### BP3.2
 
