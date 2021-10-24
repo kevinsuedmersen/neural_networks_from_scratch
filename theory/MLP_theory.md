@@ -898,7 +898,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (76) and plug (78) back into (76) yielding
+From here on out, it is really straight forward. Transpose both sides of (70) and plug (72) back into the transpose of (70) yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -909,13 +909,15 @@ $$
         \vdots \\
         \delta^{l, m}_{n^l}
 	}
-\right],
+\right].
 $$
-or written more compactly as
-$$
-\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = \frac{1}{M} \sum^M_{m=1} \boldsymbol{\delta}^{l, m},
-$$
-which represents equation **BP4.2**. 
+Representing (73) such that each training example refers to a separate element of the depth dimension, we will get
+
+![dC_db_l](dC_db_l.png)
+
+Figure 14
+
+where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
 
 ## Summary
 
