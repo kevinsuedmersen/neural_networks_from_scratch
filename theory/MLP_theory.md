@@ -838,7 +838,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (69) as follows
+so, using that, we can rewrite (64) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -856,59 +856,19 @@ $$
 	}
 \right].
 $$
-Working out the above matrix multiplication yields
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M} \sum^M_{m=1} 
-\left[
-	\matrix{
-		\delta^{l, m}_1 a^{l-1, m}_1 & \delta^{l, m}_1 a^{l-1, m}_2 & ... & \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\delta^{l, m}_2 a^{l-1, m}_1 & \delta^{l, m}_2 a^{l-1, m}_2 & ... & \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\delta^{l, m}_{n^l} a^{l-1, m}_1 & \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
-	}
-\right].
-$$
-Moving the summation inwards gives us 
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M}
-\left[
-	\matrix{
-		\sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_1 a^{l-1, m}_{n^{l-1}} \\
-		\sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_2 a^{l-1, m}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		\sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_1 & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_2 & ... & \sum^M_{m=1} \delta^{l, m}_{n^l} a^{l-1, m}_{n^{l-1}}
-	}
-\right],
-$$
-which can be decomposed into the following matrix multiplication
-$$
-\frac{\partial C}{\partial \textbf{W}^l} = 
-\frac{1}{M}
-\left[
-	\matrix{
-		\delta^{l, 1}_1 & \delta^{l, 2}_1 & ... & \delta^{l, M}_1 \\
-        \delta^{l, 1}_2 & \delta^{l, 2}_2 & ... & \delta^{l, M}_2 \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \delta^{l, 1}_{n^l} & \delta^{l, 2}_{n^l} & ... & \delta^{l, M}_{n^l}
-	}
-\right]
-\left[
-	\matrix{
-		a^{l-1, 1}_1 & a^{l-1, 1}_2 & ... & a^{l-1, 1}_{n^{l-1}} \\
-		a^{l-1, 2}_1 & a^{l-1, 2}_2 & ... & a^{l-1, 2}_{n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		a^{l-1, M}_1 & a^{l-1, M}_2 & ... & a^{l-1, M}_{n^{l-1}}
-	}
-\right],
-$$
-or written more compactly as
-$$
-\frac{\partial C}{\partial \textbf{W}^l} 
-= \frac{1}{M} \boldsymbol{\Delta}^l \left( \textbf{A}^{l-1} \right)^T,
-$$
-which represents equation **BP3.2**. 
+Using the same notation as before, we can represent the above equation such that each training example belongs to a different element of the depth dimension
+
+![dC_dW_l](dC_dW_l_1.png)
+
+Figure 12
+
+which can be multiplied out as
+
+ ![dC_dW_l_2](dC_dW_l_2.png)
+
+Figure 13
+
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
 
 ### BP4.2
 
