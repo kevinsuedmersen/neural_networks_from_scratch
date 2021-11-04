@@ -4,5 +4,5 @@ from abc import ABC
 logger = logging.getLogger(__name__)
 
 
-class Loss(ABC):
+class Optimizer(ABC):
     pass
