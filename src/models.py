@@ -15,7 +15,7 @@ logger = logging.getLogger(__name__)
 
 class Model(ABC):
     @abstractmethod
-    def _forward_prop(self, **kwargs):
+    def _forward_pass(self, **kwargs):
         pass
 
     @abstractmethod
@@ -23,7 +23,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def _backward_prop(self, **kwargs):
+    def _backward_pass(self, **kwargs):
         pass
 
     @abstractmethod
@@ -77,12 +77,12 @@ class MultiLayerPerceptron(Model):
         """Init caches so that their indices correspond to layer indices, starting at layer 0 and ending at layer L"""
         return [None for _ in range(self.n_layers)]
 
-    def _forward_prop(
+    def _forward_pass(
             self,
             x_batch: np.ndarray((BatchSize, ...)),
             y_batch: np.ndarray((BatchSize, NNeuronsOut))
     ):
-        """Propagate activations from layer 0 to layer L and return predictions"""
+        """Propagate activations from layer 0 to layer L"""
         # Init forward prop: Preprocess the raw input data
         self.activations[0] = self.layers[0].init_activations(x_batch)
 
@@ -102,7 +102,7 @@ class MultiLayerPerceptron(Model):
         self.costs.append(cost)
         logger.info(f"Cost after {batch_idx + 1} batches: {cost:.3f}")
 
-    def _backward_prop(
+    def _backward_pass(
             self,
             ytrue_batch: np.ndarray((BatchSize, NNeuronsOut)),
             ypred_batch: np.ndarray((BatchSize, NNeuronsOut))
