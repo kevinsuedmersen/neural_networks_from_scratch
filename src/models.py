@@ -8,7 +8,7 @@ from src.layers import DenseLayer
 from src.losses import Loss
 from src.metrics import Metric
 from src.optimizers import Optimizer
-from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsOut
+from src.types import BatchSize, NNeuronsCurr, NNeuronsPrev, NNeuronsOut
 
 logger = logging.getLogger(__name__)
 
@@ -63,35 +63,33 @@ class MultiLayerPerceptron(Model):
         :param optimizer:
         """
         self.layers = layers
+        self.n_layers = len(layers)
         self.loss = loss
         self.metrics = metrics
         self.optimizer = optimizer
 
-        # Init caches so that their indices correspond to layer indices
-        self.z_cache: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeurons], 1))] = []
-        self.a_cache: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeurons], 1))] = []
-        self.error_cache: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeurons], 1))] = [None]
+        self.weighted_inputs: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
+        self.activations: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
+        self.errors: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
         self.costs: List[float] = []
+
+    def _init_cache(self) -> List[None]:
+        """Init caches so that their indices correspond to layer indices, starting at layer 0 and ending at layer L"""
+        return [None for _ in range(self.n_layers)]
 
     def _forward_prop(
             self,
             x_batch: np.ndarray((BatchSize, ...)),
             y_batch: np.ndarray((BatchSize, NNeuronsOut))
-    ) -> np.ndarray((BatchSize, NNeuronsOut)):
+    ):
         """Propagate activations from layer 0 to layer L and return predictions"""
-        # Init forward prop
-        a_prev = x_batch.copy()
+        # Init forward prop: Preprocess the raw input data
+        self.activations[0] = self.layers[0].init_activations(x_batch)
 
-        # Forward propagate the activations from layer 0 to layer L
-        a = None
-        for layer in self.layers:
-            z = layer.forward_prop(a_prev)
-            self.z_cache.append(z)
-            a = layer.activate(z)
-            self.a_cache.append(a)
-            a_prev = a.copy()
-
-        return a
+        # Forward propagate the activations from layer 1 to layer L
+        for l in range(1, self.n_layers):
+            self.weighted_inputs[l] = self.layers[l].forward_prop(self.activations[l - 1])
+            self.activations[l] = self.layers[l].activate(self.weighted_inputs[l])
 
     def _compute_cost(
             self,
@@ -99,7 +97,7 @@ class MultiLayerPerceptron(Model):
             ypred_batch: np.ndarray((BatchSize, NNeuronsOut)),
             batch_idx: int
     ):
-        losses = self.loss(ytrue_batch, ypred_batch)
+        losses = self.loss.compute_loss(ytrue_batch, ypred_batch)
         cost = self.loss.compute_cost(losses)
         self.costs.append(cost)
         logger.info(f"Cost after {batch_idx + 1} batches: {cost:.3f}")
@@ -110,15 +108,12 @@ class MultiLayerPerceptron(Model):
             ypred_batch: np.ndarray((BatchSize, NNeuronsOut))
     ):
         """Propagate the error backward from layer L to layer 1"""
-        # Init backprop: Compute error at layer L
-        error_curr = self.loss.init_error(self.a_cache[-1], self.z_cache[-1])  # Error at layer L
-        self.error_cache.append(error_curr)  # Insert after the `None`
+        # Init backprop: Compute error at layer L, the output layer
+        self.errors[-1] = self.loss.init_error(self.activations[-1], self.weighted_inputs[-1])
 
         # Backprop the error from layer L-1 to layer 1
-        for layer in reversed(self.layers[1:-1]):
-            error_prev = self.layer.backward_prop(error_curr, a_prev, z_prev)
-            self.error_cache.insert(1, error_prev)  # Insert before the `None`
-            error_curr = error_prev.copy()
+        for l in range(self.n_layers - 1, 0, -1):
+            self.errors[l] = self.layers[l].backward_prop(self.errors[l+1], self.activations[l], self.weighted_inputs[l])
 
     def _update_params(self):
         pass
