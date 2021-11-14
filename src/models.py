@@ -1,14 +1,14 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Union
+from typing import List, Union, Tuple
 
-import numpy as np
+import numpy.typing as npt
 
 from src.layers import DenseLayer
 from src.losses import Loss
 from src.metrics import Metric
 from src.optimizers import Optimizer
-from src.types import BatchSize, NNeuronsCurr, NNeuronsPrev, NNeuronsOut
+from src.types import BatchSize, NNeurons, NNeuronsOut, NFeatures
 
 logger = logging.getLogger(__name__)
 
@@ -68,9 +68,9 @@ class MultiLayerPerceptron(Model):
         self.metrics = metrics
         self.optimizer = optimizer
 
-        self.weighted_inputs: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
-        self.activations: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
-        self.errors: List[np.ndarray((BatchSize, Union[NNeuronsPrev, NNeuronsCurr], 1))] = self._init_cache()
+        self.weighted_inputs: List[Union[npt.NDArray[Tuple[BatchSize, NNeurons, 1]], None]] = self._init_cache()
+        self.activations: List[Union[npt.NDArray[Tuple[BatchSize, NNeurons, 1]], None]] = self._init_cache()
+        self.errors: List[Union[npt.NDArray[Tuple[BatchSize, NNeurons, 1]], None]] = self._init_cache()
         self.costs: List[float] = []
 
     def _init_cache(self) -> List[None]:
@@ -79,8 +79,8 @@ class MultiLayerPerceptron(Model):
 
     def _forward_pass(
             self,
-            x_batch: np.ndarray((BatchSize, ...)),
-            y_batch: np.ndarray((BatchSize, NNeuronsOut))
+            x_batch: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            y_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ):
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop: Preprocess the raw input data
@@ -93,8 +93,8 @@ class MultiLayerPerceptron(Model):
 
     def _compute_cost(
             self,
-            ytrue_batch: np.ndarray((BatchSize, NNeuronsOut)),
-            ypred_batch: np.ndarray((BatchSize, NNeuronsOut)),
+            ytrue_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
+            ypred_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
             batch_idx: int
     ):
         losses = self.loss.compute_loss(ytrue_batch, ypred_batch)
@@ -104,8 +104,8 @@ class MultiLayerPerceptron(Model):
 
     def _backward_pass(
             self,
-            ytrue_batch: np.ndarray((BatchSize, NNeuronsOut)),
-            ypred_batch: np.ndarray((BatchSize, NNeuronsOut))
+            ytrue_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
+            ypred_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ):
         """Propagate the error backward from layer L to layer 1"""
         # Init backprop: Compute error at layer L, the output layer
