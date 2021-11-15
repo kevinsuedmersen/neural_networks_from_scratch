@@ -1,6 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import List, Union, Tuple, Any
+from typing import List, Union, Tuple, Any, Iterable
 
 import numpy.typing as npt
 
@@ -31,19 +31,20 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def _batch_generator(self, **kwargs) -> Tuple[npt.NDArray[Tuple[BatchSize, NFeatures]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]]:
+    def train(
+            self,
+            train_data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]],
+            val_data_gen: Iterable,
+            **kwargs
+    ):
         pass
 
     @abstractmethod
-    def train(self, **kwargs):
+    def predict(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
         pass
 
     @abstractmethod
-    def predict(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def evaluate(self, **kwargs):
+    def evaluate(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
         pass
 
 
@@ -118,17 +119,16 @@ class MultiLayerPerceptron(Model):
     def _update_params(self):
         pass
 
-    def _batch_generator(self) -> Tuple[
-            npt.NDArray[Tuple[BatchSize, NFeatures, 1]],
-            npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]
-    ]:
+    def train(
+            self,
+            train_data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]],
+            val_data_gen: Iterable,
+            **kwargs
+    ):
         pass
 
-    def train(self):
+    def predict(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
         pass
 
-    def predict(self):
-        pass
-
-    def evaluate(self):
+    def evaluate(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
         pass
