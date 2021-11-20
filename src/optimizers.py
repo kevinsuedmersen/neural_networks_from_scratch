@@ -6,3 +6,7 @@ logger = logging.getLogger(__name__)
 
 class Optimizer(ABC):
     pass
+
+
+class StochasticGradientDescent(Optimizer):
+    pass

@@ -1,11 +1,10 @@
 import logging
+from abc import ABC, abstractmethod
 from typing import Tuple
 
-import numpy as np
 import numpy.typing as npt
-from abc import ABC, abstractmethod
 
-from src.types import BatchSize, NFeatures, NNeuronsOut
+from src.types import BatchSize, NNeuronsOut
 
 logger = logging.getLogger(__name__)
 
@@ -27,6 +26,28 @@ class Loss(ABC):
         pass
 
     @abstractmethod
+    def init_error(
+            self,
+            activations_out: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]],
+            dendritic_potentials_out: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]
+    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]:
+        pass
+
+
+class CategoricalCrossEntropy(Loss):
+    def compute_loss(
+            self,
+            ytrue: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]],
+            ypred: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]
+    ) -> npt.NDArray[Tuple[BatchSize, 1, 1]]:
+        pass
+
+    def compute_cost(
+            self,
+            losses: npt.NDArray[Tuple[BatchSize, 1, 1]]
+    ):
+        pass
+
     def init_error(
             self,
             activations_out: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]],

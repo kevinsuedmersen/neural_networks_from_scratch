@@ -1,5 +1,4 @@
 import logging
-from abc import ABC, abstractmethod
 from typing import List, Union, Tuple, Any, Iterable
 
 import numpy.typing as npt
@@ -7,45 +6,11 @@ import numpy.typing as npt
 from src.layers import DenseLayer, InputLayer
 from src.losses import Loss
 from src.metrics import Metric
+from src.models.interface import Model
 from src.optimizers import Optimizer
 from src.types import BatchSize, NNeuronsOut, NFeatures
 
 logger = logging.getLogger(__name__)
-
-
-class Model(ABC):
-    @abstractmethod
-    def _forward_pass(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def _compute_cost(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def _backward_pass(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def _update_params(self, **kwargs):
-        pass
-
-    @abstractmethod
-    def train(
-            self,
-            train_data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]],
-            val_data_gen: Iterable,
-            **kwargs
-    ):
-        pass
-
-    @abstractmethod
-    def predict(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
-        pass
-
-    @abstractmethod
-    def evaluate(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
-        pass
 
 
 class MultiLayerPerceptron(Model):
