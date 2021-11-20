@@ -3,11 +3,12 @@ from typing import List, Union, Tuple, Any, Iterable
 
 import numpy.typing as npt
 
-from src.layers import DenseLayer, InputLayer
-from src.losses import Loss
-from src.metrics import Metric
+from src.layers.dense import DenseLayer
+from src.layers.input import InputLayer
+from src.losses.interface import Loss
+from src.metrics.interface import Metric
 from src.models.interface import Model
-from src.optimizers import Optimizer
+from src.optimizers.interface import Optimizer
 from src.types import BatchSize, NNeuronsOut, NFeatures
 
 logger = logging.getLogger(__name__)

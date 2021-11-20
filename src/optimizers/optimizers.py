@@ -1,11 +1,8 @@
 import logging
-from abc import ABC
+
+from src.optimizers.interface import Optimizer
 
 logger = logging.getLogger(__name__)
-
-
-class Optimizer(ABC):
-    pass
 
 
 class StochasticGradientDescent(Optimizer):

@@ -1,10 +1,11 @@
 import logging
 
-from src.layers import InputLayer, DenseLayer
-from src.losses import CategoricalCrossEntropy
-from src.metrics import Accuracy
+from src.layers.dense import DenseLayer
+from src.layers.input import InputLayer
+from src.losses.categorical_crossentropy import CategoricalCrossEntropy
+from src.metrics.metrics import Accuracy
 from src.models.mlp import Model, MultiLayerPerceptron
-from src.optimizers import StochasticGradientDescent
+from src.optimizers.optimizers import StochasticGradientDescent
 
 logger = logging.getLogger(__name__)
 

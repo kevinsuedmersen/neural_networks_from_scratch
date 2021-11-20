@@ -1,11 +1,8 @@
 import logging
-from abc import ABC
+
+from src.metrics.interface import Metric
 
 logger = logging.getLogger(__name__)
-
-
-class Metric(ABC):
-    pass
 
 
 class Accuracy(Metric):
