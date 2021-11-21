@@ -10,7 +10,7 @@ from src.optimizers.optimizers import StochasticGradientDescent
 logger = logging.getLogger(__name__)
 
 
-def _simple_multi_layer_perceptron() -> MultiLayerPerceptron:
+def simple_multi_layer_perceptron() -> MultiLayerPerceptron:
     mlp = MultiLayerPerceptron(
         layers=[
             InputLayer(),
@@ -29,6 +29,6 @@ def _simple_multi_layer_perceptron() -> MultiLayerPerceptron:
 
 def get_model(model_name: str) -> Model:
     if model_name == "simple_multi_layer_perceptron":
-        return _simple_multi_layer_perceptron()
+        return simple_multi_layer_perceptron()
     else:
         ValueError(f"Unknown or non-implemented model_name provided: {model_name}")
