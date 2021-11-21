@@ -1,5 +1,6 @@
 import logging
 
+from src.data_gen.factory import get_data_generator
 from src.models.factory import get_model
 from src.utils import get_cli_args
 
@@ -9,12 +10,12 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     args = get_cli_args()
     model = get_model(args.model_name)
-    train_data_gen, val_data_gen, test_data_gen = get_data_generators(
+    data_gen = get_data_generator(
         args.data_gen_name,
-        args.data_dir,
-        args.val_size,
-        args.test_size,
-        args.batch_size
+        data_dir=args.data_dir,
+        val_size=args.val_size,
+        test_size=args.test_size,
+        batch_size=args.batch_size
     )
-    model.train(train_data_gen, val_data_gen)
-    model.evaluate(test_data_gen)
+    model.train(data_gen, 50)
+    model.evaluate(data_gen)

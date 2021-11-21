@@ -1,8 +1,9 @@
 import logging
-from typing import List, Union, Tuple, Any, Iterable
+from typing import List, Union, Tuple, Any
 
 import numpy.typing as npt
 
+from src.data_gen.interface import DataGenerator
 from src.layers.dense import DenseLayer
 from src.layers.input import InputLayer
 from src.losses.interface import Loss
@@ -85,16 +86,11 @@ class MultiLayerPerceptron(Model):
     def _update_params(self):
         pass
 
-    def train(
-            self,
-            train_data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]],
-            val_data_gen: Iterable,
-            **kwargs
-    ):
+    def train(self, data_gen: DataGenerator, epochs):
         pass
 
-    def predict(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
+    def predict(self, data_gen: DataGenerator, **kwargs):
         pass
 
-    def evaluate(self, data_gen: Iterable[Tuple[npt.NDArray, npt.NDArray]], **kwargs):
+    def evaluate(self, data_gen: DataGenerator, **kwargs):
         pass
