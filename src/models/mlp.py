@@ -50,7 +50,7 @@ class MultiLayerPerceptron(Model):
             y_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ):
         """Propagate activations from layer 0 to layer L"""
-        # Init forward prop: Preprocess the raw input data
+        # Init forward prop: Preprocess the raw input data_gen
         self.activations[0] = self.layers[0].init_activations(x_batch)
 
         # Forward propagate the activations from layer 1 to layer L

@@ -60,7 +60,7 @@ def img_data_generators(
         img_height: int,
         img_width: int
 ) -> Tuple[Generator, Generator, Generator]:
-    """Returns a tuple of image data generators for training, validation and testing each of them
+    """Returns a tuple of image data_gen generators for training, validation and testing each of them
     yielding a batch of images
     """
     abs_img_paths = get_abs_img_paths(data_dir)

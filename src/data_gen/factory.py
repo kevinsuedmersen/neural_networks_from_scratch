@@ -1,7 +1,7 @@
 import logging
 from typing import Tuple, Generator
 
-from src.data.img_data_gen import img_data_generators
+from src.data_gen.img_data_gen import img_data_generators
 
 logger = logging.getLogger(__name__)
 
@@ -10,7 +10,7 @@ def get_data_generators(
         data_gen_name: str,
         **kwargs
 ) -> Tuple[Generator, Generator, Generator]:
-    """Returns a train, validation and test data generators"""
+    """Returns a train, validation and test data_gen generators"""
     if data_gen_name == "img_data_gen":
         data_generators = img_data_generators(
             kwargs["data_dir"],
