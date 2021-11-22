@@ -1,6 +1,7 @@
 import logging
-from typing import List, Union, Tuple, Any
+from typing import List, Union, Tuple
 
+import numpy as np
 import numpy.typing as npt
 
 from src.data_gen.interface import DataGenerator
@@ -10,7 +11,7 @@ from src.losses.interface import Loss
 from src.metrics.interface import Metric
 from src.models.interface import Model
 from src.optimizers.interface import Optimizer
-from src.types import BatchSize, NNeuronsOut, NFeatures
+from src.types import BatchSize, NNeuronsOut, NFeatures, NSamples
 
 logger = logging.getLogger(__name__)
 
@@ -24,7 +25,7 @@ class MultiLayerPerceptron(Model):
             optimizer: Optimizer,
     ):
         """
-        Instantiats a Multi Layer Perceptron model
+        Instantiates a Multi Layer Perceptron model
         :param layers: List of layers from [0, L], where layer 0 represents the input layer and L the output layer
         :param loss:
         :param metrics:
@@ -41,23 +42,32 @@ class MultiLayerPerceptron(Model):
         self.errors = self._init_cache()
         self.costs = []
 
-    def _init_cache(self) -> List[Union[None, npt.NDArray[Tuple[BatchSize, Any, 1]]]]:
+    def _init_cache(self) -> List[Union[None, npt.NDArray]]:
         """Init caches so that their indices correspond to layer indices, starting at layer 0 and ending at layer L"""
         return [None for _ in range(self.n_layers)]
 
-    def _forward_pass(
+    def _train_step(
             self,
-            x_batch: npt.NDArray[Tuple[BatchSize, NFeatures]],
-            y_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
-    ):
+            x_train: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            ytrue_train: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
+    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop: Preprocess the raw input data_gen
-        self.activations[0] = self.layers[0].init_activations(x_batch)
+        self.activations[0] = self.layers[0].init_activations(x_train)
 
         # Forward propagate the activations from layer 1 to layer L
         for l in range(1, self.n_layers):
             self.dendritic_potentials[l] = self.layers[l].forward_prop(self.activations[l - 1])
             self.activations[l] = self.layers[l].activate(self.dendritic_potentials[l])
+
+        return self.activations[-1]
+
+    def _val_step(
+            self,
+            x_val: npt.NDArray[BatchSize, NFeatures],
+            ytrue_val: npt.NDArray[BatchSize, NFeatures]
+    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
+        pass
 
     def _compute_cost(
             self,
@@ -86,11 +96,47 @@ class MultiLayerPerceptron(Model):
     def _update_params(self):
         pass
 
-    def train(self, data_gen: DataGenerator, epochs):
+    def train(self, data_gen: DataGenerator, epochs: int):
+        """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
+        """
+        for epoch_counter in range(epochs):
+            # Container for all predictions on train and validation set.
+            # TODO: Try to think of a more efficient solution than storing all predictions in memory
+            ytrues_train = []
+            ytrues_val = []
+            ypreds_train = []
+            ypreds_val = []
+
+            # Train on batches of training data until there is no data left
+            for x_train, ytrue_train in data_gen.train():
+                ypred_train = self._train_step(x_train, ytrue_train)
+                ytrues_train.append(ytrue_train)
+                ypreds_train.append(ypred_train)
+
+            # Evaluate on the validation set
+            for x_val, ytrue_val in data_gen.val():
+                ypred_val = self._val_step(x_val, ytrue_val)
+                ytrues_val.append(ytrue_val)
+                ypreds_val.append(ypred_val)
+
+            # Evaluate performance on the train and test sets
+            ytrue_train_ = np.concatenate(ypreds_train, axis=0)
+            ypred_train_ = np.concatenate(ypreds_train, axis=0)
+            self.evaluate(ytrue_train_, ypred_train_)
+
+            ypred_val_ = np.concatenate(ypreds_val, axis=0)
+            ytrue_val_ = np.concatenate(ypreds_val, axis=0)
+            self.evaluate(ytrue_val_, ypred_val_)
+
+    def predict(
+            self,
+            x: npt.NDArray[NSamples, NFeatures]
+    ) -> npt.NDArray[NSamples, NNeuronsOut]:
         pass
 
-    def predict(self, data_gen: DataGenerator, **kwargs):
-        pass
-
-    def evaluate(self, data_gen: DataGenerator, **kwargs):
+    def evaluate(
+            self,
+            ytrue: npt.NDArray[NSamples, NNeuronsOut],
+            ypred: npt.NDArray[NSamples, NNeuronsOut]
+    ):
         pass

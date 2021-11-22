@@ -1,6 +1,7 @@
 import typing
 
 
+NSamples = typing.NewType("NSamples", int)
 BatchSize = typing.NewType("BatchSize", int)
 NFeatures = typing.NewType("NFeatures", int)
 NNeurons = typing.NewType("NumberNeuronsCurrentLayer", int)
