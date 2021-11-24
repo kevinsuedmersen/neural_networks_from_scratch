@@ -502,8 +502,16 @@ or in short,
 $$
 (\boldsymbol{\delta}^{l-1})^T 
 = \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
-= (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
+= (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}),
 $$
+or similarly
+$$
+(\boldsymbol{\delta}^{l})^T 
+= \nabla L(\textbf{z}^{l+1}) \ \textbf{J}_{\textbf{z}^{l+1}}(\textbf{z}^{l})
+= (\boldsymbol{\delta}^{l+1})^T \ \textbf{W}^{l+1} \ \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^{l})
+$$
+
+
 The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its Jacobi matrix for the backpropagation algorithm. 
 
 #### Example 
