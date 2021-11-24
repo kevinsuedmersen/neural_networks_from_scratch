@@ -9,19 +9,7 @@ from src.types import BatchSize, NFeatures, NNeuronsOut, NSamples
 
 class Model(ABC):
     @abstractmethod
-    def _train_step(
-            self,
-            x_train: npt.NDArray[Tuple[BatchSize, NFeatures]],
-            ytrue_train: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
-        pass
-
-    @abstractmethod
-    def _val_step(
-            self,
-            x_val: npt.NDArray[BatchSize, NFeatures],
-            ytrue_val: npt.NDArray[BatchSize, NNeuronsOut]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
+    def _forward_pass(self, *args, **kwargs):
         pass
 
     @abstractmethod
@@ -39,6 +27,14 @@ class Model(ABC):
 
     @abstractmethod
     def _update_params(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def _train_step(self, *args, **kwargs) -> npt.NDArray:
+        pass
+
+    @abstractmethod
+    def _val_step(self, *args, **kwargs) -> npt.NDArray:
         pass
 
     @abstractmethod

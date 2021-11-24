@@ -19,16 +19,9 @@ class Loss(ABC):
         pass
 
     @abstractmethod
-    def compute_cost(
-            self,
-            losses: npt.NDArray[Tuple[BatchSize, 1, 1]]
-    ):
+    def compute_cost(self,losses: npt.NDArray[Tuple[BatchSize, 1, 1]]) -> float:
         pass
 
     @abstractmethod
-    def init_error(
-            self,
-            activations_out: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]],
-            dendritic_potentials_out: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]:
+    def init_error(self, *args, **kwargs) -> npt.NDArray:
         pass

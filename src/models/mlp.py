@@ -38,37 +38,36 @@ class MultiLayerPerceptron(Model):
         self.metrics_val = metrics_val
         self.optimizer = optimizer
 
-        self.dendritic_potentials = self._init_cache()
         self.activations = self._init_cache()
         self.errors = self._init_cache()
         self.costs = []
 
+    def _validate_params(self):
+        """Validates parameters"""
+        # Make sure that the first layer is an InputLayer
+        if not isinstance(self.layers[0], InputLayer):
+            raise ValueError(f"The first layer must be an InputLayer instance")
+
     def _init_cache(self) -> List[Union[None, npt.NDArray]]:
-        """Init caches so that their indices correspond to layer indices, starting at layer 0 and ending at layer L"""
+        """Init caches so that their indices correspond to layer indices,
+        starting at layer 0 and ending at layer L
+        """
         return [None for _ in range(self.n_layers)]
 
-    def _train_step(
+    def _forward_pass(
             self,
-            x_train: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            x_train: npt.NDArray[Tuple[BatchSize, ...]],
             ytrue_train: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
         """Propagate activations from layer 0 to layer L"""
-        # Init forward prop: Preprocess the raw input data_gen
+        # Init forward prop
         self.activations[0] = self.layers[0].init_activations(x_train)
 
         # Forward propagate the activations from layer 1 to layer L
         for l in range(1, self.n_layers):
-            self.dendritic_potentials[l] = self.layers[l].forward_prop(self.activations[l - 1])
-            self.activations[l] = self.layers[l].activate(self.dendritic_potentials[l])
+            self.activations[l] = self.layers[l].forward(self.activations[l - 1])
 
         return self.activations[-1]
-
-    def _val_step(
-            self,
-            x_val: npt.NDArray[BatchSize, NFeatures],
-            ytrue_val: npt.NDArray[BatchSize, NFeatures]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
-        pass
 
     def _compute_cost(
             self,
@@ -81,20 +80,28 @@ class MultiLayerPerceptron(Model):
         self.costs.append(cost)
         logger.info(f"Cost after {batch_idx + 1} batches: {cost:.3f}")
 
-    def _backward_pass(
-            self,
-            ytrue_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]],
-            ypred_batch: npt.NDArray[Tuple[BatchSize, NNeuronsOut, 1]]
-    ):
-        """Propagate the error backward from layer L to layer 1"""
+    def _backward_pass(self, ytrue_batch: npt.NDArray):
+        """Propagate the error backward from layer L to layer 1
+        """
         # Init backprop: Compute error at layer L, the output layer
-        self.errors[-1] = self.loss.init_error(self.activations[-1], self.dendritic_potentials[-1])
+        self.errors[-1] = self.loss.init_error(ytrue_batch, self.activations[1])
 
         # Backprop the error from layer L-1 to layer 1
         for l in range(self.n_layers - 1, 0, -1):
-            self.errors[l] = self.layers[l].backward_prop(self.errors[l+1], self.activations[l], self.dendritic_potentials[l])
+            self.errors[l] = self.layers[l].backward(self.errors[l + 1])
 
     def _update_params(self):
+        pass
+
+    def _train_step(self, *args, **kwargs) -> npt.NDArray:
+        """Includes the forward pass, cost computation, backward pass and parameter update"""
+        pass
+
+    def _val_step(
+            self,
+            x_val: npt.NDArray[BatchSize, NFeatures],
+            ytrue_val: npt.NDArray[BatchSize, NFeatures]
+    ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
         pass
 
     def _update_metric_state(
@@ -105,7 +112,7 @@ class MultiLayerPerceptron(Model):
     ):
         pass
 
-    def _eval_metrics(self, dataset: str):
+    def _get_metric_result(self, dataset: str):
         pass
 
     def train(self, data_gen: DataGenerator, epochs: int):
@@ -123,8 +130,8 @@ class MultiLayerPerceptron(Model):
                 self._update_metric_state(ytrue_val, ypred_val, "validation")
 
             # Evaluate and log performance on the train and test sets
-            self._eval_metrics("train")
-            self._eval_metrics("validation")
+            self._get_metric_result("train")
+            self._get_metric_result("validation")
 
     def predict(
             self,

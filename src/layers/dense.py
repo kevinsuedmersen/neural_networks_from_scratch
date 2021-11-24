@@ -10,22 +10,20 @@ logger = logging.getLogger(__name__)
 
 
 class DenseLayer(Layer):
-    def forward_prop(
+    def forward(
             self,
             activations_prev: npt.NDArray[Tuple[BatchSize, NNeuronsPrev, 1]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
         pass
 
-    def activate(
+    def _activate(
             self,
             dendritic_potentials: npt.NDArray[Tuple[BatchSize, NNeurons, 1]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
         pass
 
-    def backward_prop(
+    def backward(
             self,
-            error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext, 1]],
-            activations: npt.NDArray[Tuple[BatchSize, NNeurons, 1]],
-            dendritic_potentials: npt.NDArray[Tuple[BatchSize, NNeurons, 1]]
+            error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext, 1]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
         pass

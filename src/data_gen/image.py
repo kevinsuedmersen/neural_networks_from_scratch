@@ -8,7 +8,7 @@ import numpy.typing as npt
 from sklearn.model_selection import train_test_split
 
 from src.data_gen.interface import DataGenerator
-from src.types import BatchSize, ImgHeight, ImgWidth
+from src.types import BatchSize, ImgHeight, ImgWidth, ImgChannels
 
 logger = logging.getLogger(__name__)
 
@@ -68,7 +68,9 @@ class ImageDataGenerator(DataGenerator):
     def _batch_generator(
             self,
             img_paths_2_labels: List[Tuple[str, str]]
-    ) -> Generator[Tuple[npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth]], npt.NDArray[BatchSize]], None, None]:
+    ) -> Generator[Tuple[
+                    npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
+                    npt.NDArray[BatchSize, 1]], None, None]:
         """Creates a generator yielding a batch of images"""
         img_arrays = []
         labels = []
@@ -76,7 +78,10 @@ class ImageDataGenerator(DataGenerator):
             # Collect images and labels self.batch_size times
             img_array = cv2.imread(img_path)
             img_resized = cv2.resize(img_array, self.img_height, self.img_width)
-            img_arrays.append(img_resized)
+            img_rescaled = img_resized / 255
+            # Add batch dimension for concatenation later
+            img_rescaled = img_rescaled[np.newaxis, ...]
+            img_arrays.append(img_rescaled)
             labels.append(label)
 
             # After self.batch_size elements have been collected transform them into a numpy array
