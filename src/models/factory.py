@@ -21,7 +21,8 @@ def simple_multi_layer_perceptron() -> MultiLayerPerceptron:
             DenseLayer(10, "softmax")
         ],
         loss=CategoricalCrossEntropy(),
-        metrics=[Accuracy()],
+        metrics_train=[Accuracy("acc_train")],
+        metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescent()
     )
     return mlp

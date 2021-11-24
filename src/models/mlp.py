@@ -1,7 +1,6 @@
 import logging
 from typing import List, Union, Tuple
 
-import numpy as np
 import numpy.typing as npt
 
 from src.data_gen.interface import DataGenerator
@@ -21,20 +20,22 @@ class MultiLayerPerceptron(Model):
             self,
             layers: List[Union[InputLayer, DenseLayer]],
             loss: Loss,
-            metrics: List[Metric],
+            metrics_train: List[Metric],
+            metrics_val: List[Metric],
             optimizer: Optimizer,
     ):
         """
         Instantiates a Multi Layer Perceptron model
         :param layers: List of layers from [0, L], where layer 0 represents the input layer and L the output layer
         :param loss:
-        :param metrics:
+        :param metrics_train:
         :param optimizer:
         """
         self.layers = layers
         self.n_layers = len(layers)
         self.loss = loss
-        self.metrics = metrics
+        self.metrics_train = metrics_train
+        self.metrics_val = metrics_val
         self.optimizer = optimizer
 
         self.dendritic_potentials = self._init_cache()
@@ -96,42 +97,39 @@ class MultiLayerPerceptron(Model):
     def _update_params(self):
         pass
 
+    def _update_metric_state(
+            self,
+            ytrue: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
+            ypred: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
+            dataset: str
+    ):
+        pass
+
+    def _eval_metrics(self, dataset: str):
+        pass
+
     def train(self, data_gen: DataGenerator, epochs: int):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
         for epoch_counter in range(epochs):
-            # Container for all predictions on train and validation set.
-            # TODO: Try to think of a more efficient solution than storing all predictions in memory
-            ytrues_train = []
-            ytrues_val = []
-            ypreds_train = []
-            ypreds_val = []
-
             # Train on batches of training data until there is no data left
             for x_train, ytrue_train in data_gen.train():
                 ypred_train = self._train_step(x_train, ytrue_train)
-                ytrues_train.append(ytrue_train)
-                ypreds_train.append(ypred_train)
+                self._update_metric_state(ytrue_train, ypred_train, "train")
 
             # Evaluate on the validation set
             for x_val, ytrue_val in data_gen.val():
                 ypred_val = self._val_step(x_val, ytrue_val)
-                ytrues_val.append(ytrue_val)
-                ypreds_val.append(ypred_val)
+                self._update_metric_state(ytrue_val, ypred_val, "validation")
 
-            # Evaluate performance on the train and test sets
-            ytrue_train_ = np.concatenate(ypreds_train, axis=0)
-            ypred_train_ = np.concatenate(ypreds_train, axis=0)
-            self.evaluate(ytrue_train_, ypred_train_)
-
-            ypred_val_ = np.concatenate(ypreds_val, axis=0)
-            ytrue_val_ = np.concatenate(ypreds_val, axis=0)
-            self.evaluate(ytrue_val_, ypred_val_)
+            # Evaluate and log performance on the train and test sets
+            self._eval_metrics("train")
+            self._eval_metrics("validation")
 
     def predict(
             self,
-            x: npt.NDArray[NSamples, NFeatures]
-    ) -> npt.NDArray[NSamples, NNeuronsOut]:
+            x: npt.NDArray[Tuple[NSamples, NFeatures]]
+    ) -> npt.NDArray[Tuple[NSamples, NNeuronsOut]]:
         pass
 
     def evaluate(
