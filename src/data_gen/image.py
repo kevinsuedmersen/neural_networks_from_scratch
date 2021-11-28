@@ -127,6 +127,14 @@ class ImageDataGenerator(DataGenerator):
 
         return train_subset, val_set, test_set
 
+    def _load_and_preprocess(self, img_path: str) -> npt.NDArray[Tuple[ImgHeight, ImgWidth, ImgChannels]]:
+        """Loads an image from disk, resizes and rescales it"""
+        img_array = cv2.imread(img_path)
+        img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
+        img_rescaled = img_resized / 255
+
+        return img_rescaled
+
     def _batch_generator(
             self,
             img_paths_2_one_hot: List[Tuple[str, List[int]]]
@@ -138,13 +146,10 @@ class ImageDataGenerator(DataGenerator):
         one_hot_arrays = []
         for counter, (img_path, one_hot) in enumerate(img_paths_2_one_hot):
             # Collect images and one_hot_arrays self.batch_size times
-            # Read in and resize image
-            img_array = cv2.imread(img_path)
-            img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
-            img_rescaled = img_resized / 255
+            img_array = self._load_and_preprocess(img_path)
             # Add batch dimension for concatenation later
-            img_rescaled = img_rescaled[np.newaxis, ...]  # shape=(1, ImgHeight, ImgWidth, ImgChannels)
-            img_arrays.append(img_rescaled)
+            img_array = img_array[np.newaxis, ...]  # shape=(1, ImgHeight, ImgWidth, ImgChannels)
+            img_arrays.append(img_array)
 
             # Convert one_hot to numpy array
             one_hot_array = np.asarray(one_hot)
