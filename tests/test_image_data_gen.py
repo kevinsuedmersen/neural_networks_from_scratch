@@ -78,6 +78,29 @@ class TestImageDataGenerator(TestConfig):
             for label_index in label_indices:
                 assert one_hot[label_index] == 1
 
+    @pytest.fixture
+    def img_paths_2_one_hot(self, img_data_gen, img_paths_2_indices):
+        img_paths_2_one_hot = img_data_gen._convert_indices_2_one_hot(img_paths_2_indices)
+
+        return img_paths_2_one_hot
+
+    def test_train_val_test_split(self, img_data_gen, img_paths_2_one_hot):
+        img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = img_data_gen._train_val_test_split(
+            img_paths_2_one_hot
+        )
+        # Make sure that no sample was lost
+        assert (len(img_paths_2_one_hot_train)
+                + len(img_paths_2_one_hot_val)
+                + len(img_paths_2_one_hot_test)) == len(img_paths_2_one_hot)
+
+        # Make sure that there is no overlap, i.e. combine all subsets and test that each element is unique
+        all_filepaths = [x[0] for x in img_paths_2_one_hot_train] + \
+                        [x[0] for x in img_paths_2_one_hot_val] + \
+                        [x[0] for x in img_paths_2_one_hot_test]
+        # Note that the set function doesn't work with numpy arrays, so I extracted the filepaths
+        # from all mappings
+        unique_filepaths = set(all_filepaths)
+        assert len(unique_filepaths) == len(all_filepaths)
 
     def test_train(self, img_data_gen):
         train_data_gen = img_data_gen.train()
