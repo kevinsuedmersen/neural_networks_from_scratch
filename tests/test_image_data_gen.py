@@ -13,6 +13,10 @@ class TestImageDataGenerator(TestConfig):
     img_width = 128
     img_extension = (".jpg",)
 
+    # Test images have 3 color channels and are from 2 different categories
+    n_channels = 3
+    n_labels = 2
+
     @pytest.fixture
     def img_data_gen(self) -> ImageDataGenerator:
         img_data_gen = ImageDataGenerator(
@@ -29,4 +33,5 @@ class TestImageDataGenerator(TestConfig):
     def test_train(self, img_data_gen):
         train_data_gen = img_data_gen.train()
         for img_batch, label_batch in train_data_gen:
-            print(img_batch.shape, label_batch.shape)
+            assert img_batch.shape == (self.batch_size, self.img_height, self.img_width, self.n_channels)
+            assert label_batch.shape == (self.batch_size, self.n_labels)
