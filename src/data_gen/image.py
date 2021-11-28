@@ -1,11 +1,11 @@
 import logging
 import os
+import random
 from typing import List, Tuple, Generator, Dict
 
 import cv2
 import numpy as np
 import numpy.typing as npt
-from sklearn.model_selection import train_test_split
 
 from src.data_gen.interface import DataGenerator
 from src.types import BatchSize, ImgHeight, ImgWidth, ImgChannels, NNeuronsOut
@@ -101,13 +101,31 @@ class ImageDataGenerator(DataGenerator):
 
     def _train_val_test_split(
             self,
-            img_paths_2_one_hot: List[Tuple[str, List[int]]]
-    ) -> Tuple[List[Tuple[str, str]], List[Tuple[str, str]], List[Tuple[str, str]]]:
+            img_paths_2_one_hot: List[Tuple[str, List[int]]],
+            shuffle: bool = True
+    ) -> Tuple[
+            List[Tuple[str, List[int]]],
+            List[Tuple[str, List[int]]],
+            List[Tuple[str, List[int]]]
+    ]:
         """Splits a list of absolute image filepaths into train, validation and test set"""
-        img_paths_train, img_paths_test = train_test_split(img_paths_2_one_hot, test_size=self.test_size)
-        img_paths_train, img_paths_val = train_test_split(img_paths_2_one_hot, test_size=self.val_size)
+        # Determine sample sizes
+        n_samples = len(img_paths_2_one_hot)
+        n_samples_train = round(n_samples * (1 - self.test_size))
+        n_samples_train_subset = round(n_samples_train * (1 - self.val_size))
 
-        return img_paths_train, img_paths_val, img_paths_test
+        # Shuffle if desired
+        if shuffle:
+            random.shuffle(img_paths_2_one_hot)
+
+        # Subset all samples accordingly
+        train_subset = img_paths_2_one_hot[:n_samples_train_subset]
+        val_set = img_paths_2_one_hot[n_samples_train_subset:n_samples_train]
+        test_set = img_paths_2_one_hot[n_samples_train:]
+
+        # TODO: Write test that each set is mutually exclusive and that all sets together are collectively exhaustive, i.e. contain all samples
+
+        return train_subset, val_set, test_set
 
     def _batch_generator(
             self,
