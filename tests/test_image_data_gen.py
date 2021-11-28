@@ -1,3 +1,5 @@
+from typing import Dict, List, Tuple
+
 import pytest
 
 from src.data_gen.image import ImageDataGenerator
@@ -5,6 +7,7 @@ from tests.test_config import TestConfig
 
 
 class TestImageDataGenerator(TestConfig):
+    """Testing the ImageDataGenerator in a multi-class-classification scheme"""
     data_dir = "fixtures"
     val_size = 0.3
     test_size = 0.3
@@ -31,7 +34,7 @@ class TestImageDataGenerator(TestConfig):
         return img_data_gen
 
     def test_get_img_paths_2_labels(self, img_data_gen):
-        """In a Multi-Class-Classification scheme, each filepath is mapped to exactly one label.
+        """In a multi-class-classification scheme, each filepath is mapped to exactly one label.
         Then, we can assert that the label's name is included in the filepath, because the label
         comes from the directory the image is located in
         """
@@ -39,6 +42,22 @@ class TestImageDataGenerator(TestConfig):
         for img_path, labels in img_paths_2_labels.items():
             if len(labels) == 1:  # ==> multi-class-classification
                 assert labels[0] in img_path
+
+    @pytest.fixture
+    def img_paths_2_labels(self, img_data_gen) -> Dict:
+        img_paths_2_labels = img_data_gen._get_img_paths_2_labels()
+
+        return img_paths_2_labels
+
+    def test_convert_labels_2_indices(self, img_data_gen, img_paths_2_labels):
+        """For each mapping, look up the label name and assert that is included in the image's filepath
+        """
+        img_paths_2_indices: List[Tuple] = img_data_gen._convert_labels_2_indices(img_paths_2_labels)
+        index_2_label = {index: label for label, index in img_data_gen.label_2_index.items()}
+        for img_path, label_indices in img_paths_2_indices:
+            if len(label_indices) == 1:
+                label = index_2_label[label_indices[0]]
+                assert label in img_path
 
     def test_train(self, img_data_gen):
         train_data_gen = img_data_gen.train()
