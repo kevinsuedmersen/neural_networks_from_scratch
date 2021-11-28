@@ -129,36 +129,43 @@ class ImageDataGenerator(DataGenerator):
 
     def _batch_generator(
             self,
-            img_paths_2_one_hot_labels: List[Tuple[str, List[int]]]
+            img_paths_2_one_hot: List[Tuple[str, List[int]]]
     ) -> Generator[Tuple[
                     npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
-                    npt.NDArray[BatchSize, 1]], None, None]:
+                    npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
         """Creates a generator yielding a batch of images"""
         img_arrays = []
-        one_hot_labels = []
-        for counter, (img_path, one_hot_label) in enumerate(img_paths_2_one_hot_labels):
-            # Collect images and one_hot_labels self.batch_size times
+        one_hot_arrays = []
+        for counter, (img_path, one_hot) in enumerate(img_paths_2_one_hot):
+            # Collect images and one_hot_arrays self.batch_size times
+            # Read in and resize image
             img_array = cv2.imread(img_path)
-            img_resized = cv2.resize(img_array, self.img_height, self.img_width)
+            img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
             img_rescaled = img_resized / 255
             # Add batch dimension for concatenation later
-            img_rescaled = img_rescaled[np.newaxis, ...]
+            img_rescaled = img_rescaled[np.newaxis, ...]  # shape=(1, ImgHeight, ImgWidth, ImgChannels)
             img_arrays.append(img_rescaled)
-            one_hot_labels.append(one_hot_label)
 
-            # After self.batch_size elements have been collected transform them into a numpy array
+            # Convert one_hot to numpy array
+            one_hot_array = np.asarray(one_hot)
+            # Add batch dimension for concatenation later
+            one_hot_array = one_hot_array[np.newaxis, ...]  # shape=(1, NNeuronsOut)
+            one_hot_arrays.append(one_hot_array)
+
+            # After self.batch_size elements have been collected transform them into a numpy arrays
             if (counter + 1) % self.batch_size == 0:
                 img_batch = np.concatenate(img_arrays, axis=0)
-                label_batch = np.concatenate(one_hot_labels)
+                label_batch = np.concatenate(one_hot_arrays, axis=0)
                 img_arrays = []
-                one_hot_labels = []
+                one_hot_arrays = []
                 yield img_batch, label_batch
 
     def _get_data_gen(
             self,
             dataset: str
-    ) -> Generator[Tuple[npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
-                         npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
+    ) -> Generator[Tuple[
+                    npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
+                    npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
         """Returns a tuple of image data_gen generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
