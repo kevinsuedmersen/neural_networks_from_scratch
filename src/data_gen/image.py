@@ -59,7 +59,8 @@ class ImageDataGenerator(DataGenerator):
                     # Map image filepaths to labels
                     if img_path not in img_paths_2_labels:
                         img_paths_2_labels[img_path] = []
-                    img_paths_2_labels[img_path].append(img_path)
+                    label = os.path.basename(dirpath)
+                    img_paths_2_labels[img_path].append(label)
 
         return img_paths_2_labels
 
@@ -129,7 +130,7 @@ class ImageDataGenerator(DataGenerator):
 
     def _load_and_preprocess(self, img_path: str) -> npt.NDArray[Tuple[ImgHeight, ImgWidth, ImgChannels]]:
         """Loads an image from disk, resizes and rescales it"""
-        img_array = cv2.imread(img_path)
+        img_array = cv2.imread(img_path, cv2.IMREAD_COLOR)
         img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
         img_rescaled = img_resized / 255
 
