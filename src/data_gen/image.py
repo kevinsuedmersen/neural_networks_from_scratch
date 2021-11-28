@@ -47,7 +47,9 @@ class ImageDataGenerator(DataGenerator):
             --img_2.png
           ...
         If an image belongs to multiple categories (Multi-Label-Classification), then it should
-        be located in multiple folders
+        be located in multiple folders. NOTE that this assumes that if an image belongs to multiple
+        categories, its filename (os.path.basename(absolute_img_filepath)) remains the same for all
+        categories.
         """
         img_paths_2_labels = {}
         # Create absolute image filepaths of all relevant images
@@ -57,7 +59,7 @@ class ImageDataGenerator(DataGenerator):
                     img_path = os.path.join(dirpath, filename)
 
                     # Map image filepaths to labels
-                    if img_path not in img_paths_2_labels:
+                    if filename not in img_paths_2_labels:
                         img_paths_2_labels[img_path] = []
                     label = os.path.basename(dirpath)
                     img_paths_2_labels[img_path].append(label)

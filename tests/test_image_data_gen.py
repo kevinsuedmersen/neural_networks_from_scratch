@@ -30,6 +30,16 @@ class TestImageDataGenerator(TestConfig):
         )
         return img_data_gen
 
+    def test_get_img_paths_2_labels(self, img_data_gen):
+        """In a Multi-Class-Classification scheme, each filepath is mapped to exactly one label.
+        Then, we can assert that the label's name is included in the filepath, because the label
+        comes from the directory the image is located in
+        """
+        img_paths_2_labels = img_data_gen._get_img_paths_2_labels()
+        for img_path, labels in img_paths_2_labels.items():
+            if len(labels) == 1:  # ==> multi-class-classification
+                assert labels[0] in img_path
+
     def test_train(self, img_data_gen):
         train_data_gen = img_data_gen.train()
         for img_batch, label_batch in train_data_gen:
