@@ -32,7 +32,7 @@ class ImageDataGenerator(DataGenerator):
         self.img_width = img_width
         self.img_extensions = img_extensions
 
-        self.label_2_idx: Dict[str, int] = {}
+        self.label_2_index: Dict[str, int] = {}
 
     def _get_img_paths_2_labels(self) -> Dict[str, List[str]]:
         """Maps absolute image filepaths to their corresponding labels. It is assumed that all images
@@ -64,50 +64,67 @@ class ImageDataGenerator(DataGenerator):
 
         return img_paths_2_labels
 
-    def _get_label_idx(self, label: str) -> int:
+    def _get_label_index(self, label: str) -> int:
         """Returns the index corresponding to ``label``"""
-        if len(self.label_2_idx.values()) == 0:
+        if len(self.label_2_index.values()) == 0:
             # If no mapping has been created yet, initialize it and return the first index
-            self.label_2_idx[label] = 0
+            self.label_2_index[label] = 0
             return 0
 
-        elif label in self.label_2_idx:
+        elif label in self.label_2_index:
             # If the mapping already exists, return the label's corresponding index
-            return self.label_2_idx[label]
+            return self.label_2_index[label]
 
         else:
             # If a new mapping needs to be created, retrieve the largest index value, increment it
             # by 1, store the new mapping and return the new index
-            old_max_idx = max(self.label_2_idx.values())
+            old_max_idx = max(self.label_2_index.values())
             new_max_idx = old_max_idx + 1
-            self.label_2_idx[label] = new_max_idx
+            self.label_2_index[label] = new_max_idx
             return new_max_idx
 
-    def _convert_labels_2_one_hot(
+    def _convert_indices_2_one_hot(
+            self,
+            img_paths_2_indices: List[Tuple[str, List[int]]]
+    ) -> List[Tuple[str, npt.NDArray[NNeuronsOut]]]:
+        """Converts a list of label indices (i.e. labels encoded as integers) into a binary vector,
+        whose i-th element equals 1, iff the corresponding image belongs to class i.
+        """
+        img_paths_2_one_hot = []
+        n_labels = len(self.label_2_index)
+        for img_path, label_indices in img_paths_2_indices:
+            one_hot = np.zeros(n_labels)
+            for label_index in label_indices:
+                one_hot[label_index] = 1
+            img_paths_2_one_hot.append((img_path, one_hot))
+
+        return img_paths_2_one_hot
+
+    def _convert_labels_2_indices(
             self,
             img_paths_2_labels: Dict[str, List[str]]
     ) -> List[Tuple[str, List[int]]]:
         """Converts the label name strings into a binary vector and returns the mapping between image
         filepaths and binary vectors as a list of tuples
         """
-        img_paths_2_one_hot = []
+        img_paths_2_indices = []
         for img_path, labels in img_paths_2_labels.items():
-            one_hot = []
+            label_indices = []
             for label in labels:
-                idx = self._get_label_idx(label)
-                one_hot.append(idx)
-            img_paths_2_one_hot.append((img_path, one_hot))
+                label_index = self._get_label_index(label)
+                label_indices.append(label_index)
+            img_paths_2_indices.append((img_path, label_indices))
 
-        return img_paths_2_one_hot
+        return img_paths_2_indices
 
     def _train_val_test_split(
             self,
-            img_paths_2_one_hot: List[Tuple[str, List[int]]],
+            img_paths_2_one_hot: List[Tuple[str, npt.NDArray[NNeuronsOut]]],
             shuffle: bool = True
     ) -> Tuple[
-            List[Tuple[str, List[int]]],
-            List[Tuple[str, List[int]]],
-            List[Tuple[str, List[int]]]
+            List[Tuple[str, npt.NDArray[NNeuronsOut]]],
+            List[Tuple[str, npt.NDArray[NNeuronsOut]]],
+            List[Tuple[str, npt.NDArray[NNeuronsOut]]]
     ]:
         """Splits a list of absolute image filepaths into train, validation and test set"""
         # Determine sample sizes
@@ -138,23 +155,19 @@ class ImageDataGenerator(DataGenerator):
 
     def _batch_generator(
             self,
-            img_paths_2_one_hot: List[Tuple[str, List[int]]]
+            img_paths_2_one_hot: List[Tuple[str, npt.NDArray[NNeuronsOut]]]
     ) -> Generator[Tuple[
                     npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
                     npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
         """Creates a generator yielding a batch of images"""
         img_arrays = []
         one_hot_arrays = []
-        for counter, (img_path, one_hot) in enumerate(img_paths_2_one_hot):
+        for counter, (img_path, one_hot_array) in enumerate(img_paths_2_one_hot):
             # Collect images and one_hot_arrays self.batch_size times
             img_array = self._load_and_preprocess(img_path)
-            # Add batch dimension for concatenation later
             img_array = img_array[np.newaxis, ...]  # shape=(1, ImgHeight, ImgWidth, ImgChannels)
             img_arrays.append(img_array)
 
-            # Convert one_hot to numpy array
-            one_hot_array = np.asarray(one_hot)
-            # Add batch dimension for concatenation later
             one_hot_array = one_hot_array[np.newaxis, ...]  # shape=(1, NNeuronsOut)
             one_hot_arrays.append(one_hot_array)
 
@@ -176,7 +189,8 @@ class ImageDataGenerator(DataGenerator):
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
         img_paths_2_labels = self._get_img_paths_2_labels()
-        img_paths_2_one_hot = self._convert_labels_2_one_hot(img_paths_2_labels)
+        img_paths_2_indices = self._convert_labels_2_indices(img_paths_2_labels)
+        img_paths_2_one_hot = self._convert_indices_2_one_hot(img_paths_2_indices)
         img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = self._train_val_test_split(
             img_paths_2_one_hot
         )
