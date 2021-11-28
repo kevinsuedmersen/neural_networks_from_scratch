@@ -1,5 +1,6 @@
 from typing import Dict, List, Tuple
 
+import numpy as np
 import pytest
 
 from src.data_gen.image import ImageDataGenerator
@@ -58,6 +59,25 @@ class TestImageDataGenerator(TestConfig):
             if len(label_indices) == 1:
                 label = index_2_label[label_indices[0]]
                 assert label in img_path
+
+    @pytest.fixture
+    def img_paths_2_indices(self, img_data_gen, img_paths_2_labels) -> List[Tuple]:
+        img_paths_2_indices = img_data_gen._convert_labels_2_indices(img_paths_2_labels)
+
+        return img_paths_2_indices
+
+    def test_convert_labels_2_one_hot(self, img_data_gen, img_paths_2_indices):
+        img_paths_2_one_hot = img_data_gen._convert_indices_2_one_hot(img_paths_2_indices)
+        for (_, one_hot), (_, label_indices) in zip(img_paths_2_one_hot, img_paths_2_indices):
+            # In a multi-class-classification scheme, we know that there should be only one 1 and
+            # zeros elsewhere in ``one_hot``
+            if len(label_indices) == 1:
+                assert np.sum(one_hot) == 1
+
+            # Make sure that the 1 is at the label_index-position
+            for label_index in label_indices:
+                assert one_hot[label_index] == 1
+
 
     def test_train(self, img_data_gen):
         train_data_gen = img_data_gen.train()
