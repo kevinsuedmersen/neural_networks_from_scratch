@@ -207,11 +207,11 @@ class ImageDataGenerator(DataGenerator):
 
         return data_gen
 
-    def train(self):
+    def train(self) -> Generator:
         return self._get_data_gen("train")
 
-    def val(self):
+    def val(self) -> Generator:
         return self._get_data_gen("val")
 
-    def test(self):
+    def test(self) -> Generator:
         return self._get_data_gen("test")

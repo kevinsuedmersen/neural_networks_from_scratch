@@ -17,5 +17,6 @@ if __name__ == '__main__':
         test_size=args.test_size,
         batch_size=args.batch_size
     )
-    model.train(data_gen, 50)
-    model.evaluate(data_gen)
+    model.train(data_gen.train(), data_gen.val(), args.epochs, args.batch_size)
+    model.evaluate(data_gen.train())
+    model.evaluate(data_gen.test())

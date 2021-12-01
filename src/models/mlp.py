@@ -1,9 +1,8 @@
 import logging
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Generator
 
 import numpy.typing as npt
 
-from src.data_gen.interface import DataGenerator
 from src.layers.dense import DenseLayer
 from src.layers.input import InputLayer
 from src.losses.interface import Loss
@@ -99,8 +98,8 @@ class MultiLayerPerceptron(Model):
 
     def _val_step(
             self,
-            x_val: npt.NDArray[BatchSize, NFeatures],
-            ytrue_val: npt.NDArray[BatchSize, NFeatures]
+            x_val: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            ytrue_val: npt.NDArray[Tuple[BatchSize, NFeatures]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeuronsOut]]:
         pass
 
@@ -115,17 +114,22 @@ class MultiLayerPerceptron(Model):
     def _get_metric_result(self, dataset: str):
         pass
 
-    def train(self, data_gen: DataGenerator, epochs: int):
+    def train(
+            self,
+            data_gen_train: Generator[Tuple[npt.NDArray[Tuple[BatchSize, NFeatures]], npt.NDArray], None, None],
+            data_gen_val: Generator[Tuple[npt.NDArray[Tuple[BatchSize, NFeatures]], npt.NDArray], None, None],
+            epochs: int
+    ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
         for epoch_counter in range(epochs):
             # Train on batches of training data until there is no data left
-            for x_train, ytrue_train in data_gen.train():
+            for x_train, ytrue_train in data_gen_train:
                 ypred_train = self._train_step(x_train, ytrue_train)
                 self._update_metric_state(ytrue_train, ypred_train, "train")
 
             # Evaluate on the validation set
-            for x_val, ytrue_val in data_gen.val():
+            for x_val, ytrue_val in data_gen_train:
                 ypred_val = self._val_step(x_val, ytrue_val)
                 self._update_metric_state(ytrue_val, ypred_val, "validation")
 
