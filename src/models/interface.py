@@ -3,8 +3,22 @@ from typing import Generator
 
 import numpy.typing as npt
 
+from src.layers.interface import Layer
+
 
 class Model(ABC):
+    @abstractmethod
+    def add_layer(self, layer: Layer):
+        pass
+
+    @abstractmethod
+    def train_step(
+            self,
+            x_train: npt.NDArray,
+            ytrue_train: npt.NDArray
+    ):
+        pass
+
     @abstractmethod
     def train(
             self,
@@ -17,11 +31,11 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def train_step(
+    def predict(
             self,
-            x_train: npt.NDArray,
-            ytrue_train: npt.NDArray
-    ):
+            x: npt.NDArray,
+            **kwargs
+    ) -> npt.NDArray:
         pass
 
     @abstractmethod
@@ -30,14 +44,6 @@ class Model(ABC):
             x_val: npt.NDArray,
             ytrue_val: npt.NDArray
     ):
-        pass
-
-    @abstractmethod
-    def predict(
-            self,
-            x: npt.NDArray,
-            **kwargs
-    ) -> npt.NDArray:
         pass
 
     @abstractmethod

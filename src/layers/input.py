@@ -1,0 +1,28 @@
+from typing import Tuple
+
+import numpy.typing as npt
+
+from src.layers.interface import Layer
+from src.types import BatchSize, NFeatures
+
+
+class InputLayer(Layer):
+    def __init__(self, input_shape: Tuple):
+        self.input_shape = input_shape
+        self.output_shape = None
+
+    def forward(
+            self,
+            x_batch: npt.NDArray[Tuple[BatchSize, ...]]
+    ) -> npt.NDArray[Tuple[BatchSize, NFeatures]]:
+        """Makes sure x_batch is converted into an array of shape (batch_size, n_features)"""
+        assert x_batch.shape == self.input_shape, \
+            f"Expected x_batch.shape={self.input_shape}, actual x_batch.shape={x_batch.shape}." \
+            f"The input layer of the network needs consistent input shapes"
+        x_batch_reshaped = x_batch.reshape((x_batch.shape[0], -1))
+        self.output_shape = x_batch_reshaped.shape
+
+        return x_batch_reshaped
+
+    def backward(self):
+        pass

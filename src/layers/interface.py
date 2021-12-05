@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 class Layer(ABC):
+    def init_parameters(self):
+        pass
+
     @abstractmethod
     def forward(self, *args, **kwargs) -> npt.NDArray:
         pass

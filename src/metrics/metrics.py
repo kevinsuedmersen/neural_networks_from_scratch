@@ -6,4 +6,5 @@ logger = logging.getLogger(__name__)
 
 
 class Accuracy(Metric):
-    pass
+    def __init__(self, name: str):
+        self.name = name

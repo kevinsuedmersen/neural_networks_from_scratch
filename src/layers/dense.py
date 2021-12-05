@@ -1,33 +1,56 @@
 import logging
 from typing import Tuple, Union
 
+import numpy as np
 import numpy.typing as npt
 
+from src.layers.activation_functions import get_activation_function
 from src.layers.interface import Layer
-from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsNext, One, NFeatures
+from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsNext, NFeatures
 
 logger = logging.getLogger(__name__)
 
 
 class DenseLayer(Layer):
-    @staticmethod
-    def init_activations(
-            x_batch: npt.NDArray[Tuple[BatchSize, ...]]
-    ) -> npt.NDArray[Tuple[BatchSize, NFeatures, One]]:
-        """Makes sure x_batch is converted into an array of shape (batch_size, n_features, 1)"""
-        x_batch_reshaped = x_batch.reshape((x_batch.shape[0], -1, 1))
+    def __init__(
+            self,
+            units: int,
+            activation_function_name: str
+    ):
+        self.units = units
+        self.activation_function_name = activation_function_name
 
-        return x_batch_reshaped
+        self.activation_function = get_activation_function(activation_function_name)
+        self.weights = None
+        self.biases = None
+        self.output_shape = None
+        self.dendritic_potentials = None
+        self.activations = None
+
+    def _init_weights(self, units_prev: int):
+        self.weights = np.random.randn(1, self.units, units_prev) * 0.01  # batch_size=1 for broadcasting
+
+    def _init_biases(self):
+        self.biases = np.random.randn(1, self.units)  # batch_size=1 for broadcasting
+
+    def init_parameters(self, units_prev: int):
+        self._init_weights(units_prev)
+        self._init_biases()
+        self.output_shape = (None, self.units)
 
     def forward(
             self,
-            activations_prev_l: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev], One]]
+            activations_prev: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev]]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
-        pass
+        """Computes the activations of the current layer"""
+        self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
+        self.activations = self.activation_function(self.dendritic_potentials)
+
+        return self.activations
 
     def backward(
             self,
-            error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext, One]]
+            error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext]]
     ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
         pass
 
