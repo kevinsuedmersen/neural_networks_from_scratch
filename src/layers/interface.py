@@ -7,7 +7,8 @@ logger = logging.getLogger(__name__)
 
 
 class Layer(ABC):
-    def init_parameters(self):
+    @abstractmethod
+    def init_parameters(self, *args, **kwargs):
         pass
 
     @abstractmethod

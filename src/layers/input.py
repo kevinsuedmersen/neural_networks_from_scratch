@@ -7,6 +7,9 @@ from src.types import BatchSize, NFeatures
 
 
 class InputLayer(Layer):
+    def init_parameters(self, *args, **kwargs):
+        pass
+
     def __init__(self, input_shape: Tuple):
         self.input_shape = input_shape
         self.output_shape = None

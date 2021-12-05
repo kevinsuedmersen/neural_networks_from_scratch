@@ -41,7 +41,7 @@ class DenseLayer(Layer):
     def forward(
             self,
             activations_prev: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev]]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
+    ) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
         """Computes the activations of the current layer"""
         self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
         self.activations = self.activation_function(self.dendritic_potentials)
@@ -51,7 +51,7 @@ class DenseLayer(Layer):
     def backward(
             self,
             error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeurons, 1]]:
+    ) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
         pass
 
     def update_params(self):
