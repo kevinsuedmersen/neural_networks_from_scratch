@@ -19,13 +19,7 @@ def set_root_logger():
 
 def get_cli_args():
     parser = argparse.ArgumentParser(description="CLI argument parser")
-    parser.add_argument("--model_name", default=None, type=str)
-    parser.add_argument("--data_gen_name", default=None, type=str)
-    parser.add_argument("--data_dir", default=None, type=str)
-    parser.add_argument("--val_size", default=0.25, type=float)
-    parser.add_argument("--test_size", default=0.25, type=float)
-    parser.add_argument("--batch_size", default=32, type=int)
-    parser.add_argument("--epochs", default=100, type=int)
+    parser.add_argument("--config_path", default=None, type=str)
     args = parser.parse_args()
 
     return args
