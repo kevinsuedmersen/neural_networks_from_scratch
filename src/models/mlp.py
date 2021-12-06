@@ -42,8 +42,6 @@ class MultiLayerPerceptron(Model):
         """Adds a fully initialized layer to the model"""
         # if self.layers is empty
         if not self.layers:
-            assert layer.input_shape is not None, \
-                "The first layer must have the ``input_shape`` argument provided"
             units_prev = layer.input_shape[1]
 
         # if self.layers contains at least one layer
