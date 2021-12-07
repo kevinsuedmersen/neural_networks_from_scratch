@@ -4,7 +4,6 @@ from typing import Tuple
 import numpy.typing as npt
 
 from src.layers.interface import Layer
-from src.types import BatchSize, NFeatures, One
 
 
 class InputLayer(Layer):
@@ -18,10 +17,7 @@ class InputLayer(Layer):
         flattened_dim = reduce(lambda x, y: x*y, input_shape[1:])
         self.output_shape = (input_shape[0], flattened_dim)
 
-    def forward(
-            self,
-            x_batch: npt.NDArray[Tuple[BatchSize, ...]]
-    ) -> npt.NDArray[Tuple[BatchSize, NFeatures, One]]:
+    def forward(self, x_batch: npt.NDArray) -> npt.NDArray:
         """Makes sure x_batch is converted into an array of shape (batch_size, n_features)"""
         assert x_batch.shape[1:] == self.input_shape[1:], \
             f"Expected x_batch.shape={self.input_shape}, actual x_batch.shape={x_batch.shape}." \

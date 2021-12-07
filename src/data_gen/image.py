@@ -8,7 +8,6 @@ import numpy as np
 import numpy.typing as npt
 
 from src.data_gen.interface import DataGenerator
-from src.types import BatchSize, ImgHeight, ImgWidth, ImgChannels, NNeuronsOut
 
 logger = logging.getLogger(__name__)
 
@@ -88,7 +87,7 @@ class ImageDataGenerator(DataGenerator):
     def _convert_indices_2_one_hot(
             self,
             img_paths_2_indices: List[Tuple[str, List[int]]]
-    ) -> List[Tuple[str, npt.NDArray[NNeuronsOut]]]:
+    ) -> List[Tuple[str, npt.NDArray]]:
         """Converts a list of label indices (i.e. labels encoded as integers) into a binary vector,
         whose i-th element equals 1, iff the corresponding image belongs to class i.
         """
@@ -121,13 +120,9 @@ class ImageDataGenerator(DataGenerator):
 
     def _train_val_test_split(
             self,
-            img_paths_2_one_hot: List[Tuple[str, npt.NDArray[NNeuronsOut]]],
+            img_paths_2_one_hot: List[Tuple[str, npt.NDArray]],
             shuffle: bool = True
-    ) -> Tuple[
-            List[Tuple[str, npt.NDArray[NNeuronsOut]]],
-            List[Tuple[str, npt.NDArray[NNeuronsOut]]],
-            List[Tuple[str, npt.NDArray[NNeuronsOut]]]
-    ]:
+    ) -> Tuple[List[Tuple[str, npt.NDArray]], List[Tuple[str, npt.NDArray]], List[Tuple[str, npt.NDArray]]]:
         """Splits a list of absolute image filepaths into train, validation and test set"""
         # Determine sample sizes
         n_samples = len(img_paths_2_one_hot)
@@ -147,7 +142,7 @@ class ImageDataGenerator(DataGenerator):
 
         return train_subset, val_set, test_set
 
-    def _load_and_preprocess(self, img_path: str) -> npt.NDArray[Tuple[ImgHeight, ImgWidth, ImgChannels]]:
+    def _load_and_preprocess(self, img_path: str) -> npt.NDArray:
         """Loads an image from disk, resizes and rescales it"""
         img_array = cv2.imread(img_path, cv2.IMREAD_COLOR)
         img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
@@ -157,10 +152,8 @@ class ImageDataGenerator(DataGenerator):
 
     def _batch_generator(
             self,
-            img_paths_2_one_hot: List[Tuple[str, npt.NDArray[NNeuronsOut]]]
-    ) -> Generator[Tuple[
-                    npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
-                    npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
+            img_paths_2_one_hot: List[Tuple[str, npt.NDArray]]
+    ) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Creates a generator yielding a batch of images"""
         img_arrays = []
         one_hot_arrays = []
@@ -184,9 +177,7 @@ class ImageDataGenerator(DataGenerator):
     def _get_data_gen(
             self,
             dataset: str
-    ) -> Generator[Tuple[
-                    npt.NDArray[Tuple[BatchSize, ImgHeight, ImgWidth, ImgChannels]],
-                    npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None]:
+    ) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Returns a tuple of image data_gen generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """

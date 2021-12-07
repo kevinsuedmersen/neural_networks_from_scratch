@@ -9,7 +9,6 @@ from src.losses.interface import Loss
 from src.metrics.interface import Metric
 from src.models.interface import Model
 from src.optimizers.interface import Optimizer
-from src.types import BatchSize, NNeuronsOut, NFeatures, NSamples
 
 logger = logging.getLogger(__name__)
 
@@ -78,11 +77,7 @@ class MultiLayerPerceptron(Model):
         for layer in self.layers:
             layer.update_params()
 
-    def train_step(
-            self,
-            x_train: npt.NDArray[Tuple[BatchSize, ...]],
-            ytrue_train: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
-    ):
+    def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
         ypred_train = self._forward_pass(x_train)
         losses = self.loss.compute_losses(ytrue_train, ypred_train)
@@ -90,17 +85,13 @@ class MultiLayerPerceptron(Model):
         self._backward_pass(ytrue_train, ypred_train)
         self._update_params()
 
-    def val_step(
-            self,
-            x_val: npt.NDArray[Tuple[BatchSize, ...]],
-            ytrue_val: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
-    ):
+    def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
         pass
 
     def train(
             self,
-            data_gen_train: Generator[Tuple[npt.NDArray[Tuple[BatchSize, ...]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
-            data_gen_val: Generator[Tuple[npt.NDArray[Tuple[BatchSize, ...]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
+            data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
+            data_gen_val: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
             epochs: int,
             batch_size: int,
             **kwargs
@@ -116,11 +107,7 @@ class MultiLayerPerceptron(Model):
             for x_val, ytrue_val in data_gen_train:
                 self.val_step(x_val, ytrue_val)
 
-    def predict(
-            self,
-            x: npt.NDArray[Tuple[NSamples, NFeatures]],
-            **kwargs
-    ) -> npt.NDArray[Tuple[NSamples, NNeuronsOut]]:
+    def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
         pass
 
     def evaluate(

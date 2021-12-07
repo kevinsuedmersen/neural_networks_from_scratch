@@ -1,21 +1,13 @@
-from typing import Tuple
-
 import numpy as np
 import numpy.typing as npt
 
-from src.types import BatchSize, NNeurons
 
-
-def linear_forward(
-        dendritic_potentials: npt.NDArray[Tuple[BatchSize, NNeurons]]
-) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
+def linear_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     """Computes the forward pass of the linear activation function"""
     return dendritic_potentials
 
 
-def relu_forward(
-        dendritic_potentials: npt.NDArray[Tuple[BatchSize, NNeurons]]
-) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
+def relu_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     """Computes the forward pass of the ReLU activation function"""
     activations = np.maximum(dendritic_potentials, 0)
     # TODO: Test that activations.shape == dendritic_potentials.shape

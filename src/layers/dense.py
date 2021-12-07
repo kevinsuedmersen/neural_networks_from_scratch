@@ -1,12 +1,10 @@
 import logging
-from typing import Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
 
 from src.layers.activation_functions import get_activation_function
 from src.layers.interface import Layer
-from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsNext, NFeatures, One
 
 logger = logging.getLogger(__name__)
 
@@ -38,20 +36,14 @@ class DenseLayer(Layer):
         self._init_biases()
         self.output_shape = (None, self.units)
 
-    def forward(
-            self,
-            activations_prev: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev], One]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeurons, One]]:
+    def forward(self, activations_prev: npt.NDArray) -> npt.NDArray:
         """Computes the activations of the current layer"""
         self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
         self.activations = self.activation_function(self.dendritic_potentials)
 
         return self.activations
 
-    def backward(
-            self,
-            error_next: npt.NDArray[Tuple[BatchSize, NNeuronsNext]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
+    def backward(self, error_next: npt.NDArray) -> npt.NDArray:
         pass
 
     def update_params(self):
