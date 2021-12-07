@@ -162,8 +162,7 @@ class ImageDataGenerator(DataGenerator):
             img_array = self._load_and_preprocess(img_path)
             img_array = img_array[np.newaxis, ...]  # shape=(1, ImgHeight, ImgWidth, ImgChannels)
             img_arrays.append(img_array)
-
-            one_hot_array = one_hot_array[np.newaxis, ...]  # shape=(1, NNeuronsOut)
+            one_hot_array = one_hot_array[np.newaxis, :, np.newaxis]  # shape=(1, NNeuronsOut, 1)
             one_hot_arrays.append(one_hot_array)
 
             # After self.batch_size elements have been collected transform them into a numpy arrays
@@ -174,10 +173,7 @@ class ImageDataGenerator(DataGenerator):
                 one_hot_arrays = []
                 yield img_batch, label_batch
 
-    def _get_data_gen(
-            self,
-            dataset: str
-    ) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
+    def _get_data_gen(self, dataset: str) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Returns a tuple of image data_gen generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
@@ -198,11 +194,11 @@ class ImageDataGenerator(DataGenerator):
 
         return data_gen
 
-    def train(self) -> Generator:
+    def train(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("train")
 
-    def val(self) -> Generator:
+    def val(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("val")
 
-    def test(self) -> Generator:
+    def test(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("test")

@@ -23,7 +23,10 @@ def simple_mlp() -> MultiLayerPerceptron:
     mlp.add_layer(DenseLayer(128, "relu"))
     mlp.add_layer(DenseLayer(64, "relu"))
     mlp.add_layer(DenseLayer(32, "relu"))
-    mlp.add_layer(DenseLayer(10, "linear"))
+    mlp.add_layer(DenseLayer(16, "relu"))
+    mlp.add_layer(DenseLayer(8, "relu"))
+    mlp.add_layer(DenseLayer(4, "relu"))
+    mlp.add_layer(DenseLayer(2, "linear"))
 
     return mlp
 
