@@ -10,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class CategoricalCrossEntropy(Loss):
-    def compute_loss(
+    def compute_losses(
             self,
             ytrue: npt.NDArray[Tuple[BatchSize, NNeuronsOut]],
             ypred: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]

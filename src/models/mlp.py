@@ -85,7 +85,8 @@ class MultiLayerPerceptron(Model):
     ):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
         ypred_train = self._forward_pass(x_train)
-        cost = self.loss.compute_cost(ytrue_train, ypred_train)
+        losses = self.loss.compute_losses(ytrue_train, ypred_train)
+        cost = self.loss.compute_cost(losses)
         self._backward_pass(ytrue_train, ypred_train)
         self._update_params()
 

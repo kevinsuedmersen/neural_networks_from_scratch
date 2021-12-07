@@ -8,7 +8,7 @@ logger = logging.getLogger(__name__)
 
 class Loss(ABC):
     @abstractmethod
-    def compute_loss(
+    def compute_losses(
             self,
             ytrue: npt.NDArray,
             ypred: npt.NDArray
