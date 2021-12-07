@@ -50,6 +50,7 @@ class MultiLayerPerceptron(Model):
 
         layer.init_parameters(units_prev)
         self.layers.append(layer)
+        self.n_layers = len(self.layers)
 
     def _forward_pass(self, x_train):
         """Propagate activations from layer 0 to layer L"""
@@ -79,25 +80,26 @@ class MultiLayerPerceptron(Model):
 
     def train_step(
             self,
-            x_train: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            x_train: npt.NDArray[Tuple[BatchSize, ...]],
             ytrue_train: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
         ypred_train = self._forward_pass(x_train)
+        cost = self.loss.compute_cost(ytrue_train, ypred_train)
         self._backward_pass(ytrue_train, ypred_train)
         self._update_params()
 
     def val_step(
             self,
-            x_val: npt.NDArray[Tuple[BatchSize, NFeatures]],
+            x_val: npt.NDArray[Tuple[BatchSize, ...]],
             ytrue_val: npt.NDArray[Tuple[BatchSize, NNeuronsOut]]
     ):
         pass
 
     def train(
             self,
-            data_gen_train: Generator[Tuple[npt.NDArray[Tuple[BatchSize, NFeatures]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
-            data_gen_val: Generator[Tuple[npt.NDArray[Tuple[BatchSize, NFeatures]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
+            data_gen_train: Generator[Tuple[npt.NDArray[Tuple[BatchSize, ...]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
+            data_gen_val: Generator[Tuple[npt.NDArray[Tuple[BatchSize, ...]], npt.NDArray[Tuple[BatchSize, NNeuronsOut]]], None, None],
             epochs: int,
             batch_size: int,
             **kwargs

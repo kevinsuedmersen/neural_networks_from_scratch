@@ -6,7 +6,7 @@ import numpy.typing as npt
 
 from src.layers.activation_functions import get_activation_function
 from src.layers.interface import Layer
-from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsNext, NFeatures
+from src.types import BatchSize, NNeurons, NNeuronsPrev, NNeuronsNext, NFeatures, One
 
 logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class DenseLayer(Layer):
         self.weights = np.random.randn(1, self.units, units_prev) * 0.01  # batch_size=1 for broadcasting
 
     def _init_biases(self):
-        self.biases = np.random.randn(1, self.units)  # batch_size=1 for broadcasting
+        self.biases = np.random.randn(1, self.units, 1)  # batch_size=1 for broadcasting
 
     def init_parameters(self, units_prev: int):
         self._init_weights(units_prev)
@@ -40,8 +40,8 @@ class DenseLayer(Layer):
 
     def forward(
             self,
-            activations_prev: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev]]]
-    ) -> npt.NDArray[Tuple[BatchSize, NNeurons]]:
+            activations_prev: npt.NDArray[Tuple[BatchSize, Union[NFeatures, NNeuronsPrev], One]]
+    ) -> npt.NDArray[Tuple[BatchSize, NNeurons, One]]:
         """Computes the activations of the current layer"""
         self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
         self.activations = self.activation_function(self.dendritic_potentials)
