@@ -46,5 +46,11 @@ class DenseLayer(Layer):
     def backward(self, error_next: npt.NDArray) -> npt.NDArray:
         pass
 
+    def compute_weight_grads(self, *args, **kwargs):
+        pass
+
+    def compute_bias_grads(self, *args, **kwargs):
+        pass
+
     def update_params(self):
         pass

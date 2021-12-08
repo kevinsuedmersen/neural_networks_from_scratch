@@ -28,3 +28,9 @@ class InputLayer(Layer):
 
     def backward(self):
         pass
+
+    def compute_weight_grads(self):
+        pass
+
+    def compute_bias_grads(self):
+        pass

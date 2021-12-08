@@ -16,3 +16,11 @@ class Layer(ABC):
     @abstractmethod
     def backward(self, *args, **kwargs):
         pass
+
+    @abstractmethod
+    def compute_weight_grads(self, *args, **kwargs):
+        pass
+
+    @abstractmethod
+    def compute_bias_grads(self, *args, **kwargs):
+        pass

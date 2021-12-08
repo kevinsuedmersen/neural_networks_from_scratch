@@ -172,6 +172,7 @@ class ImageDataGenerator(DataGenerator):
                 img_arrays = []
                 one_hot_arrays = []
                 yield img_batch, label_batch
+        # TODO: Test that in each batch, each image is unique
 
     def _get_data_gen(self, dataset: str) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Returns a tuple of image data_gen generators for training, validation and testing each of them

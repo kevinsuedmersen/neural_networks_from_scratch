@@ -15,6 +15,19 @@ def relu_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     return activations
 
 
+def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
+    """Computes the forward pass of the softmax activation function"""
+    # Subtract max (or any other constant) for numerical stability. It will cancel out,
+    # because the max is also used in the denominator, i.e. exp_sum
+    exp = np.exp(dendritic_potentials - np.max(dendritic_potentials))
+    exp_sum = np.sum(exp, axis=1, keepdims=True)
+    activations = exp / exp_sum
+
+    # TODO: Test that each row in activations sums up to 1
+
+    return activations
+
+
 def relu_backward():
     pass
 
@@ -34,4 +47,4 @@ def get_activation_function(activation_function_name: str):
         raise NotImplementedError
 
     elif activation_function_name == "softmax":
-        raise NotImplementedError
+        return softmax_forward

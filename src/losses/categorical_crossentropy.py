@@ -23,5 +23,5 @@ class CategoricalCrossEntropy(Loss):
 
         return cost.item()
 
-    def init_error(self, activations_out: npt.NDArray, dendritic_potentials_out: npt.NDArray) -> npt.NDArray:
+    def init_error(self, ypred_batch: npt.NDArray, dendritic_potentials_out: npt.NDArray) -> npt.NDArray:
         pass

@@ -51,18 +51,18 @@ class MultiLayerPerceptron(Model):
         self.layers.append(layer)
         self.n_layers = len(self.layers)
 
-    def _forward_pass(self, x_train):
+    def _forward_pass(self, x_train: npt.NDArray):
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
-        activation = self.layers[0].forward(x_train)
+        activations = self.layers[0].forward(x_train)
 
         # Forward propagate the activations from layer 1 to layer L
         for l in range(1, self.n_layers):
-            activation = self.layers[l].forward(activation)
+            activations = self.layers[l].forward(activations)
 
-        return activation
+        return activations
 
-    def _backward_pass(self, ytrue_train, ypred_train):
+    def _backward_pass(self, ytrue_train: npt.NDArray, ypred_train: npt.NDArray):
         """Propagate the error backward from layer L to layer 1
         """
         # Init backprop: Compute error at layer L, the output layer
@@ -71,6 +71,8 @@ class MultiLayerPerceptron(Model):
         # Backprop the error from layer L-1 to layer 1
         for l in range((self.n_layers - 1), 0, -1):
             error = self.layers[l].backward(error)
+            self.layers[l].compute_weight_grads()
+            self.layers[l].compute_bias_grads()
 
     def _update_params(self):
         """Uses the states in each layer to update its parameters"""
