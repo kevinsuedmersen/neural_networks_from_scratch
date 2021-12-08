@@ -1,51 +1,27 @@
 from abc import ABC, abstractmethod
-from typing import Generator
-
-import numpy.typing as npt
-
-from src.layers.interface import Layer
 
 
 class Model(ABC):
     @abstractmethod
-    def add_layer(self, layer: Layer):
+    def add_layer(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def train_step(
-            self,
-            x_train: npt.NDArray,
-            ytrue_train: npt.NDArray
-    ):
+    def train_step(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def train(
-            self,
-            data_gen_train: Generator,
-            data_gen_val: Generator,
-            epochs: int,
-            batch_size: int,
-            **kwargs
-    ):
+    def train(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def predict(
-            self,
-            x: npt.NDArray,
-            **kwargs
-    ) -> npt.NDArray:
+    def predict(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def val_step(
-            self,
-            x_val: npt.NDArray,
-            ytrue_val: npt.NDArray
-    ):
+    def val_step(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def evaluate(self, data_gen: Generator, **kwargs):
+    def evaluate(self, *args, **kwargs):
         pass

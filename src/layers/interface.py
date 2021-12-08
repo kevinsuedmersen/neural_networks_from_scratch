@@ -1,8 +1,6 @@
 import logging
 from abc import ABC, abstractmethod
 
-import numpy.typing as npt
-
 logger = logging.getLogger(__name__)
 
 
@@ -12,9 +10,9 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def forward(self, *args, **kwargs) -> npt.NDArray:
+    def forward(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def backward(self, *args, **kwargs) -> npt.NDArray:
+    def backward(self, *args, **kwargs):
         pass

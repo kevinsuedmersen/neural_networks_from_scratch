@@ -1,19 +1,18 @@
 import logging
 from abc import ABC, abstractmethod
-from typing import Generator
 
 logger = logging.getLogger(__name__)
 
 
 class DataGenerator(ABC):
     @abstractmethod
-    def train(self) -> Generator:
+    def train(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def val(self) -> Generator:
+    def val(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def test(self) -> Generator:
+    def test(self, *args, **kwargs):
         pass

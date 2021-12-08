@@ -8,13 +8,13 @@ logger = logging.getLogger(__name__)
 
 class Loss(ABC):
     @abstractmethod
-    def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
+    def compute_losses(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def compute_cost(self, losses: npt.NDArray) -> float:
+    def compute_cost(self, losses: npt.NDArray):
         pass
 
     @abstractmethod
-    def init_error(self, *args, **kwargs) -> npt.NDArray:
+    def init_error(self, *args, **kwargs):
         pass
