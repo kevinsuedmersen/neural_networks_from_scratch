@@ -3,12 +3,18 @@ import numpy.typing as npt
 
 
 def linear_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
-    """Computes the forward pass of the linear activation function"""
+    """Computes the forward pass of the linear activation function
+    Input and output matrix both have shape (batch_size, n_neurons_current_layer)
+    """
     return dendritic_potentials
 
 
 def relu_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
-    """Computes the forward pass of the ReLU activation function"""
+    """
+    Computes the forward pass of the ReLU activation function
+    :param dendritic_potentials: shape = (batch_size, n_neurons_current_layer, 1)
+    :return: shape = (batch_size, n_neurons_current_layer, 1)
+    """
     activations = np.maximum(dendritic_potentials, 0)
     # TODO: Test that activations.shape == dendritic_potentials.shape
 
@@ -16,7 +22,11 @@ def relu_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
 
 
 def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
-    """Computes the forward pass of the softmax activation function"""
+    """
+    Computes the forward pass of the softmax activation function
+    :param dendritic_potentials: shape = (batch_size, n_neurons_current_layer, 1)
+    :return: shape = (batch_size, n_neurons_current_layer, 1)
+    """
     # Subtract max (or any other constant) for numerical stability. It will cancel out,
     # because the max is also used in the denominator, i.e. exp_sum
     exp = np.exp(dendritic_potentials - np.max(dendritic_potentials))
@@ -29,6 +39,16 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
 
 
 def relu_backward():
+    pass
+
+
+def softmax_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -> npt.NDArray:
+    """
+    Computes the backward pass of the softmax function.
+    :param dendritic_potentials: shape = (batch_size, n_neurons_current_layer, 1)
+    :param activations: shape = (batch_size, n_neurons_current_layer, 1)
+    :return: shape = (batch_size, n_neurons_current_layer, n_neurons_current_layer)
+    """
     pass
 
 
