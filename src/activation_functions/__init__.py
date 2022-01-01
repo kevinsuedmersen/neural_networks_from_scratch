@@ -21,3 +21,14 @@ def get_activation_function(activation_function_name: str):
 
     elif activation_function_name == "softmax":
         return softmax_forward, softmax_backward
+
+    else:
+        raise ValueError(f"Unknown activation_function_name provided: {activation_function_name}")
+
+
+def get_jacobian_function(activation_function_name: str):
+    if activation_function_name == "softmax":
+        return softmax_jacobian
+
+    else:
+        raise ValueError(f"Unknown activation_function_name provided: {activation_function_name}")

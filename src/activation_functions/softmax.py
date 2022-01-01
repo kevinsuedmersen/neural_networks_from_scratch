@@ -17,6 +17,10 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     return activations
 
 
+def softmax_jacobian():
+    raise NotImplementedError
+
+
 def softmax_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -> npt.NDArray:
     """Computes the backward pass of the softmax function.
     :param dendritic_potentials: shape = (batch_size, n_neurons_current_layer, 1)
