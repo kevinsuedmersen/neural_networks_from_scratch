@@ -3,7 +3,7 @@ import logging
 import numpy as np
 import numpy.typing as npt
 
-from src.layers.activation_functions import get_activation_function
+from src.activation_functions import get_activation_function
 from src.layers.interface import Layer
 
 logger = logging.getLogger(__name__)

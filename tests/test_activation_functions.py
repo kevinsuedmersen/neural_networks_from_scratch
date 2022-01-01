@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.layers.activation_functions import softmax_forward, relu_forward
+from src.activation_functions import softmax_forward, relu_forward
 from tests.test_config import TestConfig
 
 
