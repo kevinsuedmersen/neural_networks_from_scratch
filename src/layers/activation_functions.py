@@ -16,7 +16,6 @@ def relu_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     :return: shape = (batch_size, n_neurons_current_layer, 1)
     """
     activations = np.maximum(dendritic_potentials, 0)
-    # TODO: Test that activations.shape == dendritic_potentials.shape
 
     return activations
 
@@ -32,8 +31,6 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     exp = np.exp(dendritic_potentials - np.max(dendritic_potentials))
     exp_sum = np.sum(exp, axis=1, keepdims=True)
     activations = exp / exp_sum
-
-    # TODO: Test that each row in activations sums up to 1
 
     return activations
 
