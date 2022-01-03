@@ -75,7 +75,7 @@ class MultiLayerPerceptron(Model):
         error = self.loss.init_error(
             ytrue=ytrue_train,
             dendritic_potentials=dendritic_potentials_out,
-            activations=ypred_train
+            activations_out=ypred_train
         )
 
         # Backprop the error from layer L-1 to layer 1

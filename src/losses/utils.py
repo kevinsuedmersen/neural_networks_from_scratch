@@ -12,12 +12,12 @@ def simplify_init_error(
                 loss_instance,
                 ytrue: npt.NDArray,
                 dendritic_potentials: npt.NDArray,
-                activations: npt.NDArray
+                activations_out: npt.NDArray
         ) -> npt.NDArray:
             if (loss_instance.output_activation == output_activation_) and (loss_instance.task == task_):
-                error = ytrue - activations
+                error = ytrue - activations_out
             else:
-                error = method(loss_instance, ytrue, dendritic_potentials, activations)
+                error = method(loss_instance, ytrue, dendritic_potentials, activations_out)
 
             return error
 

@@ -25,13 +25,13 @@ class CategoricalCrossEntropyLoss(Loss):
         return cost.item()
 
     @staticmethod
-    def _gradient(ytrue: npt.NDArray, activations: npt.NDArray):
+    def _compute_loss_gradient(ytrue: npt.NDArray, activations_out: npt.NDArray):
         """Computes the gradient of the loss function w.r.t. the activations in layer L, i.e. the
         predictions
         """
-        gradient = -(ytrue / activations)
+        loss_gradient = -(ytrue / activations_out)
 
-        return gradient
+        return loss_gradient
 
     @simplify_init_error(output_activation_="softmax", task_="multi_class_classification")
     def init_error(
@@ -41,8 +41,9 @@ class CategoricalCrossEntropyLoss(Loss):
             activations: npt.NDArray
     ) -> npt.NDArray:
         """Initializes the error at the output layer"""
-        jacobian = self.jacobian_function(dendritic_potentials, activations)
-        gradient = self._gradient(ytrue, activations)
-        error = np.matmul(jacobian, gradient)
+        # TODO: Think of and implement a test for this method
+        jacobians = self.jacobian_function(dendritic_potentials, activations)
+        gradients = self._compute_loss_gradient(ytrue, activations)
+        error = np.matmul(jacobians, gradients)
 
         return error
