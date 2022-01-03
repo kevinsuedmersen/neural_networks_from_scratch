@@ -1,3 +1,5 @@
+from typing import Union, Tuple
+
 import numpy as np
 import numpy.typing as npt
 
@@ -17,24 +19,34 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     return activations
 
 
-def softmax_jacobian(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -> npt.NDArray:
+def softmax_jacobian(
+        dendritic_potentials: npt.NDArray,
+        activations: npt.NDArray,
+        debug: bool = False
+) -> Union[Tuple[npt.NDArray, npt.NDArray], npt.NDArray]:
     """Computes the jacobian of the softmax activation function
+    :param debug:
     :param dendritic_potentials: (batch_size, n_neurons_current_layer, 1)
     :param activations: (batch_size, n_neurons_current_layer, 1)
     :return: (batch_size, n_neurons_current_layer, n_neurons_current_layer)
     """
     # Take the (negative) outer matmul product from the activations
-    # TODO: Only transpose the last 2 dimensions
-    outer_product = np.matmul(activations, activations.T)  # (batch_size, n_neurons, n_neurons)
-    outer_product *= (-1)
+    # (batch_size, 1, n_neurons)
+    activations_t = np.transpose(activations, axes=[0, 2, 1])
+    # (batch_size, n_neurons, n_neurons)
+    jacobians = np.matmul(activations, activations_t)
+    jacobians *= (-1)
 
     # Replace the entries along the diagonal for all batches
-    diagonal_elements = activations * (1 - activations)
     n_neurons = activations.shape[1]
-    diagonal_idxs = (np.arange(n_neurons), np.arange(n_neurons))
-    outer_product[:, diagonal_idxs] = diagonal_elements
+    diagonal_elements = activations * (1 - activations)
+    diagonal_elements = np.squeeze(diagonal_elements)
+    jacobians[:, np.arange(n_neurons), np.arange(n_neurons)] = diagonal_elements
 
-    return outer_product
+    if debug:
+        return jacobians, diagonal_elements
+    else:
+        return jacobians
 
 
 def softmax_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -> npt.NDArray:

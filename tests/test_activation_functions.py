@@ -43,7 +43,18 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
         return activations
 
     def test_softmax_jacobian(self, dendritic_potentials: npt.NDArray, activations: npt.NDArray):
-        jacobian = softmax_jacobian(dendritic_potentials, activations)
+        jacobians, diagonal_elements = softmax_jacobian(dendritic_potentials, activations, True)
+
+        # Test that the dimensions make sense
+        batch_size = activations.shape[0]
+        n_neurons = activations.shape[1]
+        assert jacobians.shape == (batch_size, n_neurons, n_neurons)
+        assert diagonal_elements.shape == (batch_size, n_neurons)
+
+        # Test that the diagonal elements have been placed on the diagonals of all batch_size jacobians
+        for batch_idx in range(batch_size):
+            for neuron_idx in range(n_neurons):
+                assert jacobians[batch_idx, neuron_idx, neuron_idx] == diagonal_elements[batch_idx, neuron_idx]
 
 
 class TestReluActivationFunction(TestActivationFunction):
