@@ -12,7 +12,7 @@ logger = logging.getLogger(__name__)
 
 def simple_mlp() -> MultiLayerPerceptron:
     mlp = MultiLayerPerceptron(
-        loss=CategoricalCrossEntropyLoss(),
+        loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescent()
@@ -24,8 +24,6 @@ def simple_mlp() -> MultiLayerPerceptron:
     mlp.add_layer(DenseLayer(64, "relu"))
     mlp.add_layer(DenseLayer(32, "relu"))
     mlp.add_layer(DenseLayer(16, "relu"))
-    mlp.add_layer(DenseLayer(8, "relu"))
-    mlp.add_layer(DenseLayer(4, "relu"))
     mlp.add_layer(DenseLayer(2, "softmax"))
 
     return mlp

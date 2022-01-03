@@ -4,17 +4,9 @@ import numpy as np
 import numpy.typing as npt
 
 from src.losses.interface import Loss
+from src.losses.utils import simplify_init_error
 
 logger = logging.getLogger(__name__)
-
-
-def categorical_cross_entropy_gradient(ytrue: npt.NDArray, activations: npt.NDArray):
-    """Computes the gradient of the loss function w.r.t. the activations in layer L, i.e. the
-    predictions
-    """
-    gradient = -(ytrue / activations)
-
-    return gradient
 
 
 class CategoricalCrossEntropyLoss(Loss):
@@ -32,21 +24,25 @@ class CategoricalCrossEntropyLoss(Loss):
 
         return cost.item()
 
+    @staticmethod
+    def _gradient(ytrue: npt.NDArray, activations: npt.NDArray):
+        """Computes the gradient of the loss function w.r.t. the activations in layer L, i.e. the
+        predictions
+        """
+        gradient = -(ytrue / activations)
+
+        return gradient
+
+    @simplify_init_error(output_activation_="softmax", task_="multi_class_classification")
     def init_error(
             self,
             ytrue: npt.NDArray,
             dendritic_potentials: npt.NDArray,
             activations: npt.NDArray
     ) -> npt.NDArray:
-        """Initializes the error at the output layer
-        :param ytrue:
-        """
-        # TODO: Wrap if else block into decorator
-        if self.activation_function_name == "softmax":
-            error = ytrue - activations
-        else:
-            jacobian = self.jacobian_function(dendritic_potentials, activations)
-            gradient = categorical_cross_entropy_gradient(ytrue, activations)
-            error = np.matmul(jacobian, gradient)
+        """Initializes the error at the output layer"""
+        jacobian = self.jacobian_function(dendritic_potentials, activations)
+        gradient = self._gradient(ytrue, activations)
+        error = np.matmul(jacobian, gradient)
 
         return error

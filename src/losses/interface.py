@@ -9,13 +9,16 @@ logger = logging.getLogger(__name__)
 
 
 class Loss(ABC):
-    def __init__(self, activation_function_name: str):
+    def __init__(self, output_activation: str, task: str):
         """
         Instantiates a loss object
-        :param activation_function_name: Activation function at the output layer
+        :param output_activation: Activation function at the output layer
+        :param task: The kind of classification task we are doing, i.e. either "multi_class_classification"
+            or "multi_label_classification"
         """
-        self.activation_function_name = activation_function_name
-        self.jacobian_function = get_jacobian_function(activation_function_name)
+        self.output_activation = output_activation
+        self.task = task
+        self.jacobian_function = get_jacobian_function(output_activation)
 
     @abstractmethod
     def compute_losses(self, *args, **kwargs):

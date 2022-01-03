@@ -55,18 +55,28 @@ class MultiLayerPerceptron(Model):
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
         activations = self.layers[0].forward(x_train)
+        dendritic_potentials = None
 
         # Forward propagate the activations from layer 1 to layer L
         for l in range(1, self.n_layers):
-            activations = self.layers[l].forward(activations)
+            activations, dendritic_potentials = self.layers[l].forward(activations)
 
-        return activations
+        return activations, dendritic_potentials
 
-    def _backward_pass(self, ytrue_train: npt.NDArray, ypred_train: npt.NDArray):
+    def _backward_pass(
+            self,
+            ytrue_train: npt.NDArray,
+            ypred_train: npt.NDArray,
+            dendritic_potentials_out: npt.NDArray
+    ):
         """Propagate the error backward from layer L to layer 1
         """
         # Init backprop: Compute error at layer L, the output layer
-        error = self.loss.init_error(ytrue_train, ypred_train)
+        error = self.loss.init_error(
+            ytrue=ytrue_train,
+            dendritic_potentials=dendritic_potentials_out,
+            activations=ypred_train
+        )
 
         # Backprop the error from layer L-1 to layer 1
         for l in range((self.n_layers - 1), 0, -1):
@@ -81,11 +91,15 @@ class MultiLayerPerceptron(Model):
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
-        ypred_train = self._forward_pass(x_train)
-        losses = self.loss.compute_losses(ytrue_train, ypred_train)
+        activations_out, dendritic_potentials_out = self._forward_pass(x_train)
+        losses = self.loss.compute_losses(ytrue_train, activations_out)
         cost = self.loss.compute_cost(losses)
         self.costs.append(cost)
-        self._backward_pass(ytrue_train, ypred_train)
+        self._backward_pass(
+            ytrue_train=ytrue_train,
+            ypred_train=activations_out,
+            dendritic_potentials_out=dendritic_potentials_out
+        )
         self._update_params()
 
     def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):

@@ -1,4 +1,5 @@
 import logging
+from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
@@ -18,7 +19,7 @@ class DenseLayer(Layer):
         self.units = units
         self.activation_function_name = activation_function_name
 
-        self.activation_function = get_activation_function(activation_function_name)
+        self.activation_func_forward, self.activation_func_backward = get_activation_function(activation_function_name)
         self.weights = None
         self.biases = None
         self.output_shape = None
@@ -36,12 +37,12 @@ class DenseLayer(Layer):
         self._init_biases()
         self.output_shape = (None, self.units)
 
-    def forward(self, activations_prev: npt.NDArray) -> npt.NDArray:
+    def forward(self, activations_prev: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Computes the activations of the current layer"""
         self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
-        self.activations = self.activation_function(self.dendritic_potentials)
+        self.activations = self.activation_func_forward(self.dendritic_potentials)
 
-        return self.activations
+        return self.activations, self.dendritic_potentials
 
     def backward(self, error_next: npt.NDArray) -> npt.NDArray:
         pass
