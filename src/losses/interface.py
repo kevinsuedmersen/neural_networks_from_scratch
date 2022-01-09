@@ -13,9 +13,10 @@ class Loss(ABC):
         """
         Instantiates a loss object
         :param output_activation: Activation function at the output layer
-        :param task: The kind of classification task we are doing, i.e. either "multi_class_classification"
-            or "multi_label_classification"
+        :param task: For classifications, it must be either "multi_class_classification" or
+            "multi_label_classification". For regressions, it must be "regression"
         """
+        assert task in ["multi_class_classification", "multi_label_classification", "regression"]
         self.output_activation = output_activation
         self.task = task
         self.jacobian_function = get_jacobian_function(output_activation)

@@ -37,7 +37,7 @@ def softmax_jacobian(
     jacobians = np.matmul(activations, activations_t)
     jacobians *= (-1)
 
-    # Replace the entries along the diagonal for all batches
+    # Replace the entries along the diagonal of ``jacobians`` for all batches
     n_neurons = activations.shape[1]
     diagonal_elements = activations * (1 - activations)
     diagonal_elements = np.squeeze(diagonal_elements)

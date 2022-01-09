@@ -10,7 +10,10 @@ logger = logging.getLogger(__name__)
 
 
 class CategoricalCrossEntropyLoss(Loss):
-    """Categorical cross entropy loss and cost used form multi-class classification problems"""
+    def __init__(self, output_activation, task):
+        super().__init__(output_activation, task)
+        assert task in ["multi_class_classification", "multi_label_classification"]
+
     def compute_losses(self, ytrue_batch: npt.NDArray, ypred_batch: npt.NDArray) -> npt.NDArray:
         """Computes the losses for each training example in the current batch"""
         logs = ytrue_batch * np.log(ypred_batch)
@@ -37,13 +40,18 @@ class CategoricalCrossEntropyLoss(Loss):
     def init_error(
             self,
             ytrue: npt.NDArray,
-            dendritic_potentials: npt.NDArray,
-            activations: npt.NDArray
+            dendritic_potentials_out: npt.NDArray,
+            activations_out: npt.NDArray
     ) -> npt.NDArray:
-        """Initializes the error at the output layer"""
-        # TODO: Think of and implement a test for this method
-        jacobians = self.jacobian_function(dendritic_potentials, activations)
-        gradients = self._compute_loss_gradient(ytrue, activations)
+        """
+        Initializes the error at the output layer
+        :param ytrue: Ground truth
+        :param dendritic_potentials_out: Dendritic potentials at the output layer
+        :param activations_out: Activations at the output layer, i.e. predictions
+        :return: Error at the output layer
+        """
+        jacobians = self.jacobian_function(dendritic_potentials_out, activations_out)
+        gradients = self._compute_loss_gradient(ytrue, activations_out)
         error = np.matmul(jacobians, gradients)
 
         return error
