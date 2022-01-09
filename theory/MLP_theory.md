@@ -246,10 +246,10 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
 
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
-  - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​, which is a matrix where each column contains the error for a different training example.
+  - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​.
 - BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$ or BP2.1
-  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​ or BP2.2, which again, is a matrix where each column contains the error for a different training example.
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​ or BP2.2.
   - Note that in the first iteration, we must set $\boldsymbol{\delta}^l = \boldsymbol{\delta}^L$​​ or $\boldsymbol{\Delta}^l = \boldsymbol{\Delta}^L$ which we already computed in BP1.1 and BP1.2 respectively. ​​After that, we can recursively substitute the error all the way back to the input layer. 
 - BP3.x: An equation relating the error at layer $l$ to:
   - The derivative of the *loss* function w.r.t the weights in layer $l$​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{W}^l}$​. We'll refer to this equation as BP3.1
@@ -972,13 +972,15 @@ In this section, we will show equations for the forward and backward pass of all
 
 ## Loss functions
 
+This section will show how all relevant loss functions and their gradients $\nabla L (\textbf{a}^L) = \frac{\partial L}{\partial \textbf{a}^L}$, which are needed as an interim quantity to initialize the error at the output layer (see BP1.1 and BP1.2). 
+
 ### Categorical Crossentropy
 
 Recall from (15) that
 $$
 L = - \sum^{n^L}_{i=1} y_i \ log(a^{L}_i),
 $$
-where we used that $\hat{\textbf{y}}^m = \textbf{a}^{L, m}$. From BP1.1 and BP1.2, we know that for the backward pass, we need the derivative of the loss function w.r.t. the activations, i.e.
+where we used that $\hat{\textbf{y}}^m = \textbf{a}^{L, m}$. Its gradient is defined as
 $$
 \frac{\partial L}{\partial \textbf{a}^{L}}
 = - \frac{\textbf{y}}{\textbf{a}^L}
@@ -996,7 +998,7 @@ The Sum of Squared Errors loss is defined as
 $$
 L = \frac{1}{2} \sum^{n^L}_{i=1} \left( y_i - a^L_i \right)^2
 $$
-and its derivative w.r.t. the activations is
+and its gradient is
 $$
 \frac{\partial L}{\partial \textbf{a}^{L}}
 = - (\textbf{y} - \textbf{a}^L)
@@ -1009,6 +1011,8 @@ $$
 
 
 ## Activation Functions
+
+This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2).  
 
 ### Sigmoid
 
