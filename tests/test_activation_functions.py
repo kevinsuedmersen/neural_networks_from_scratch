@@ -2,7 +2,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.activation_functions import softmax_forward, relu_forward
+from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward
 from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
@@ -17,6 +17,27 @@ class TestActivationFunction(TestConfig):
         dendritic_potentials_ = np.random.randn(self.batch_size, self.n_neurons, 1)
 
         return dendritic_potentials_
+
+
+class TestLinearActivationFunction(TestActivationFunction):
+    def test_linear_forward(self, dendritic_potentials):
+        """Tests that inputs equal outputs"""
+        activations = linear_forward(dendritic_potentials)
+        np.testing.assert_array_equal(activations, dendritic_potentials)
+
+    @pytest.fixture
+    def activations(self, dendritic_potentials):
+        activations = linear_forward(dendritic_potentials)
+
+        return activations
+
+    def test_linear_backward(self, dendritic_potentials, activations):
+        """Tests that we have batch_size identity matrices"""
+        jacobians = linear_backward(dendritic_potentials, activations)
+        assert jacobians.shape == (self.batch_size, self.n_neurons, self.n_neurons)
+        for jacobian in jacobians:
+            identity_matrix = np.eye(self.n_neurons)
+            np.testing.assert_array_equal(jacobian, identity_matrix)
 
 
 class TestSoftmaxActivationFunction(TestActivationFunction):
@@ -42,7 +63,7 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
 
         return activations
 
-    def test_softmax_jacobian(self, dendritic_potentials: npt.NDArray, activations: npt.NDArray):
+    def test_softmax_backward(self, dendritic_potentials: npt.NDArray, activations: npt.NDArray):
         jacobians, diagonal_elements = softmax_backward(dendritic_potentials, activations, True)
 
         # Test that the dimensions make sense
