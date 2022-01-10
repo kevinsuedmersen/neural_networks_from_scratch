@@ -106,4 +106,4 @@ class TestImageDataGenerator(TestConfig):
         train_data_gen = img_data_gen.train()
         for img_batch, label_batch in train_data_gen:
             assert img_batch.shape == (self.batch_size, self.img_height, self.img_width, self.n_channels)
-            assert label_batch.shape == (self.batch_size, self.n_labels)
+            assert label_batch.shape == (self.batch_size, self.n_labels, 1)

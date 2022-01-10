@@ -3,7 +3,7 @@ import numpy.typing as npt
 import pytest
 
 from src.activation_functions import softmax_forward, relu_forward
-from src.activation_functions.softmax import softmax_jacobian
+from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
 
@@ -11,8 +11,6 @@ class TestActivationFunction(TestConfig):
     batch_size = 32
     n_neurons = 16
 
-
-class TestSoftmaxActivationFunction(TestActivationFunction):
     @pytest.fixture
     def dendritic_potentials(self) -> npt.NDArray:
         """Random dendritic potentials of layer l"""
@@ -20,6 +18,8 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
 
         return dendritic_potentials_
 
+
+class TestSoftmaxActivationFunction(TestActivationFunction):
     def test_softmax_forward(self, dendritic_potentials):
         """Tests expected shape of activations and
          whether the softmax_forward activation function makes sure that the sum of neurons
@@ -43,7 +43,7 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
         return activations
 
     def test_softmax_jacobian(self, dendritic_potentials: npt.NDArray, activations: npt.NDArray):
-        jacobians, diagonal_elements = softmax_jacobian(dendritic_potentials, activations, True)
+        jacobians, diagonal_elements = softmax_backward(dendritic_potentials, activations, True)
 
         # Test that the dimensions make sense
         batch_size = activations.shape[0]

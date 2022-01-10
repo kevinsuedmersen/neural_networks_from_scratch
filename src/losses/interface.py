@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy.typing as npt
 
-from src.activation_functions import get_jacobian_function
+from src.activation_functions import get_activation_function
 
 logger = logging.getLogger(__name__)
 
@@ -19,7 +19,7 @@ class Loss(ABC):
         assert task in ["multi_class_classification", "multi_label_classification", "regression"]
         self.output_activation = output_activation
         self.task = task
-        self.jacobian_function = get_jacobian_function(output_activation)
+        _, self.activation_function_backward = get_activation_function(output_activation)
 
     @abstractmethod
     def compute_losses(self, *args, **kwargs):

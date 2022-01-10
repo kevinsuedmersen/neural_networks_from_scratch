@@ -19,15 +19,15 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     return activations
 
 
-def softmax_jacobian(
+def softmax_backward(
         dendritic_potentials: npt.NDArray,
         activations: npt.NDArray,
         debug: bool = False
 ) -> Union[Tuple[npt.NDArray, npt.NDArray], npt.NDArray]:
     """Computes the jacobian of the softmax activation function
-    :param debug:
     :param dendritic_potentials: (batch_size, n_neurons_current_layer, 1)
     :param activations: (batch_size, n_neurons_current_layer, 1)
+    :param debug: If True, also the diagonal elements of the Jacobian are returned
     :return: (batch_size, n_neurons_current_layer, n_neurons_current_layer)
     """
     # Take the (negative) outer matmul product from the activations
@@ -47,12 +47,3 @@ def softmax_jacobian(
         return jacobians, diagonal_elements
     else:
         return jacobians
-
-
-def softmax_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -> npt.NDArray:
-    """Computes the backward pass of the softmax function.
-    :param dendritic_potentials: shape = (batch_size, n_neurons_current_layer, 1)
-    :param activations: shape = (batch_size, n_neurons_current_layer, 1)
-    :return: shape = (batch_size, n_neurons_current_layer, n_neurons_current_layer)
-    """
-    raise NotImplementedError
