@@ -43,6 +43,7 @@ def softmax_backward(
     diagonal_elements = np.squeeze(diagonal_elements)
     jacobians[:, np.arange(n_neurons), np.arange(n_neurons)] = diagonal_elements
 
+    # TODO: In the tests, retrieve diagonal elements and remove debug flag here
     if debug:
         return jacobians, diagonal_elements
     else:

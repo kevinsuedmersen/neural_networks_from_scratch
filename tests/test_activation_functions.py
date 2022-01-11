@@ -2,7 +2,8 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward
+from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward, \
+    relu_backward
 from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
@@ -40,11 +41,36 @@ class TestLinearActivationFunction(TestActivationFunction):
             np.testing.assert_array_equal(jacobian, identity_matrix)
 
 
+class TestReluActivationFunction(TestActivationFunction):
+    def test_relu_forward(self, dendritic_potentials):
+        """Tests the expected shape of activations and that the activations are not smaller than 0"""
+        activations = relu_forward(dendritic_potentials)
+        assert activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all(activations >= 0)
+
+    @pytest.fixture
+    def activations(self, dendritic_potentials):
+        activations = relu_forward(dendritic_potentials)
+
+        return activations
+
+    def test_relu_backward(self, dendritic_potentials, activations):
+        """Verifies the shape of the jacobians and that its elements are 1 where
+        dendritic_potentials > 0 and 0 elsewhere
+        """
+        jacobians = relu_backward(dendritic_potentials, activations)
+        assert jacobians.shape == (self.batch_size, self.n_neurons, self.n_neurons)
+        indices_1 = np.squeeze(dendritic_potentials > 0)
+        indices_0 = np.squeeze(dendritic_potentials <= 0)
+        diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
+        assert np.all(diagonal_elements[indices_1] == 1)
+        assert np.all(diagonal_elements[indices_0] == 0)
+
+
 class TestSoftmaxActivationFunction(TestActivationFunction):
     def test_softmax_forward(self, dendritic_potentials):
-        """Tests expected shape of activations and
-         whether the softmax_forward activation function makes sure that the sum of neurons
-        in the current layer sums up to 1
+        """Tests expected shape of activations and whether the softmax_forward activation function
+        makes sure that the sum of neurons in the current layer sums up to 1
         """
         activations = softmax_forward(dendritic_potentials)
 
@@ -76,12 +102,3 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
         for batch_idx in range(batch_size):
             for neuron_idx in range(n_neurons):
                 assert jacobians[batch_idx, neuron_idx, neuron_idx] == diagonal_elements[batch_idx, neuron_idx]
-
-
-class TestReluActivationFunction(TestActivationFunction):
-    def test_relu_forward(self, dendritic_potentials):
-        """Tests expected shape of activations"""
-        activations = relu_forward(dendritic_potentials)
-
-        # Test that the shape makes sense
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
