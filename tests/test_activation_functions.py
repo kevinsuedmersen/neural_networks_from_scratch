@@ -3,7 +3,7 @@ import numpy.typing as npt
 import pytest
 
 from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward, \
-    relu_backward
+    relu_backward, sigmoid_forward
 from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
@@ -65,6 +65,16 @@ class TestReluActivationFunction(TestActivationFunction):
         diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
         assert np.all(diagonal_elements[indices_1] == 1)
         assert np.all(diagonal_elements[indices_0] == 0)
+
+
+class TestSigmoidActivationFunction(TestActivationFunction):
+    def test_sigmoid_forward(self, dendritic_potentials):
+        """Tests that the shape of the activations make sense and that all activations are between
+        0 and 1
+        """
+        activations = sigmoid_forward(dendritic_potentials)
+        assert activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((activations >= 0) & (activations <= 1))
 
 
 class TestSoftmaxActivationFunction(TestActivationFunction):
