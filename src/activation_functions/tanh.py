@@ -19,11 +19,11 @@ def tanh_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray) -
     """Computes the Jacobians of the tanh function w.r.t. the dendritic potentials. Since the tanh
     function has a scalar input and a scalar output, the tanh's Jacobians have zeros off the main
     diagonal. The diagonal elements equal 1 - a^2.
-    :param dendritic_potentials: shape(batch_size, n_neurons_current_layer, 1)
-    :param activations: shape(batch_size, n_neurons_current_layer, 1)
-    :return: shape(batch_size, n_neurons_current_layer, n_neurons_current_layer))
+    :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
+    :param activations: shape=(batch_size, n_neurons_current_layer, 1)
+    :return: shape=(batch_size, n_neurons_current_layer, n_neurons_current_layer))
     """
-    # Get dimensionseeew
+    # Get dimensions
     batch_size = activations.shape[0]
     n_neurons = activations.shape[1]
 

@@ -16,9 +16,9 @@ def sigmoid_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray
     """Computes the Jacobians of the sigmoid function w.r.t. the dendritic potentials.
     Since the sigmoid function has a scalar input and a scalar output, the sigmoid's Jacobians have
     zeros off the main diagonal. The diagonal elements equal a * (1 - a).
-    :param dendritic_potentials: shape(batch_size, n_neurons_current_layer, 1)
-    :param activations: shape(batch_size, n_neurons_current_layer, 1)
-    :return: shape(batch_size, n_neurons_current_layer, n_neurons_current_layer))
+    :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
+    :param activations: shape=(batch_size, n_neurons_current_layer, 1)
+    :return: shape=(batch_size, n_neurons_current_layer, n_neurons_current_layer))
     """
     # Get dimensions
     batch_size = activations.shape[0]

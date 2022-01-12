@@ -116,7 +116,7 @@ class TestTanhActivationFunction(TestActivationFunction):
         jacobians = tanh_backward(dendritic_potentials, activations)
         assert jacobians.shape == (self.batch_size, self.n_neurons, self.n_neurons)
 
-        # Test that its diagonal elements are between [0, 0.25]
+        # Test that its diagonal elements are between [0, 1]
         diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
         assert np.all((diagonal_elements >= 0) & (diagonal_elements <= 1))
 
