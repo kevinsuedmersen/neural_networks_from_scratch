@@ -3,7 +3,7 @@ import numpy.typing as npt
 import pytest
 
 from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward, \
-    relu_backward, sigmoid_forward, sigmoid_backward
+    relu_backward, sigmoid_forward, sigmoid_backward, tanh_forward, tanh_backward
 from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
@@ -90,6 +90,35 @@ class TestSigmoidActivationFunction(TestActivationFunction):
         # Test that its diagonal elements are between [0, 0.25]
         diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
         assert np.all((diagonal_elements >= 0) & (diagonal_elements <= 0.25))
+
+        # Test that all off diagonal elements equal 0
+        jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)] = 0
+        assert np.all(jacobians == 0)
+
+
+class TestTanhActivationFunction(TestActivationFunction):
+    def test_tanh_forward(self, dendritic_potentials):
+        """Tests that the shape of the activations make sense and that all activations are between
+        -1 and 1
+        """
+        activations = tanh_forward(dendritic_potentials)
+        assert activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((activations >= -1) & (activations <= 1))
+
+    @pytest.fixture
+    def activations(self, dendritic_potentials):
+        return tanh_forward(dendritic_potentials)
+
+    def test_tanh_backward(self, dendritic_potentials, activations):
+        """Tests that the jacobians of the tanh function have the expected shapes and that
+        its diagonal elements are between 0 and 1 and that all other values are 0
+        """
+        jacobians = tanh_backward(dendritic_potentials, activations)
+        assert jacobians.shape == (self.batch_size, self.n_neurons, self.n_neurons)
+
+        # Test that its diagonal elements are between [0, 0.25]
+        diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
+        assert np.all((diagonal_elements >= 0) & (diagonal_elements <= 1))
 
         # Test that all off diagonal elements equal 0
         jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)] = 0
