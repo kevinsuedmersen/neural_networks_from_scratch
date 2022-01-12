@@ -3,7 +3,7 @@ import numpy.typing as npt
 import pytest
 
 from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward, \
-    relu_backward, sigmoid_forward
+    relu_backward, sigmoid_forward, sigmoid_backward
 from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
@@ -75,6 +75,25 @@ class TestSigmoidActivationFunction(TestActivationFunction):
         activations = sigmoid_forward(dendritic_potentials)
         assert activations.shape == (self.batch_size, self.n_neurons, 1)
         assert np.all((activations >= 0) & (activations <= 1))
+
+    @pytest.fixture
+    def activations(self, dendritic_potentials):
+        return sigmoid_forward(dendritic_potentials)
+
+    def test_sigmoid_backward(self, dendritic_potentials, activations):
+        """Tests that the jacobians of the sigmoid function have the expected shapes and that
+        its diagonal elements are between 0 and 0.25 and that all other values are 0
+        """
+        jacobians = sigmoid_backward(dendritic_potentials, activations)
+        assert jacobians.shape == (self.batch_size, self.n_neurons, self.n_neurons)
+
+        # Test that its diagonal elements are between [0, 0.25]
+        diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
+        assert np.all((diagonal_elements >= 0) & (diagonal_elements <= 0.25))
+
+        # Test that all off diagonal elements equal 0
+        jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)] = 0
+        assert np.all(jacobians == 0)
 
 
 class TestSoftmaxActivationFunction(TestActivationFunction):
