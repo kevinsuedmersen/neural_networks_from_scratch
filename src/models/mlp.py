@@ -41,13 +41,13 @@ class MultiLayerPerceptron(Model):
         """Adds a fully initialized layer to the model"""
         # if self.layers is empty
         if not self.layers:
-            units_prev = layer.input_shape[1]
+            n_neurons_prev = layer.input_shape[1]
 
         # if self.layers contains at least one layer
         else:
-            units_prev = self.layers[-1].output_shape[1]
+            n_neurons_prev = self.layers[-1].output_shape[1]
 
-        layer.init_parameters(units_prev)
+        layer.init_parameters(n_neurons_prev)
         self.layers.append(layer)
         self.n_layers = len(self.layers)
 
@@ -69,20 +69,22 @@ class MultiLayerPerceptron(Model):
             ypred_train: npt.NDArray,
             dendritic_potentials_out: npt.NDArray
     ):
-        """Propagate the error backward from layer L to layer 1
-        """
+        """Propagate the error backward from layer L to layer 1"""
         # Init backprop: Compute error at layer L, the output layer
         error = self.loss.init_error(
             ytrue=ytrue_train,
-            dendritic_potentials=dendritic_potentials_out,
+            dendritic_potentials_out=dendritic_potentials_out,
             activations_out=ypred_train
         )
 
         # Backprop the error from layer L-1 to layer 1
         for l in range((self.n_layers - 1), 0, -1):
-            error = self.layers[l].backward(error)
-            self.layers[l].compute_weight_grads()
-            self.layers[l].compute_bias_grads()
+            # layers[l] ==> layer l-1
+            # input error ==> layer l
+            # output error ==> layer l-1
+            error = self.layers[l - 1].backward(error, self.layers[l].weights)
+            self.layers[l - 1].compute_weight_grads()
+            self.layers[l - 1].compute_bias_grads()
 
     def _update_params(self):
         """Uses the states in each layer to update its parameters"""
