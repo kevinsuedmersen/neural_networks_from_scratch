@@ -8,19 +8,7 @@ from src.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
 
-class TestActivationFunction(TestConfig):
-    batch_size = 32
-    n_neurons = 16
-
-    @pytest.fixture
-    def dendritic_potentials(self) -> npt.NDArray:
-        """Random dendritic potentials of layer l"""
-        dendritic_potentials_ = np.random.randn(self.batch_size, self.n_neurons, 1)
-
-        return dendritic_potentials_
-
-
-class TestLinearActivationFunction(TestActivationFunction):
+class TestLinearActivationFunction(TestConfig):
     def test_linear_forward(self, dendritic_potentials):
         """Tests that inputs equal outputs"""
         activations = linear_forward(dendritic_potentials)
@@ -41,7 +29,7 @@ class TestLinearActivationFunction(TestActivationFunction):
             np.testing.assert_array_equal(jacobian, identity_matrix)
 
 
-class TestReluActivationFunction(TestActivationFunction):
+class TestReluActivationFunction(TestConfig):
     def test_relu_forward(self, dendritic_potentials):
         """Tests the expected shape of activations and that the activations are not smaller than 0"""
         activations = relu_forward(dendritic_potentials)
@@ -67,7 +55,7 @@ class TestReluActivationFunction(TestActivationFunction):
         assert np.all(diagonal_elements[indices_0] == 0)
 
 
-class TestSigmoidActivationFunction(TestActivationFunction):
+class TestSigmoidActivationFunction(TestConfig):
     def test_sigmoid_forward(self, dendritic_potentials):
         """Tests that the shape of the activations make sense and that all activations are between
         0 and 1
@@ -96,7 +84,7 @@ class TestSigmoidActivationFunction(TestActivationFunction):
         assert np.all(jacobians == 0)
 
 
-class TestTanhActivationFunction(TestActivationFunction):
+class TestTanhActivationFunction(TestConfig):
     def test_tanh_forward(self, dendritic_potentials):
         """Tests that the shape of the activations make sense and that all activations are between
         -1 and 1
@@ -125,7 +113,7 @@ class TestTanhActivationFunction(TestActivationFunction):
         assert np.all(jacobians == 0)
 
 
-class TestSoftmaxActivationFunction(TestActivationFunction):
+class TestSoftmaxActivationFunction(TestConfig):
     def test_softmax_forward(self, dendritic_potentials):
         """Tests expected shape of activations and whether the softmax_forward activation function
         makes sure that the sum of neurons in the current layer sums up to 1
