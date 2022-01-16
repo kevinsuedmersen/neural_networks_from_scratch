@@ -21,8 +21,7 @@ def softmax_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
 
 def softmax_backward(
         dendritic_potentials: npt.NDArray,
-        activations: npt.NDArray,
-        debug: bool = False
+        activations: npt.NDArray
 ) -> Union[Tuple[npt.NDArray, npt.NDArray], npt.NDArray]:
     """Computes the jacobian of the softmax activation function
     :param dendritic_potentials: (batch_size, n_neurons_current_layer, 1)
@@ -43,8 +42,4 @@ def softmax_backward(
     diagonal_elements = np.squeeze(diagonal_elements)
     jacobians[:, np.arange(n_neurons), np.arange(n_neurons)] = diagonal_elements
 
-    # TODO: In the tests, retrieve diagonal elements and remove debug flag here
-    if debug:
-        return jacobians, diagonal_elements
-    else:
-        return jacobians
+    return jacobians

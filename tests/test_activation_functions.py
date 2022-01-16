@@ -148,7 +148,8 @@ class TestSoftmaxActivationFunction(TestActivationFunction):
         return activations
 
     def test_softmax_backward(self, dendritic_potentials: npt.NDArray, activations: npt.NDArray):
-        jacobians, diagonal_elements = softmax_backward(dendritic_potentials, activations, True)
+        jacobians = softmax_backward(dendritic_potentials, activations)
+        diagonal_elements = jacobians[:, np.arange(self.n_neurons), np.arange(self.n_neurons)]
 
         # Test that the dimensions make sense
         batch_size = activations.shape[0]
