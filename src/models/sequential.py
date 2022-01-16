@@ -23,11 +23,12 @@ class SequentialModel(Model):
             optimizer: Optimizer,
     ):
         """
-        Instantiates a Multi Layer Perceptron model
+        Instantiates a model consisting of a sequential stack of layers
         :param layers: List of layers from [0, L], where layer 0 represents the input layer and L the output layer
-        :param loss:
-        :param metrics_train:
-        :param optimizer:
+        :param loss: Loss instance computing losses, cost and initializing backpropagation
+        :param metrics_train: List of metrics to be evaluated on the training set
+        :param metrics_val: List of metrics to be evaluated on the validation set
+        :param optimizer: Optimizer instance applying weight updates
         """
         self.loss = loss
         self.metrics_train = metrics_train
@@ -78,15 +79,15 @@ class SequentialModel(Model):
             activations_out=ypred_train
         )
 
-        # Backprop the error from layer L-1 to layer 1
-        for l in range((self.n_layers - 1), 1, -1):
-            # layers[l] ==> layer l-1
-            # input error ==> layer l
-            # output error ==> layer l-1
-            error = self.layers[l - 1].backward_propagate(error, self.layers[l].weights)
-            self.layers[l - 1].compute_weight_gradients()
-            self.layers[l - 1].compute_bias_gradients()
-            self.layers[l - 1].update_parameters()
+        # Backprop the error from layer with index L-2 (layer before output layer) to layer with
+        # index 1 (layer after input layer)
+        for l in range((self.n_layers - 2), 0, -1):
+            # input error ==> layer l+1
+            # output error ==> layer l
+            error = self.layers[l].backward_propagate(error, self.layers[l + 1].weights)
+            self.layers[l].compute_weight_gradients(self.layers[l - 1].activations)
+            self.layers[l].compute_bias_gradients()
+            self.layers[l].update_parameters()
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
