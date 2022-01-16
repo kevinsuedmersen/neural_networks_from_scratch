@@ -18,8 +18,24 @@ def set_root_logger():
 
 
 def get_cli_args():
+    """Parses CLI arguments"""
     parser = argparse.ArgumentParser(description="CLI argument parser")
     parser.add_argument("--config_path", default=None, type=str)
     args = parser.parse_args()
 
     return args
+
+
+def log_progress(counter: int, total: int = None, frequency: int = 100, topic: str = None):
+    """Logs progress"""
+    if (counter + 1) % frequency == 0:
+        if topic is not None:
+            log_msg = f"{topic}: {counter}/{total}"
+        else:
+            log_msg = f"Progress: {counter}/{total}"
+
+        if total is not None:
+            progress_percentage = (counter + 1) / total * 100
+            log_msg += f" ({progress_percentage:.2f}%)"
+
+        logger.info(log_msg)

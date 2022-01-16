@@ -803,8 +803,15 @@ $$
 Again, we will first transpose both sides of the above equation giving us
 $$
 \boldsymbol{\delta}^{l-1} 
-= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l
+= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l,
 $$
+which, in our use case, is equivalent to the following, since, as the examples will show, the Jacobian is usually a symmetric matrix
+$$
+\boldsymbol{\delta}^{l-1} 
+= \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}) \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
+$$
+
+
 As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
 ![Delta_l_1.png](Delta_l_1.png)

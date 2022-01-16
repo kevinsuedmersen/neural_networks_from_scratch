@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import numpy.typing as npt
 
-from src.losses.interface import Loss
-from src.losses.utils import simplify_init_error
+from src.losses import Loss
+from src.losses.decorators import simplify_init_error
 
 logger = logging.getLogger(__name__)
 
@@ -50,7 +50,7 @@ class CategoricalCrossEntropyLoss(Loss):
         :param activations_out: Activations at the output layer, i.e. predictions
         :return: Error at the output layer
         """
-        jacobians = self.jacobian_function(dendritic_potentials_out, activations_out)
+        jacobians = self.activation_function_backward(dendritic_potentials_out, activations_out)
         gradients = self._compute_loss_gradient(ytrue, activations_out)
         error = np.matmul(jacobians, gradients)
 

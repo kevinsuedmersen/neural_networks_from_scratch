@@ -19,4 +19,4 @@ Each type of network is explained by a separate document in the `theory` folder 
 
 # Feedback
 
-Let's make this repository better together, so if you have some feedback, feel free to create an issue [here](https://kevinsuedmersen.atlassian.net/jira/software/projects/NNFS/boards/1)
+Let's make this repository better together, so if you have some feedback, feel free to create an issue.

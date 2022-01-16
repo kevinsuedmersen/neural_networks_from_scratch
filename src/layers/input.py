@@ -1,14 +1,18 @@
+import logging
 from functools import reduce
 from typing import Tuple
 
 import numpy.typing as npt
 
-from src.layers.interface import Layer
+from src.layers import Layer
+
+logger = logging.getLogger(__name__)
 
 
 class InputLayer(Layer):
     def init_parameters(self, *args, **kwargs):
-        pass
+        """This method is called in the model.add_layer method and hence, it must be implemented here"""
+        logger.info("Skipping parameter initialization of the input layer, because it has no parameters")
 
     def __init__(self, input_shape: Tuple):
         self.input_shape = input_shape
@@ -17,7 +21,7 @@ class InputLayer(Layer):
         flattened_dim = reduce(lambda x, y: x*y, input_shape[1:])
         self.output_shape = (input_shape[0], flattened_dim)
 
-    def forward(self, x_batch: npt.NDArray) -> npt.NDArray:
+    def forward_propagate(self, x_batch: npt.NDArray) -> npt.NDArray:
         """Makes sure x_batch is converted into an array of shape (batch_size, n_features)"""
         assert x_batch.shape[1:] == self.input_shape[1:], \
             f"Expected x_batch.shape={self.input_shape}, actual x_batch.shape={x_batch.shape}." \
@@ -26,11 +30,20 @@ class InputLayer(Layer):
 
         return x_batch_reshaped
 
-    def backward(self):
-        pass
+    def backward_propagate(self):
+        raise NotImplementedError(
+            "The input layer has no parameters and hence no errors should be computed during "
+            "backpropagation"
+        )
 
-    def compute_weight_grads(self):
-        pass
+    def compute_weight_gradients(self):
+        raise NotImplementedError(
+            "The input layer has no parameters, so no weight gradients should be computed during "
+            "backpropagation"
+        )
 
-    def compute_bias_grads(self):
-        pass
+    def compute_bias_gradients(self):
+        raise NotImplementedError(
+            "The input layer has no parameters, so no bias gradients should be computed during "
+            "backpropagation"
+        )

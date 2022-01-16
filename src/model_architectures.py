@@ -4,18 +4,18 @@ from src.layers.dense import DenseLayer
 from src.layers.input import InputLayer
 from src.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
 from src.metrics.metrics import Accuracy
-from src.models.mlp import Model, MultiLayerPerceptron
-from src.optimizers.optimizers import StochasticGradientDescent
+from src.models.sequential import Model, SequentialModel
+from src.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
 
 logger = logging.getLogger(__name__)
 
 
-def simple_mlp() -> MultiLayerPerceptron:
-    mlp = MultiLayerPerceptron(
+def simple_mlp() -> SequentialModel:
+    mlp = SequentialModel(
         loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
         metrics_val=[Accuracy("acc_val")],
-        optimizer=StochasticGradientDescent()
+        optimizer=StochasticGradientDescentOptimizer()
     )
     mlp.add_layer(InputLayer(input_shape=(None, 128, 128, 3)))
     mlp.add_layer(DenseLayer(512, "relu"))
