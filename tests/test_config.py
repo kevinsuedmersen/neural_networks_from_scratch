@@ -5,7 +5,9 @@ import pytest
 
 class TestConfig:
     batch_size = 32
+    n_neurons_prev = 32
     n_neurons = 16
+    n_neurons_next = 8
     activation_function_names = ["linear", "relu", "sigmoid", "tanh", "softmax"]
 
     @pytest.fixture
