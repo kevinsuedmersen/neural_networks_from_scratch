@@ -30,6 +30,7 @@ class DenseLayer(Layer):
         self.dendritic_potentials = None
         self.activations = None
         self.error = None
+        self.weight_gradients = None
 
     def _init_weights(self, n_neurons_prev: int):
         self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.01  # batch_size=1 for broadcasting
@@ -67,8 +68,18 @@ class DenseLayer(Layer):
 
         return self.error
 
-    def compute_weight_gradients(self, *args, **kwargs):
-        raise NotImplementedError
+    def compute_weight_gradients(self, activations_prev: npt.NDArray, *args, **kwargs):
+        """Computes the weight gradients of the current layer
+        :param activations_prev: If the current layer is l, these activations belong to layer l - 1
+        """
+        # Derivatives of the loss function w.r.t. each weight in each batch-element in the current layer
+        # shape=(batch_size, n_neurons, n_neurons_prev)
+        activations_prev_t = np.transpose(activations_prev, axes=[0, 2, 1])
+        derivative_loss_wrt_weights = np.matmul(self.error, activations_prev_t)
+
+        # Derivative of the cost function w.r.t. each weight in the current layer
+        # shape=(1, n_neurons, n_neurons_prev)
+        self.weight_gradients = np.mean(derivative_loss_wrt_weights, axis=0, keepdims=True)
 
     def compute_bias_gradients(self, *args, **kwargs):
         raise NotImplementedError
