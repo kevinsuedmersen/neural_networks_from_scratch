@@ -71,20 +71,20 @@ class SequentialModel(Model):
             ypred_train: npt.NDArray,
             dendritic_potentials_out: npt.NDArray
     ):
-        """Propagate the error backward from layer L to layer 1"""
-        # Init backprop: Compute error at layer L, the output layer
-        error = self.loss.init_error(
+        """Propagate the errors backward from layer L to layer 1"""
+        # Init backprop: Compute errors at layer L, the output layer
+        errors = self.loss.init_error(
             ytrue=ytrue_train,
             dendritic_potentials_out=dendritic_potentials_out,
             activations_out=ypred_train
         )
 
-        # Backprop the error from layer with index L-2 (layer before output layer) to layer with
+        # Backprop the errors from layer with index L-2 (layer before output layer) to layer with
         # index 1 (layer after input layer)
         for l in range((self.n_layers - 2), 0, -1):
-            # input error ==> layer l+1
-            # output error ==> layer l
-            error = self.layers[l].backward_propagate(error, self.layers[l + 1].weights)
+            # input errors ==> layer l+1
+            # output errors ==> layer l
+            errors = self.layers[l].backward_propagate(errors, self.layers[l + 1].weights)
             self.layers[l].compute_weight_gradients(self.layers[l - 1].activations)
             self.layers[l].compute_bias_gradients()
             self.layers[l].update_parameters()
