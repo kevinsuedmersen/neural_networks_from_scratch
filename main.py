@@ -3,7 +3,7 @@ import logging
 from configobj import ConfigObj
 
 from src.data_generators.factory import get_data_generator
-from src.models.factory import get_model
+from src.model_architectures import get_model
 from src.utils import get_cli_args
 
 logger = logging.getLogger(__name__)
