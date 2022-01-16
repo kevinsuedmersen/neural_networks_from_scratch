@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import numpy.typing as npt
 
-from src.losses.interface import Loss
-from src.losses.utils import simplify_init_error
+from src.losses import Loss
+from src.losses.decorators import simplify_init_error
 
 logger = logging.getLogger(__name__)
 
