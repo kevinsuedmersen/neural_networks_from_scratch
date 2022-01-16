@@ -42,14 +42,14 @@ class DenseLayer(Layer):
         self._init_biases()
         self.output_shape = (None, self.n_neurons)
 
-    def forward(self, activations_prev: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
+    def forward_propagate(self, activations_prev: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Computes the activations of the current layer"""
         self.dendritic_potentials = np.matmul(self.weights, activations_prev) + self.biases
         self.activations = self.activation_function_forward(self.dendritic_potentials)
 
         return self.activations, self.dendritic_potentials
 
-    def backward(self, error_next: npt.NDArray, weights_next: npt.NDArray) -> npt.NDArray:
+    def backward_propagate(self, error_next: npt.NDArray, weights_next: npt.NDArray) -> npt.NDArray:
         """Computes the backward pass of the current layer
         :param error_next: If the current layer is l, error_next is the error in layer l + 1
         :param weights_next: If the current layer is l, weights_next are the weights in layer l + 1
@@ -69,11 +69,11 @@ class DenseLayer(Layer):
 
         return self.error
 
-    def compute_weight_grads(self, *args, **kwargs):
-        pass
+    def compute_weight_gradients(self, *args, **kwargs):
+        raise NotImplementedError
 
-    def compute_bias_grads(self, *args, **kwargs):
-        pass
+    def compute_bias_gradients(self, *args, **kwargs):
+        raise NotImplementedError
 
-    def update_params(self):
-        pass
+    def update_parameters(self):
+        raise NotImplementedError

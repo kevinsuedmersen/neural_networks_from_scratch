@@ -10,17 +10,17 @@ class Layer(ABC):
         pass
 
     @abstractmethod
-    def forward(self, *args, **kwargs):
+    def forward_propagate(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def backward(self, *args, **kwargs):
+    def backward_propagate(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def compute_weight_grads(self, *args, **kwargs):
+    def compute_weight_gradients(self, *args, **kwargs):
         pass
 
     @abstractmethod
-    def compute_bias_grads(self, *args, **kwargs):
+    def compute_bias_gradients(self, *args, **kwargs):
         pass

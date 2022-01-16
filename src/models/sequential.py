@@ -55,12 +55,12 @@ class SequentialModel(Model):
     def _forward_pass(self, x_train: npt.NDArray):
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
-        activations = self.layers[0].forward(x_train)
+        activations = self.layers[0].forward_propagate(x_train)
         dendritic_potentials = None
 
         # Forward propagate the activations from layer 1 to layer L
         for l in range(1, self.n_layers):
-            activations, dendritic_potentials = self.layers[l].forward(activations)
+            activations, dendritic_potentials = self.layers[l].forward_propagate(activations)
 
         return activations, dendritic_potentials
 
@@ -83,10 +83,10 @@ class SequentialModel(Model):
             # layers[l] ==> layer l-1
             # input error ==> layer l
             # output error ==> layer l-1
-            error = self.layers[l - 1].backward(error, self.layers[l].weights)
-            self.layers[l - 1].compute_weight_grads()
-            self.layers[l - 1].compute_bias_grads()
-            self.layers[l - 1].update_params()
+            error = self.layers[l - 1].backward_propagate(error, self.layers[l].weights)
+            self.layers[l - 1].compute_weight_gradients()
+            self.layers[l - 1].compute_bias_gradients()
+            self.layers[l - 1].update_parameters()
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
