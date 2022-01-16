@@ -65,8 +65,6 @@ class DenseLayer(Layer):
         j_w = np.matmul(jacobians, weights_next_t)
         self.error = np.matmul(j_w, error_next)
 
-        # TODO: Test that the shape of the errors is (batch_size, n_neurons, 1)
-
         return self.error
 
     def compute_weight_gradients(self, *args, **kwargs):
