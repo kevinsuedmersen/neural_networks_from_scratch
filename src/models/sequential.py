@@ -6,7 +6,7 @@ import numpy.typing as npt
 from src.layers.dense import DenseLayer
 from src.layers.input import InputLayer
 from src.losses import Loss
-from src.metrics.interface import Metric
+from src.metrics import Metric
 from src.models.interface import Model
 from src.optimizers.interface import Optimizer
 from src.utils import log_progress
