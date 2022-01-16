@@ -805,7 +805,7 @@ $$
 \boldsymbol{\delta}^{l-1} 
 = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l,
 $$
-which, in our use case, is equivalent to the following, since the Jacobian is usually a symmetric matrix as the examples will show
+which, in our use case, is equivalent to the following, since, as the examples will show, the Jacobian is usually a symmetric matrix
 $$
 \boldsymbol{\delta}^{l-1} 
 = \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}) \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.

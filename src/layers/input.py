@@ -1,3 +1,4 @@
+import logging
 from functools import reduce
 from typing import Tuple
 
@@ -5,10 +6,13 @@ import numpy.typing as npt
 
 from src.layers.interface import Layer
 
+logger = logging.getLogger(__name__)
+
 
 class InputLayer(Layer):
     def init_parameters(self, *args, **kwargs):
-        pass
+        """This method is called in the model.add_layer method and hence, it must be implemented here"""
+        logger.info("Skipping parameter initialization of the input layer, because it has no parameters")
 
     def __init__(self, input_shape: Tuple):
         self.input_shape = input_shape
@@ -27,10 +31,19 @@ class InputLayer(Layer):
         return x_batch_reshaped
 
     def backward(self):
-        pass
+        raise NotImplementedError(
+            "The input layer has no parameters and hence no errors should be computed during "
+            "backpropagation"
+        )
 
     def compute_weight_grads(self):
-        pass
+        raise NotImplementedError(
+            "The input layer has no parameters, so no weight gradients should be computed during "
+            "backpropagation"
+        )
 
     def compute_bias_grads(self):
-        pass
+        raise NotImplementedError(
+            "The input layer has no parameters, so no bias gradients should be computed during "
+            "backpropagation"
+        )

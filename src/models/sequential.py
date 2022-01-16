@@ -9,11 +9,12 @@ from src.losses.interface import Loss
 from src.metrics.interface import Metric
 from src.models.interface import Model
 from src.optimizers.interface import Optimizer
+from src.utils import log_progress
 
 logger = logging.getLogger(__name__)
 
 
-class MultiLayerPerceptron(Model):
+class SequentialModel(Model):
     def __init__(
             self,
             loss: Loss,
@@ -78,18 +79,14 @@ class MultiLayerPerceptron(Model):
         )
 
         # Backprop the error from layer L-1 to layer 1
-        for l in range((self.n_layers - 1), 0, -1):
+        for l in range((self.n_layers - 1), 1, -1):
             # layers[l] ==> layer l-1
             # input error ==> layer l
             # output error ==> layer l-1
             error = self.layers[l - 1].backward(error, self.layers[l].weights)
             self.layers[l - 1].compute_weight_grads()
             self.layers[l - 1].compute_bias_grads()
-
-    def _update_params(self):
-        """Uses the states in each layer to update its parameters"""
-        for layer in self.layers:
-            layer.update_params()
+            self.layers[l - 1].update_params()
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
@@ -102,7 +99,6 @@ class MultiLayerPerceptron(Model):
             ypred_train=activations_out,
             dendritic_potentials_out=dendritic_potentials_out
         )
-        self._update_params()
 
     def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
         pass
@@ -111,20 +107,27 @@ class MultiLayerPerceptron(Model):
             self,
             data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
             data_gen_val: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
-            epochs: int,
+            n_epochs: int,
             batch_size: int,
+            n_samples_train: int = None,
+            n_samples_val: int = None,
             **kwargs
     ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
-        for epoch_counter in range(epochs):
+        logger.info("Training started")
+        for epoch_counter in range(n_epochs):
             # Train on batches of training data until there is no data left
-            for x_train, ytrue_train in data_gen_train:
+            for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
                 self.train_step(x_train, ytrue_train)
+                log_progress(train_batch_counter, n_samples_train, topic="Train batch")
 
             # Evaluate on the validation set
-            for x_val, ytrue_val in data_gen_train:
+            for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
                 self.val_step(x_val, ytrue_val)
+                log_progress(val_batch_counter, n_samples_val, topic="Validation batch")
+
+            log_progress(epoch_counter, n_epochs, 1, "Epoch")
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
         pass

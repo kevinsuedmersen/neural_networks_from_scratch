@@ -3,10 +3,6 @@ from abc import ABC, abstractmethod
 
 class Model(ABC):
     @abstractmethod
-    def add_layer(self, *args, **kwargs):
-        pass
-
-    @abstractmethod
     def train_step(self, *args, **kwargs):
         pass
 

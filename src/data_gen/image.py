@@ -174,7 +174,7 @@ class ImageDataGenerator(DataGenerator):
                 yield img_batch, label_batch
         # TODO: Test that in each batch, each image is unique
 
-    def _get_data_gen(self, dataset: str) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
+    def _get_data_gen(self, dataset: str) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
         """Returns a tuple of image data_gen generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
@@ -186,20 +186,32 @@ class ImageDataGenerator(DataGenerator):
         )
         if dataset == "train":
             data_gen = self._batch_generator(img_paths_2_one_hot_train)
+            n_samples = len(img_paths_2_one_hot_train)
+
         elif dataset == "val":
             data_gen = self._batch_generator(img_paths_2_one_hot_val)
+            n_samples = len(img_paths_2_one_hot_val)
+
         elif dataset == "test":
             data_gen = self._batch_generator(img_paths_2_one_hot_test)
+            n_samples = len(img_paths_2_one_hot_test)
+
         else:
             raise ValueError(f"Unknown dataset provided: {dataset}")
 
-        return data_gen
+        return data_gen, n_samples
 
-    def train(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
-        return self._get_data_gen("train")
+    def train(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+        _data_gen_train, n_samples_train = self._get_data_gen("train")
 
-    def val(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
-        return self._get_data_gen("val")
+        return _data_gen_train, n_samples_train
 
-    def test(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
-        return self._get_data_gen("test")
+    def val(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+        _data_gen_val, n_samples_val = self._get_data_gen("val")
+
+        return _data_gen_val, n_samples_val
+
+    def test(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+        _data_gen_test, n_samples_test = self._get_data_gen("test")
+
+        return _data_gen_test, n_samples_test
