@@ -4,7 +4,7 @@ from typing import Tuple
 
 import numpy.typing as npt
 
-from src.layers.interface import Layer
+from src.layers import Layer
 
 logger = logging.getLogger(__name__)
 
