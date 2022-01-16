@@ -74,3 +74,7 @@ class TestDenseLayer(TestLayer):
         """Test that the shape of the computed weight gradients is as expected"""
         backward_propagated_layer.compute_weight_gradients(activations_prev)
         assert backward_propagated_layer.weight_gradients.shape == (1, self.n_neurons, self.n_neurons_prev)
+
+    def test_compute_bias_gradients(self, backward_propagated_layer):
+        backward_propagated_layer.compute_bias_gradients()
+        assert backward_propagated_layer.bias_gradients.shape == (1, self.n_neurons, 1)

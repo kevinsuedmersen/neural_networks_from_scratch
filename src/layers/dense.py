@@ -29,8 +29,9 @@ class DenseLayer(Layer):
         self.output_shape = None
         self.dendritic_potentials = None
         self.activations = None
-        self.error = None
+        self.errors = None
         self.weight_gradients = None
+        self.bias_gradients = None
 
     def _init_weights(self, n_neurons_prev: int):
         self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.01  # batch_size=1 for broadcasting
@@ -64,9 +65,9 @@ class DenseLayer(Layer):
         # self.error.shape = (batch_size, n_neurons, 1)
         weights_next_t = np.transpose(weights_next, axes=[0, 2, 1])
         j_w = np.matmul(jacobians, weights_next_t)
-        self.error = np.matmul(j_w, error_next)
+        self.errors = np.matmul(j_w, error_next)
 
-        return self.error
+        return self.errors
 
     def compute_weight_gradients(self, activations_prev: npt.NDArray, *args, **kwargs):
         """Computes the weight gradients of the current layer
@@ -75,14 +76,17 @@ class DenseLayer(Layer):
         # Derivatives of the loss function w.r.t. each weight in each batch-element in the current layer
         # shape=(batch_size, n_neurons, n_neurons_prev)
         activations_prev_t = np.transpose(activations_prev, axes=[0, 2, 1])
-        derivative_loss_wrt_weights = np.matmul(self.error, activations_prev_t)
+        derivative_loss_wrt_weights = np.matmul(self.errors, activations_prev_t)
 
         # Derivative of the cost function w.r.t. each weight in the current layer
         # shape=(1, n_neurons, n_neurons_prev)
         self.weight_gradients = np.mean(derivative_loss_wrt_weights, axis=0, keepdims=True)
 
     def compute_bias_gradients(self, *args, **kwargs):
-        raise NotImplementedError
+        """Computes the bias gradients of the current layer"""
+        # Bias gradients equal the errors averaged over all batch elements
+        # shape=(1, n_neurons, 1)
+        self.bias_gradients = np.mean(self.errors, axis=0, keepdims=True)
 
     def update_parameters(self):
         raise NotImplementedError
