@@ -6,6 +6,7 @@ import pytest
 class TestConfig:
     batch_size = 32
     n_neurons = 16
+    activation_function_names = ["linear", "relu", "sigmoid", "tanh", "softmax"]
 
     @pytest.fixture
     def dendritic_potentials(self) -> npt.NDArray:

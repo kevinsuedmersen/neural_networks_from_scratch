@@ -31,8 +31,8 @@ class DenseLayer(Layer):
         self.activations = None
         self.error = None
 
-    def _init_weights(self, units_prev: int):
-        self.weights = np.random.randn(1, self.n_neurons, units_prev) * 0.01  # batch_size=1 for broadcasting
+    def _init_weights(self, n_neurons_prev: int):
+        self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.01  # batch_size=1 for broadcasting
 
     def _init_biases(self):
         self.biases = np.random.randn(1, self.n_neurons, 1)  # batch_size=1 for broadcasting
