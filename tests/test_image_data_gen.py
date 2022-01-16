@@ -103,7 +103,7 @@ class TestImageDataGenerator(TestConfig):
         assert len(unique_filepaths) == len(all_filepaths)
 
     def test_train(self, img_data_gen):
-        train_data_gen = img_data_gen.train()
+        train_data_gen, n_samples_train = img_data_gen.train()
         for img_batch, label_batch in train_data_gen:
             assert img_batch.shape == (self.batch_size, self.img_height, self.img_width, self.n_channels)
             assert label_batch.shape == (self.batch_size, self.n_labels, 1)
