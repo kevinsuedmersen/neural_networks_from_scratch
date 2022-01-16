@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from src.data_gen.interface import DataGenerator
+from src.data_generators import DataGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -175,7 +175,7 @@ class ImageDataGenerator(DataGenerator):
         # TODO: Test that in each batch, each image is unique
 
     def _get_data_gen(self, dataset: str) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
-        """Returns a tuple of image data_gen generators for training, validation and testing each of them
+        """Returns a tuple of image data_generators generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
         img_paths_2_labels = self._get_img_paths_2_labels()
@@ -201,17 +201,17 @@ class ImageDataGenerator(DataGenerator):
 
         return data_gen, n_samples
 
-    def train(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def train(self):
         _data_gen_train, n_samples_train = self._get_data_gen("train")
 
         return _data_gen_train, n_samples_train
 
-    def val(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def val(self):
         _data_gen_val, n_samples_val = self._get_data_gen("val")
 
         return _data_gen_val, n_samples_val
 
-    def test(self) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def test(self):
         _data_gen_test, n_samples_test = self._get_data_gen("test")
 
         return _data_gen_test, n_samples_test
