@@ -25,6 +25,5 @@ class TestConfig:
     def config_parser(self) -> ConfigParser:
         cp = ConfigParser(os.path.join("..", "configs", "image_classification.ini"))
         cp.data_dir = "fixtures"
-        cp.n_epochs = 1
 
         return cp
