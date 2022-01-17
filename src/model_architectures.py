@@ -10,7 +10,7 @@ from src.optimizers.stochastic_gradient_descent import StochasticGradientDescent
 logger = logging.getLogger(__name__)
 
 
-def simple_mlp() -> SequentialModel:
+def get_simple_mlp_model() -> SequentialModel:
     mlp = SequentialModel(
         loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
@@ -31,6 +31,6 @@ def simple_mlp() -> SequentialModel:
 
 def get_model(model_name: str) -> Model:
     if model_name == "simple_mlp":
-        return simple_mlp()
+        return get_simple_mlp_model()
     else:
         ValueError(f"Unknown or non-implemented model_name provided: {model_name}")
