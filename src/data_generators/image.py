@@ -199,6 +199,8 @@ class ImageDataGenerator(DataGenerator):
         else:
             raise ValueError(f"Unknown dataset provided: {dataset}")
 
+        logger.info(f"Number of images in the '{dataset}' dataset: {n_samples}")
+
         return data_gen, n_samples
 
     def train(self):
