@@ -52,7 +52,7 @@ class DenseLayer(Layer):
         return self.activations, self.dendritic_potentials
 
     def backward_propagate(self, error_next: npt.NDArray, weights_next: npt.NDArray) -> npt.NDArray:
-        """Computes the backward pass of the current layer
+        """Computes the errors of the current layer
         :param error_next: If the current layer is l, error_next is the error in layer l + 1
         :param weights_next: If the current layer is l, weights_next are the weights in layer l + 1
         :return: Returns the error of the current layer, i.e. layer l
