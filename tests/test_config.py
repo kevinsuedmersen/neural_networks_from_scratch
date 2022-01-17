@@ -1,6 +1,10 @@
+import os
+
 import numpy as np
 import numpy.typing as npt
 import pytest
+
+from src.config_parser import ConfigParser
 
 
 class TestConfig:
@@ -16,3 +20,11 @@ class TestConfig:
         dendritic_potentials_ = np.random.randn(self.batch_size, self.n_neurons, 1)
 
         return dendritic_potentials_
+
+    @pytest.fixture
+    def config_parser(self) -> ConfigParser:
+        cp = ConfigParser(os.path.join("..", "configs", "image_classification.ini"))
+        cp.data_dir = "fixtures"
+        cp.n_epochs = 1
+
+        return cp
