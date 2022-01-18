@@ -17,14 +17,14 @@ def get_simple_mlp_model() -> SequentialModel:
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer()
     )
-    mlp.add_layer(InputLayer(input_shape=(None, 128, 128, 3)))
-    mlp.add_layer(DenseLayer(512, "relu"))
-    mlp.add_layer(DenseLayer(256, "relu"))
-    mlp.add_layer(DenseLayer(128, "relu"))
-    mlp.add_layer(DenseLayer(64, "relu"))
-    mlp.add_layer(DenseLayer(32, "relu"))
-    mlp.add_layer(DenseLayer(16, "relu"))
-    mlp.add_layer(DenseLayer(2, "softmax"))
+    mlp.add_layer(InputLayer(input_shape=(None, 128, 128, 3), layer_idx=0))
+    mlp.add_layer(DenseLayer(512, "relu", layer_idx=1))
+    mlp.add_layer(DenseLayer(256, "relu", layer_idx=2))
+    mlp.add_layer(DenseLayer(128, "relu", layer_idx=3))
+    mlp.add_layer(DenseLayer(64, "relu", layer_idx=4))
+    mlp.add_layer(DenseLayer(32, "relu", layer_idx=5))
+    mlp.add_layer(DenseLayer(16, "relu", layer_idx=6))
+    mlp.add_layer(DenseLayer(2, "softmax", layer_idx=7))
 
     return mlp
 
