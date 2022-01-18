@@ -53,7 +53,7 @@ class SequentialModel(Model):
         self.layers.append(layer)
         self.n_layers = len(self.layers)
 
-    def _forward_pass(self, x_train: npt.NDArray):
+    def _forward_pass(self, x_train: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
         activations = self.layers[0].forward_propagate(x_train)
@@ -72,14 +72,18 @@ class SequentialModel(Model):
             dendritic_potentials_out: npt.NDArray
     ):
         """Propagate the errors backward from layer L to layer 1"""
-        # Init backprop: Compute errors at layer L, the output layer
+        # Init backprop: Intitially, at layer L (the output layer), compute errors and gradients
         errors = self.loss.init_error(
             ytrue=ytrue_train,
             dendritic_potentials_out=dendritic_potentials_out,
             activations_out=ypred_train
         )
+        self.layers[-1].errors = errors
+        self.layers[-1].compute_weight_gradients(activations_prev=self.layers[-2].activations)
+        self.layers[-1].compute_bias_gradients()
+        self.layers[-1].update_parameters()
 
-        # Backprop the errors from layer with index L-2 (layer before output layer) to layer with
+        # Continue to backprop the errors from layer with index L-2 (layer before output layer) to layer with
         # index 1 (layer after input layer)
         for l in range((self.n_layers - 2), 0, -1):
             # input errors ==> layer l+1
