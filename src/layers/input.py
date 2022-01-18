@@ -10,9 +10,11 @@ logger = logging.getLogger(__name__)
 
 
 class InputLayer(Layer):
-    def __init__(self, input_shape: Tuple):
+    def __init__(self, input_shape: Tuple, layer_idx: int = None):
         super().__init__()
         self.input_shape = input_shape
+        self.layer_idx = layer_idx
+
         # in self.forward(), all but the batch dimensions will be flattened. So, the size of the
         # flattened dimension will the product of all dimensions except for the batch dimension
         flattened_dim = reduce(lambda x, y: x*y, input_shape[1:])
