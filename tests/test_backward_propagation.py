@@ -21,19 +21,20 @@ class TestBackwardPropagation(TestConfig):
         return ml_job_
 
     @pytest.fixture
-    def model(self, config_parser):
+    def fixed_model(self, config_parser):
         return get_model(config_parser.model_name)
 
-    def test_weight_gradients(self, ml_job, config_parser, model):
+    def test_weight_gradients(self, ml_job, config_parser, fixed_model):
         """Tests that the backward propagation algorithm computes the correct weight gradients"""
         # Extract all weight gradients and store them in a flattened numpy array
         # Flattened, because each layer's weight matrices have different dimensions
         weight_gradients = []
-        for layer in ml_job.model.layers:
+        for layer in ml_job.model.layers[1:]:
             flat_weight_gradients = layer.weight_gradients.ravel().reshape(-1, 1)
             weight_gradients.append(flat_weight_gradients)
         # shape=(n_layers, n_neurons, n_neurons_prev)
         weight_gradients_backprop = np.concatenate(weight_gradients, axis=0)
+        print()
 
         # Forward propagate ``model`` and cache the loss value
 
