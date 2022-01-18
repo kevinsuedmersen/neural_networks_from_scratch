@@ -79,14 +79,14 @@ class DenseLayer(Layer):
         derivative_loss_wrt_weights = np.matmul(self.errors, activations_prev_t)
 
         # Derivative of the cost function w.r.t. each weight in the current layer
-        # shape=(1, n_neurons, n_neurons_prev)
+        # shape=(1, n_neurons, n_neurons_prev), the same as the layer's weights
         self.weight_gradients = np.mean(derivative_loss_wrt_weights, axis=0, keepdims=True)
 
     def compute_bias_gradients(self, *args, **kwargs):
         """Computes the bias gradients of the current layer"""
         # Bias gradients equal the errors averaged over all batch elements
-        # shape=(1, n_neurons, 1)
+        # shape=(1, n_neurons, 1), same as dendritic_potentials and activations
         self.bias_gradients = np.mean(self.errors, axis=0, keepdims=True)
 
     def update_parameters(self):
-        raise NotImplementedError
+        logger.warning("the update_parameters method is not implemented yet and currently does nothing")
