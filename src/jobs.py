@@ -1,5 +1,6 @@
 import logging
 
+import src.constants as c
 from src.config_parser import ConfigParser
 from src.data_generators.factory import get_data_generator
 from src.model_architectures import get_model
@@ -18,9 +19,16 @@ class MLJob:
             test_size=self.cp.test_size,
             batch_size=self.cp.batch_size,
             img_height=self.cp.img_height,
-            img_width=self.cp.img_width
+            img_width=self.cp.img_width,
+            random_state=c.RANDOM_STATE
         )
-        self.model = get_model(self.cp.model_name)
+        self.model = get_model(
+            model_name=self.cp.model_name,
+            img_height=self.cp.img_height,
+            img_width=self.cp.img_width,
+            n_color_channels=self.cp.n_color_channels,
+            random_state=c.RANDOM_STATE
+        )
 
     def train_and_evaluate(self):
         data_gen_train, n_samples_train = self.data_gen.train()

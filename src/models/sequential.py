@@ -20,7 +20,7 @@ class SequentialModel(Model):
             loss: Loss,
             metrics_train: List[Metric],
             metrics_val: List[Metric],
-            optimizer: Optimizer,
+            optimizer: Optimizer
     ):
         """
         Instantiates a model consisting of a sequential stack of layers

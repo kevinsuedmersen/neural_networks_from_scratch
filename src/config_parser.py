@@ -17,6 +17,7 @@ class ConfigParser:
         self.batch_size = config["training"]["batch_size"]
         self.img_height = config["data"]["image_height"]
         self.img_width = config["data"]["image_width"]
+        self.n_color_channels = config["data"]["n_color_channels"]
 
         self.model_name = config["training"]["model_name"]
         self.n_epochs = config["training"]["n_epochs"]
