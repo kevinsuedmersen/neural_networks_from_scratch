@@ -13,9 +13,10 @@ This repository is for anyone who wants to get a deep understanding of the inter
 - [Micheal Nielsons online Deep Learning book](http://neuralnetworksanddeeplearning.com/)
 - [3Blue1Brown](https://www.youtube.com/watch?v=aircAruvnKk&ab_channel=3Blue1Brown)
 
-# Files
+# Theory
 
-Each type of network is explained by a separate document in the `theory` folder and is implemented in the `src` folder. 
+The following types of networks are derived in the following documents:
+- [Multi Layer Perceptrons](https://github.com/kevinsuedmersen/neural_networks_from_scratch/blob/master/theory/MLP_theory.md)
 
 # Feedback
 
