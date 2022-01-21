@@ -2,8 +2,9 @@ import logging
 
 import numpy as np
 import numpy.typing as npt
-from src.losses import Loss
-from src.losses.decorators import simplify_init_error
+
+from src.lib.losses import Loss
+from src.lib.losses.decorators import simplify_init_error
 
 logger = logging.getLogger(__name__)
 

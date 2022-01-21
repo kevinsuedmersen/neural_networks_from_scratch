@@ -1,8 +1,9 @@
 import logging
 
 import numpy as np
-from src.data_generators import DataGenerator
-from src.data_generators.image import ImageDataGenerator
+
+from src.lib.data_generators import DataGenerator
+from src.lib.data_generators.image import ImageDataGenerator
 
 logger = logging.getLogger(__name__)
 

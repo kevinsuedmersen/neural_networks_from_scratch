@@ -6,7 +6,8 @@ from typing import List, Tuple, Generator, Dict
 import cv2
 import numpy as np
 import numpy.typing as npt
-from src.data_generators import DataGenerator
+
+from src.lib.data_generators import DataGenerator
 
 logger = logging.getLogger(__name__)
 

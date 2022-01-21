@@ -3,8 +3,9 @@ from typing import Tuple
 
 import numpy as np
 import numpy.typing as npt
-from src.activation_functions import get_activation_function
-from src.layers import Layer
+
+from src.lib.activation_functions import get_activation_function
+from src.lib.layers import Layer
 
 logger = logging.getLogger(__name__)
 

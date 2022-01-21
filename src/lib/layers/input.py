@@ -3,7 +3,8 @@ from functools import reduce
 from typing import Tuple
 
 import numpy.typing as npt
-from src.layers import Layer
+
+from src.lib.layers import Layer
 
 logger = logging.getLogger(__name__)
 

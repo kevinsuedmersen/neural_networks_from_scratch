@@ -2,13 +2,13 @@ import logging
 from typing import List, Tuple, Generator, Union
 
 import numpy.typing as npt
-from src.layers.dense import DenseLayer
-from src.layers.input import InputLayer
-from src.losses import Loss
-from src.metrics import Metric
-from src.models import Model
-from src.optimizers import Optimizer
 
+from src.lib.layers.dense import DenseLayer
+from src.lib.layers.input import InputLayer
+from src.lib.losses import Loss
+from src.lib.metrics import Metric
+from src.lib.models import Model
+from src.lib.optimizers import Optimizer
 from src.utils import log_progress
 
 logger = logging.getLogger(__name__)
