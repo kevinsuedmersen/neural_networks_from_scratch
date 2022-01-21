@@ -6,8 +6,8 @@ import numpy as np
 import pytest
 
 import src.constants as c
-from src.data_generators.factory import get_data_generator
-from src.model_architectures import get_simple_mlp_model
+from src.lib.data_generators.factory import get_data_generator
+from src.model_architectures import get_tiny_mlp_model
 from src.utils import log_progress
 from tests.test_config import TestConfig
 
@@ -50,7 +50,7 @@ class TestBackwardPropagation(TestConfig):
     @pytest.fixture
     def untrained_model(self, config_parser):
         """Untrained model instance"""
-        model = get_simple_mlp_model(
+        model = get_tiny_mlp_model(
             img_height=config_parser.img_height,
             img_width=config_parser.img_width,
             n_color_channels=config_parser.n_color_channels
@@ -106,7 +106,8 @@ class TestBackwardPropagation(TestConfig):
                     counter=counter + 1,
                     total=weights.size,
                     topic="Computing gradients using brute force",
-                    use_print=True
+                    use_print=True,
+                    frequency=10_000
                 )
 
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
