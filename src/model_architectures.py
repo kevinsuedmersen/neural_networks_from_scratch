@@ -13,7 +13,7 @@ logger = logging.getLogger(__name__)
 
 
 def get_simple_mlp_model(
-        img_heigt: int,
+        img_height: int,
         img_width: int,
         n_color_channels: int
 ) -> SequentialModel:
@@ -24,7 +24,7 @@ def get_simple_mlp_model(
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer()
     )
-    mlp.add_layer(InputLayer(input_shape=(None, img_heigt, img_width, n_color_channels), layer_idx=0))
+    mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels), layer_idx=0))
     mlp.add_layer(DenseLayer(512, "relu", layer_idx=1))
     mlp.add_layer(DenseLayer(256, "relu", layer_idx=2))
     mlp.add_layer(DenseLayer(128, "relu", layer_idx=3))
@@ -32,6 +32,8 @@ def get_simple_mlp_model(
     mlp.add_layer(DenseLayer(32, "relu", layer_idx=5))
     mlp.add_layer(DenseLayer(16, "relu", layer_idx=6))
     mlp.add_layer(DenseLayer(2, "softmax", layer_idx=7))
+
+    # TODO: Use tanh instead of relu activation function
 
     return mlp
 

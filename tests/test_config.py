@@ -5,6 +5,9 @@ import numpy.typing as npt
 import pytest
 
 from src.config_parser import ConfigParser
+from src.utils import set_root_logger
+
+set_root_logger()
 
 
 class TestConfig:

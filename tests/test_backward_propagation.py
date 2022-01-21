@@ -1,20 +1,24 @@
 import copy
 import itertools
+import logging
 
 import numpy as np
 import pytest
 
 import src.constants as c
 from src.data_generators.factory import get_data_generator
-from src.model_architectures import get_model
+from src.model_architectures import get_simple_mlp_model
+from src.utils import log_progress
 from tests.test_config import TestConfig
+
+logger = logging.getLogger(__name__)
 
 
 class TestBackwardPropagation(TestConfig):
     """Tests that the backpropagation algorithm computes the correct gradients, i.e. the same gradients
     which are computed using a brute force method
     """
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def img_gen_train(self, config_parser):
         img_gen = get_data_generator(
             config_parser.data_gen_name,
@@ -30,7 +34,7 @@ class TestBackwardPropagation(TestConfig):
 
         return img_gen_train
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def single_training_tuple(self, img_gen_train):
         # Retrieve the first image array and first ground truth labels
         x_train, ytrue_train = next(img_gen_train)
@@ -43,19 +47,17 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def untrained_model(self, config_parser):
         """Untrained model instance"""
-        model = get_model(
-            model_name=config_parser.model_name,
+        model = get_simple_mlp_model(
             img_height=config_parser.img_height,
             img_width=config_parser.img_width,
-            n_color_channels=config_parser.n_color_channels,
-            random_state=c.RANDOM_STATE
+            n_color_channels=config_parser.n_color_channels
         )
         return model
 
-    @pytest.fixture(scope="class")
+    @pytest.fixture
     def trained_model_backprop(self, img_gen_train, config_parser, untrained_model, single_training_tuple):
         """Model trained on a single image for 1 epoch using backpropagation"""
         # Create a deepcopy of untrained model so that untrained_model remains untrained
@@ -66,21 +68,6 @@ class TestBackwardPropagation(TestConfig):
         model.train_step(x_train_0, ytrue_train_0)
 
         return model
-
-    @staticmethod
-    def _compute_gradients_backprop(trained_model_backprop, gradient_type="weight_gradients"):
-        """Computes the weight or bias gradients using backpropagation"""
-        # Extract all gradients and store them in a flattened numpy array
-        # Flattened, because each layer's weight matrices / bias vectors have different dimensions
-        gradients = []
-        for layer in trained_model_backprop.layers[1:]:
-            flat_gradients = getattr(layer, gradient_type).ravel().reshape(-1, 1)
-            gradients.append(flat_gradients)
-
-        # shape=(n_layers, n_neurons, n_neurons_prev)
-        gradients_backprop = np.concatenate(gradients, axis=0)
-
-        return gradients_backprop
 
     @staticmethod
     def _compute_loss(untrained_model, x_train_0, ytrue_train_0):
@@ -95,7 +82,7 @@ class TestBackwardPropagation(TestConfig):
             self,
             untrained_model,
             single_training_tuple,
-            epsilon=1e-6
+            epsilon=1
     ):
         """Computes the weight or bias gradients using a brute force method. Each derivative is
         calculated by computing the losses after slightly changing one parameter each time while
@@ -107,51 +94,59 @@ class TestBackwardPropagation(TestConfig):
         x_train_0, ytrue_train_0 = single_training_tuple
         loss_unchanged_parameters = self._compute_loss(untrained_model, x_train_0, ytrue_train_0)
 
-        # Change each parameter slightly, re-compute the loss and calculate the partial derivatives
+        # Innit a model which will contain all trained/updated weight gradients
+        trained_model = copy.deepcopy(untrained_model)
+
+        # Iterate over parameter in every layer
         for l in range(1, untrained_model.n_layers):
-            biases_shape = untrained_model.layers[l].biases.shape
-            weights_shape = untrained_model.layers[l].weights.shape
-            for row_idx, col_idx in itertools.product(weights_shape[1]), range(weights_shape[2]):
+            logger.info(f"Computing gradients of layer {l} using brute force method")
+            weights = untrained_model.layers[l].weights
+            for counter, (row_idx, col_idx) in enumerate(itertools.product(range(weights.shape[1]), range(weights.shape[2]))):
+                log_progress(
+                    counter=counter + 1,
+                    total=weights.size,
+                    topic="Computing gradients using brute force",
+                    use_print=True
+                )
+
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
-                trained_model_ = copy.deepcopy(untrained_model)
+                # The slightly_changed_model is only needed to compute the current loss value
+                slightly_changed_model = copy.deepcopy(untrained_model)
 
                 # Slightly change the parameter value
-                slightly_changed_value = trained_model_.weights[:, row_idx, col_idx] + epsilon
-                trained_model_.weights[:, row_idx, col_idx] = slightly_changed_value
+                slightly_changed_model.layers[l].weights[:, row_idx, col_idx] += epsilon
 
                 # Compute loss with changed parameters
-                loss_changed_parameters = self._compute_loss(trained_model_, x_train_0, ytrue_train_0)
+                loss_changed_parameters = self._compute_loss(slightly_changed_model, x_train_0, ytrue_train_0)
 
-                # Compute and set partial derivative
+                # Compute and set partial derivative into the trained model
                 partial_derivative = (loss_changed_parameters - loss_unchanged_parameters) / epsilon
-                trained_model_.weight_gradients[:, row_idx, col_idx] = partial_derivative
+                trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
 
-        return trained_model_
+        return trained_model
+
+    @staticmethod
+    def _mean_absolute_error(gradients_backprop, gradients_brute_force):
+        """Calculates the Mean Absolute Error between the gradients computed during
+        gradients computed using the brute force method and backpropagation
+        """
+        mean_absolute_error = np.abs(gradients_brute_force - gradients_backprop)
+
+        return mean_absolute_error
 
     def _compare_gradients(self, trained_model_backprop, trained_model_brute_force, gradient_type="weight_gradients"):
         """Iterates through each layer of both networks and compares gradients"""
-        pass
+        # Extract gradients of each layer from both models
+        for l in range(1, trained_model_backprop.n_layers):
+            gradients_backprop = getattr(trained_model_backprop[l], gradient_type)
+            gradients_brute_force = getattr(trained_model_brute_force[l], gradient_type)
 
-    @pytest.fixture
-    def mean_absolute_percentage_error(self):
-        pass
+            # Test that all gradients are similar
+            mae = self._mean_absolute_error(gradients_backprop, gradients_brute_force)
+            logger.info(f"Mean Absolute Percentage Error of {gradient_type} in layer {l}: {mae}")
+            np.testing.assert_allclose(gradients_backprop, gradients_brute_force)
 
-    def test_weight_gradients(self, trained_model_backprop, config_parser, untrained_model, mean_absolute_percentage_error):
+    def test_weight_gradients(self, trained_model_backprop, trained_model_brute_force, config_parser, untrained_model):
         """Tests that the backward propagation algorithm computes the correct weight gradients"""
-        weight_gradients_backprop = self._compute_gradients_backprop(trained_model_backprop, "weight_gradients")
-        weight_gradients_brute_force = self.trained_model_brute_force(trained_model_backprop, "weight_gradients")
-        np.testing.assert_allclose(weight_gradients_backprop, weight_gradients_brute_force)
-        mean_absolute_percentage_error = mean_absolute_percentage_error.result(
-            weight_gradients_backprop,
-            weight_gradients_brute_force
-        )
-
-    def test_bias_gradients(self, trained_model_backprop, mean_absolute_percentage_error):
-        """Tests that the backward propagation algorithm computes the correct bias gradients"""
-        bias_gradients_backprop = self._compute_gradients_backprop(trained_model_backprop, "bias_gradients")
-        bias_gradients_brute_force = self.trained_model_brute_force(trained_model_backprop, "bias_gradients")
-        np.testing.assert_allclose(bias_gradients_backprop, bias_gradients_brute_force)
-        mean_absolute_percentage_error = mean_absolute_percentage_error.result(
-            bias_gradients_backprop,
-            bias_gradients_brute_force
-        )
+        self._compare_gradients(trained_model_backprop, trained_model_brute_force, "weight_gradients")
+        self._compare_gradients(trained_model_backprop, trained_model_brute_force, "bias_gradients")

@@ -34,14 +34,26 @@ class DenseLayer(Layer):
         self.bias_gradients = None
 
     def _init_weights(self, n_neurons_prev: int):
+        """Init weight matrices"""
         self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.01  # batch_size=1 for broadcasting
 
     def _init_biases(self):
+        """Init biases"""
         self.biases = np.random.randn(1, self.n_neurons, 1)  # batch_size=1 for broadcasting
+
+    def _init_weight_gradients(self):
+        """Init the weight gradients. Necessary for testing gradient computation"""
+        self.weight_gradients = np.zeros(self.weights.shape)
+
+    def _init_bias_gradients(self):
+        """Init the bias gradients. Necessary for testing gradient computation"""
+        self.bias_gradients = np.zeros(self.biases.shape)
 
     def init_parameters(self, n_neurons_prev: int):
         self._init_weights(n_neurons_prev)
         self._init_biases()
+        self._init_weight_gradients()
+        self._init_bias_gradients()
         self.output_shape = (None, self.n_neurons)
 
     def forward_propagate(self, activations_prev: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
@@ -85,7 +97,7 @@ class DenseLayer(Layer):
     def compute_bias_gradients(self, *args, **kwargs):
         """Computes the bias gradients of the current layer"""
         # Bias gradients equal the errors averaged over all batch elements
-        # shape=(1, n_neurons, 1), same as dendritic_potentials and activations
+        # shape=(1, n_neurons, 1), same the layers' biases
         self.bias_gradients = np.mean(self.errors, axis=0, keepdims=True)
 
     def update_parameters(self):
