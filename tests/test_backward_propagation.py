@@ -74,7 +74,7 @@ class TestBackwardPropagation(TestConfig):
             layer.biases = self._init_parameters(layer.biases.shape)
         return model
 
-    def _get_and_verify_data(self, single_training_tuple):
+    def _get_and_check_data(self, single_training_tuple):
         """Verifies that single_traiing_tuple fixture always contains the same dat"""
         x_train_0, ytrue_train_0 = single_training_tuple
 
@@ -86,11 +86,25 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
+    def _check_parameters(self, some_model):
+        """Checks that each type of learning algorithm is initialized with the same parameters"""
+        for layer in some_model.layers[1:]:
+            np.testing.assert_array_equal(layer.weights, self._init_parameters(layer.weights.shape))
+            np.testing.assert_array_equal(layer.biases, self._init_parameters(layer.biases.shape))
+
+    def _check_intial_settings(self, single_training_tuple, some_model):
+        """Conducts a series of checks to make sure each type of learning algorithm starts with the
+        same settings
+        """
+        x_train_0, ytrue_train_0 = self._get_and_check_data(single_training_tuple)
+        self._check_parameters(some_model)
+
+        return x_train_0, ytrue_train_0
+
     @pytest.fixture
     def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
         """Model trained on a single image for 1 epoch using backpropagation"""
-        # Make sure we always get the same data
-        x_train_0, ytrue_train_0 = self._get_and_verify_data(single_training_tuple)
+        x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
 
         # Create a deepcopy of untrained model so that untrained_model remains untrained
         model = copy.deepcopy(untrained_model)
@@ -117,8 +131,9 @@ class TestBackwardPropagation(TestConfig):
         constant parameters and then dividing that difference by the slight change, i.e.:
         (L(slightly_changed_parameters, all_other_parameters) - L(original_parameters)) / slight_change
         """
+        x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
+
         # Compute the loss with unchange parameters once
-        x_train_0, ytrue_train_0 = self._get_and_verify_data(single_training_tuple)
         loss_unchanged_parameters = self._compute_loss(untrained_model, x_train_0, ytrue_train_0)
 
         # Innit a model which will contain all trained/updated weight gradients
