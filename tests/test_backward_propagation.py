@@ -101,11 +101,23 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
-    def _check_parameters_changed(self, some_model):
-        """Make sure that the parameters of some learning algorithm have actually changed"""
-        for layer in some_model.layers[1:]:
-            is_arrays_equal = np.array_equal(layer.weights, self._init_parameters(layer.weights.shape))
-            assert not is_arrays_equal
+    @staticmethod
+    def _check_gradients_changed(some_trained_model, untrained_model):
+        """Make sure that the gradients of some learning algorithm have actually changed after
+        training
+        """
+        for trained_layer, untrained_layer in zip(
+                some_trained_model.layers[1:],
+                untrained_model.layers[1:]
+        ):
+            # Verify that the gradients have been initialized with zeros
+            np.testing.assert_array_equal(
+                untrained_layer.weight_gradients,
+                np.zeros(untrained_layer.weights.shape)
+            )
+            # Verify that the gradients have changed
+            is_equal = np.array_equal(trained_layer.weight_gradients, untrained_layer.weight_gradients)
+            assert not is_equal
 
     @pytest.fixture
     def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
@@ -118,7 +130,7 @@ class TestBackwardPropagation(TestConfig):
         # Run the forward and backward pass on that single image
         trained_model.train_step(x_train_0, ytrue_train_0)
 
-        self._check_parameters_changed(trained_model)
+        self._check_gradients_changed(trained_model, untrained_model)
 
         return trained_model
 
@@ -182,7 +194,7 @@ class TestBackwardPropagation(TestConfig):
                 partial_derivative = (loss_changed_parameters - loss_unchanged_parameters) / epsilon
                 trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
 
-        self._check_parameters_changed(trained_model)
+        self._check_gradients_changed(trained_model)
 
         return trained_model
 
