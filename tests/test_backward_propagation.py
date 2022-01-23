@@ -1,6 +1,7 @@
 import copy
 import itertools
 import logging
+import os
 
 import numpy as np
 import pytest
@@ -18,6 +19,11 @@ class TestBackwardPropagation(TestConfig):
     """Tests that the backpropagation algorithm computes the correct gradients, i.e. the same gradients
     which are computed using a brute force method
     """
+    if not os.path.exists("results"):
+        os.makedirs("results")
+    x_train_0_path = os.path.join("results", "x_train_0.npy")
+    ytrue_train_0_path = os.path.join("results", "ytrue_train_0.npy")
+
     @pytest.fixture
     def img_gen_train(self, config_parser):
         img_gen = get_data_generator(
@@ -45,6 +51,10 @@ class TestBackwardPropagation(TestConfig):
         x_train_0 = x_train_0[np.newaxis, ...]
         ytrue_train_0 = ytrue_train_0[np.newaxis, ...]
 
+        # Save the data to disk so that later, we can verify each model always gets the same data
+        np.save(self.x_train_0_path, x_train_0)
+        np.save(self.ytrue_train_0_path, ytrue_train_0)
+
         return x_train_0, ytrue_train_0
 
     @staticmethod
@@ -64,14 +74,29 @@ class TestBackwardPropagation(TestConfig):
             layer.biases = self._init_parameters(layer.biases.shape)
         return model
 
+    def _get_and_verify_data(self, single_training_tuple):
+        """Verifies that single_traiing_tuple fixture always contains the same dat"""
+        x_train_0, ytrue_train_0 = single_training_tuple
+
+        x_train_0_fix = np.load(self.x_train_0_path)
+        ytrue_train_0_fix = np.load(self.ytrue_train_0_path)
+
+        np.testing.assert_array_equal(x_train_0, x_train_0_fix)
+        np.testing.assert_array_equal(ytrue_train_0, ytrue_train_0_fix)
+
+        return x_train_0, ytrue_train_0
+
     @pytest.fixture
     def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
         """Model trained on a single image for 1 epoch using backpropagation"""
+        # Make sure we always get the same data
+        x_train_0, ytrue_train_0 = self._get_and_verify_data(single_training_tuple)
+
         # Create a deepcopy of untrained model so that untrained_model remains untrained
         model = copy.deepcopy(untrained_model)
 
         # Run the forward and backward pass on that single image
-        x_train_0, ytrue_train_0 = single_training_tuple
+
         model.train_step(x_train_0, ytrue_train_0)
 
         return model
@@ -93,7 +118,7 @@ class TestBackwardPropagation(TestConfig):
         (L(slightly_changed_parameters, all_other_parameters) - L(original_parameters)) / slight_change
         """
         # Compute the loss with unchange parameters once
-        x_train_0, ytrue_train_0 = single_training_tuple
+        x_train_0, ytrue_train_0 = self._get_and_verify_data(single_training_tuple)
         loss_unchanged_parameters = self._compute_loss(untrained_model, x_train_0, ytrue_train_0)
 
         # Innit a model which will contain all trained/updated weight gradients
