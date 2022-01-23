@@ -47,18 +47,25 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
+    @staticmethod
+    def _init_parameters(shape):
+        return np.ones(shape) / 100
+
     @pytest.fixture
     def untrained_model(self, config_parser):
-        """Untrained model instance"""
+        """Untrained model instance and set weights and biases to a single value"""
         model = get_tiny_mlp_model(
             img_height=config_parser.img_height,
             img_width=config_parser.img_width,
             n_color_channels=config_parser.n_color_channels
         )
+        for layer in model.layers[1:]:
+            layer.weights = self._init_parameters(layer.weights.shape)
+            layer.biases = self._init_parameters(layer.biases.shape)
         return model
 
     @pytest.fixture
-    def trained_model_backprop(self, img_gen_train, config_parser, untrained_model, single_training_tuple):
+    def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
         """Model trained on a single image for 1 epoch using backpropagation"""
         # Create a deepcopy of untrained model so that untrained_model remains untrained
         model = copy.deepcopy(untrained_model)
@@ -78,12 +85,7 @@ class TestBackwardPropagation(TestConfig):
         return loss.item()
 
     @pytest.fixture
-    def trained_model_brute_force(
-            self,
-            untrained_model,
-            single_training_tuple,
-            epsilon=1
-    ):
+    def trained_model_brute_force(self, untrained_model, single_training_tuple, epsilon=1):
         """Computes the weight or bias gradients using a brute force method. Each derivative is
         calculated by computing the losses after slightly changing one parameter each time while
         keeping all other parameters constant, then subtracting the loss value computed with the
@@ -104,8 +106,8 @@ class TestBackwardPropagation(TestConfig):
                 f"using brute force method"
             )
             weights = untrained_model.layers[l].weights
-            row_col_idx_generator = itertools.product(range(weights.shape[1]), range(weights.shape[2]))
-            for counter, (row_idx, col_idx) in enumerate(row_col_idx_generator):
+            idx_generator = itertools.product(range(weights.shape[1]), range(weights.shape[2]))
+            for counter, (row_idx, col_idx) in enumerate(idx_generator):
                 log_progress(
                     counter=counter,
                     total=weights.size,
@@ -116,6 +118,12 @@ class TestBackwardPropagation(TestConfig):
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
                 # The slightly_changed_model is only needed to compute the current loss value
                 slightly_changed_model = copy.deepcopy(untrained_model)
+
+                # Make sure that we always start with the same set of parameters
+                np.testing.assert_array_equal(
+                    slightly_changed_model.layers[l].weights,
+                    self._init_parameters(slightly_changed_model.layers[l].weights.shape)
+                )
 
                 # Slightly change the parameter value
                 slightly_changed_model.layers[l].weights[:, row_idx, col_idx] += epsilon

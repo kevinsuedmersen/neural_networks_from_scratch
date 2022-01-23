@@ -50,8 +50,8 @@ def get_tiny_mlp_model(
         optimizer=StochasticGradientDescentOptimizer()
     )
     mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels), layer_idx=0))
-    mlp.add_layer(DenseLayer(32, "tanh", layer_idx=4))
-    mlp.add_layer(DenseLayer(2, "softmax", layer_idx=7))
+    mlp.add_layer(DenseLayer(32, "tanh", layer_idx=1))
+    mlp.add_layer(DenseLayer(2, "softmax", layer_idx=2))
 
     return mlp
 
