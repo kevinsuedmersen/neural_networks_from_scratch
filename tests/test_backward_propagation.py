@@ -101,19 +101,26 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
+    def _check_parameters_changed(self, some_model):
+        """Make sure that the parameters of some learning algorithm have actually changed"""
+        for layer in some_model.layers[1:]:
+            is_arrays_equal = np.array_equal(layer.weights, self._init_parameters(layer.weights.shape))
+            assert not is_arrays_equal
+
     @pytest.fixture
     def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
         """Model trained on a single image for 1 epoch using backpropagation"""
         x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
 
         # Create a deepcopy of untrained model so that untrained_model remains untrained
-        model = copy.deepcopy(untrained_model)
+        trained_model = copy.deepcopy(untrained_model)
 
         # Run the forward and backward pass on that single image
+        trained_model.train_step(x_train_0, ytrue_train_0)
 
-        model.train_step(x_train_0, ytrue_train_0)
+        self._check_parameters_changed(trained_model)
 
-        return model
+        return trained_model
 
     @staticmethod
     def _compute_loss(untrained_model, x_train_0, ytrue_train_0):
@@ -174,6 +181,8 @@ class TestBackwardPropagation(TestConfig):
                 # Compute and set partial derivative into the trained model
                 partial_derivative = (loss_changed_parameters - loss_unchanged_parameters) / epsilon
                 trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
+
+        self._check_parameters_changed(trained_model)
 
         return trained_model
 
