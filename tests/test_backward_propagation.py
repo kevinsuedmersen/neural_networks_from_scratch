@@ -134,7 +134,7 @@ class TestBackwardPropagation(TestConfig):
         """Calculates the Mean Absolute Error between the gradients computed during
         gradients computed using the brute force method and backpropagation
         """
-        mean_absolute_error = np.abs(gradients_brute_force - gradients_backprop)
+        mean_absolute_error = np.mean(np.abs(gradients_brute_force - gradients_backprop))
 
         return mean_absolute_error
 
@@ -142,8 +142,8 @@ class TestBackwardPropagation(TestConfig):
         """Iterates through each layer of both networks and compares gradients"""
         # Extract gradients of each layer from both models
         for l in range(1, trained_model_backprop.n_layers):
-            gradients_backprop = getattr(trained_model_backprop[l], gradient_type)
-            gradients_brute_force = getattr(trained_model_brute_force[l], gradient_type)
+            gradients_backprop = getattr(trained_model_backprop.layers[l], gradient_type)
+            gradients_brute_force = getattr(trained_model_brute_force.layers[l], gradient_type)
 
             # Test that all gradients are similar
             mae = self._mean_absolute_error(gradients_backprop, gradients_brute_force)
