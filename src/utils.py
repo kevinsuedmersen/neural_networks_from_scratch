@@ -36,13 +36,13 @@ def log_progress(
     """Logs progress of a long computation"""
     if (counter + 1) % frequency == 0:
         if topic is not None:
-            log_msg = f"{topic}: {counter}/{total}"
+            log_msg = f"{topic}: {counter + 1}/{total}"
         else:
-            log_msg = f"Progress: {counter}/{total}"
+            log_msg = f"Progress: {counter + 1}/{total}"
 
         if total is not None:
             progress_percentage = (counter + 1) / total * 100
-            log_msg += f" ({progress_percentage:.2f}%)"
+            log_msg += f" ({progress_percentage:.3f}%)"
 
         if use_print:
             print(log_msg)

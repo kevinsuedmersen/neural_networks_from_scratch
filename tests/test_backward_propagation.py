@@ -99,14 +99,17 @@ class TestBackwardPropagation(TestConfig):
 
         # Iterate over parameter in every layer
         for l in range(1, untrained_model.n_layers):
-            logger.info(f"Computing gradients of layer {l} using brute force method")
+            logger.info(
+                f"Computing gradients of layer with index {l} (output layer index={untrained_model.n_layers - 1}) "
+                f"using brute force method"
+            )
             weights = untrained_model.layers[l].weights
-            for counter, (row_idx, col_idx) in enumerate(itertools.product(range(weights.shape[1]), range(weights.shape[2]))):
+            row_col_idx_generator = itertools.product(range(weights.shape[1]), range(weights.shape[2]))
+            for counter, (row_idx, col_idx) in enumerate(row_col_idx_generator):
                 log_progress(
-                    counter=counter + 1,
+                    counter=counter,
                     total=weights.size,
-                    topic="Computing gradients using brute force",
-                    use_print=True,
+                    topic=f"Computing gradients of layer_index {l} using brute force",
                     frequency=10_000
                 )
 
