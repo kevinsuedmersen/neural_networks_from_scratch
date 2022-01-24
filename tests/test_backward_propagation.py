@@ -44,8 +44,9 @@ class TestBackwardPropagation(TestConfig):
 
         return img_gen_train
 
-    @pytest.fixture
-    def single_training_tuple(self, img_gen_train):
+    @staticmethod
+    def _create_new_img_data(img_gen_train):
+        """Creates new image data using the image data generator"""
         # Retrieve the first image array and first ground truth labels
         x_train, ytrue_train = next(img_gen_train)
         x_train_0 = x_train[0]
@@ -55,17 +56,36 @@ class TestBackwardPropagation(TestConfig):
         x_train_0 = x_train_0[np.newaxis, ...]
         ytrue_train_0 = ytrue_train_0[np.newaxis, ...]
 
-        # Save the data to disk so that later, we can verify each model always gets the same data
-        np.save(self.x_train_0_path, x_train_0)
-        np.save(self.ytrue_train_0_path, ytrue_train_0)
+        return ytrue_train_0, ytrue_train_0
+
+    def _load_img_data_from_disk(self):
+        """Loads existing image data training tuple from disk"""
+        x_train_0 = np.load(self.x_train_0_path)
+        ytrue_train_0 = np.load(self.ytrue_train_0_path)
 
         return x_train_0, ytrue_train_0
 
-    @staticmethod
-    def _init_parameters(shape):
-        np.random.seed(c.RANDOM_STATE)
+    @pytest.fixture
+    def single_training_tuple(self, img_gen_train):
+        """Returns a single training tuple of image data"""
+        if (not os.path.exists(self.x_train_0_path)) or (not os.path.exists(self.ytrue_train_0_path)):
+            x_train_0, ytrue_train_0 = self._create_new_img_data(img_gen_train)
+        else:
+            x_train_0, ytrue_train_0 = self._load_img_data_from_disk()
 
-        return np.random.randn(*shape)
+        return x_train_0, ytrue_train_0
+
+    @pytest.fixture
+    def x_train_0(self, single_training_tuple):
+        x_train_0, _ = single_training_tuple
+
+        return x_train_0
+
+    @pytest.fixture
+    def ytrue_train_0(self, single_training_tuple):
+        _, ytrue_train_0 = single_training_tuple
+
+        return ytrue_train_0
 
     @pytest.fixture
     def untrained_model(self, config_parser):
@@ -75,64 +95,47 @@ class TestBackwardPropagation(TestConfig):
             img_width=config_parser.img_width,
             n_color_channels=config_parser.n_color_channels
         )
-        for layer in model.layers[1:]:
-            layer.weights = self._init_parameters(layer.weights.shape)
-            layer.biases = self._init_parameters(layer.biases.shape)
         return model
 
-    def _get_and_check_data(self, single_training_tuple):
-        """Verifies that single_traiing_tuple fixture always contains the same dat"""
-        x_train_0, ytrue_train_0 = single_training_tuple
+    @pytest.fixture
+    def initial_weights(self, untrained_model):
+        return [layer.weights for layer in untrained_model.layers]
 
-        x_train_0_fix = np.load(self.x_train_0_path)
-        ytrue_train_0_fix = np.load(self.ytrue_train_0_path)
+    @pytest.fixture
+    def initial_biases(self, untrained_model):
+        return [layer.biases for layer in untrained_model.layers]
 
-        np.testing.assert_array_equal(x_train_0, x_train_0_fix)
-        np.testing.assert_array_equal(ytrue_train_0, ytrue_train_0_fix)
+    @pytest.fixture
+    def initial_weight_gradients(self, untrained_model):
+        return [layer.weight_gradients for layer in untrained_model.layers]
 
-        return x_train_0, ytrue_train_0
-
-    def _check_parameters(self, some_untrained_model):
-        """Checks that each type of learning algorithm is initialized with the same parameters"""
-        for layer in some_untrained_model.layers[1:]:
-            weights = self._init_parameters(layer.weights.shape)
-            biases = self._init_parameters(layer.biases.shape)
-            np.testing.assert_array_equal(layer.weights, weights)
-            np.testing.assert_array_equal(layer.biases, biases)
-
-    def _check_intial_settings(self, single_training_tuple, some_model):
-        """Conducts a series of checks to make sure each type of learning algorithm starts with the
-        same settings
-        """
-        x_train_0, ytrue_train_0 = self._get_and_check_data(single_training_tuple)
-        self._check_parameters(some_model)
-
-        return x_train_0, ytrue_train_0
+    @pytest.fixture
+    def initial_bias_gradients(self, untrained_model):
+        return [layer.bias_gradients for layer in untrained_model.layers]
 
     @staticmethod
-    def _check_gradients_changed(some_trained_model, untrained_model):
+    def _check_gradients_changed(some_trained_model, initial_weight_gradients):
         """Make sure that the gradients of some learning algorithm have actually changed after
         training
         """
-        for trained_layer, untrained_layer in zip(
-                some_trained_model.layers[1:],
-                untrained_model.layers[1:]
+        trained_weight_gradients = [layer.weight_gradients for layer in some_trained_model.layers]
+        for _initial_weight_gradiends, _trained_weight_gradients in zip(
+            initial_weight_gradients[1:],
+            trained_weight_gradients[1:]
         ):
             # Verify that the gradients have been initialized with zeros
             np.testing.assert_array_equal(
-                untrained_layer.weight_gradients,
-                np.zeros(untrained_layer.weights.shape)
+                _initial_weight_gradiends,
+                np.zeros(_initial_weight_gradiends.shape)
             )
 
             # Verify that the gradients of the trained model have changed
-            is_equal = np.array_equal(trained_layer.weight_gradients, untrained_layer.weight_gradients)
+            is_equal = np.array_equal(_initial_weight_gradiends, _trained_weight_gradients)
             assert not is_equal
 
     @pytest.fixture
-    def trained_model_backprop(self, config_parser, untrained_model, single_training_tuple):
+    def trained_model_backprop(self, untrained_model, x_train_0, ytrue_train_0, initial_weight_gradients):
         """Model trained on a single image for 1 epoch using backpropagation"""
-        x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
-
         # Create a deepcopy of untrained model so that untrained_model remains untrained
         trained_model = copy.deepcopy(untrained_model)
 
@@ -140,31 +143,37 @@ class TestBackwardPropagation(TestConfig):
         trained_model.train_step(x_train_0, ytrue_train_0)
         self.initial_costs_backprop = trained_model.costs[0]
 
-        self._check_gradients_changed(trained_model, untrained_model)
+        self._check_gradients_changed(trained_model, initial_weight_gradients)
 
         return trained_model
 
     @staticmethod
     def _compute_losses(untrained_model, x_train_0, ytrue_train_0):
-        """Computes the loss with unchanged parameters"""
+        """Simply computes losses without backpropagation"""
         activations_out, dendritic_potentials_out = untrained_model._forward_pass(x_train_0)
-        loss = untrained_model.loss.compute_losses(ytrue_train_0, activations_out)
+        losses = untrained_model.loss.compute_losses(ytrue_train_0, activations_out)
 
-        return loss
+        return losses
 
     @pytest.fixture
-    def trained_model_brute_force(self, untrained_model, single_training_tuple, epsilon=1):
+    def trained_model_brute_force(
+            self,
+            untrained_model,
+            x_train_0,
+            ytrue_train_0,
+            initial_weights,
+            initial_weight_gradients,
+            epsilon=1
+    ):
         """Computes the weight or bias gradients using a brute force method. Each derivative is
         calculated by computing the losses after slightly changing one parameter each time while
         keeping all other parameters constant, then subtracting the loss value computed with the
         constant parameters and then dividing that difference by the slight change, i.e.:
         (L(slightly_changed_parameters, all_other_parameters) - L(original_parameters)) / slight_change
         """
-        x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
-
-        # Compute the loss with unchange parameters once
-        losses_unchanged_parameters = self._compute_losses(untrained_model, x_train_0, ytrue_train_0)
-        self.initial_cost_brute_force = untrained_model.loss.compute_cost(losses_unchanged_parameters)
+        # Compute the loss with unchanged parameters once
+        initial_losses = self._compute_losses(untrained_model, x_train_0, ytrue_train_0)
+        self.initial_cost_brute_force = untrained_model.loss.compute_cost(initial_losses)
 
         # Make sure the initial costs of both learning algorithms are equal
         assert self.initial_costs_backprop == self.initial_cost_brute_force
@@ -172,43 +181,43 @@ class TestBackwardPropagation(TestConfig):
         # Innit a model which will contain all trained/updated weight gradients
         trained_model = copy.deepcopy(untrained_model)
 
-        # Iterate over parameter in every layer
+        # Iterate over every parameter in every layer
         for l in range(1, untrained_model.n_layers):
             logger.info(
                 f"Computing gradients of layer with index {l} (output layer index={untrained_model.n_layers - 1}) "
                 f"using brute force method"
             )
-            weights = untrained_model.layers[l].weights
-            idx_generator = itertools.product(range(weights.shape[1]), range(weights.shape[2]))
+            n_rows = untrained_model.layers[l].weights.shape[1]
+            n_cols = untrained_model.layers[l].weights.shape[2]
+            idx_generator = itertools.product(range(n_rows), range(n_cols))
             for counter, (row_idx, col_idx) in enumerate(idx_generator):
                 log_progress(
                     counter=counter,
-                    total=weights.size,
+                    total=(n_rows * n_cols),
                     topic=f"Computing gradients of layer_index {l} using brute force",
                     frequency=10_000
                 )
 
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
-                # The slightly_changed_model is only needed to compute the current loss value
-                slightly_changed_model = copy.deepcopy(untrained_model)
+                # The _untrained_model is only needed to compute the current loss value
+                _untrained_model = copy.deepcopy(untrained_model)
 
                 # Make sure that we always start with the same set of parameters
-                np.testing.assert_array_equal(
-                    slightly_changed_model.layers[l].weights,
-                    self._init_parameters(slightly_changed_model.layers[l].weights.shape)
-                )
+                np.testing.assert_array_equal(_untrained_model.layers[l].weights, initial_weights[l])
 
                 # Slightly change the parameter value
-                slightly_changed_model.layers[l].weights[:, row_idx, col_idx] += epsilon
+                _untrained_model.layers[l].weights[0, row_idx, col_idx] += epsilon
 
                 # Compute loss with changed parameters
-                loss_changed_parameters = self._compute_losses(slightly_changed_model, x_train_0, ytrue_train_0)
+                current_losses = self._compute_losses(_untrained_model, x_train_0, ytrue_train_0)
 
-                # Compute and set partial derivative into the trained model
-                partial_derivative = (loss_changed_parameters - losses_unchanged_parameters.item()) / epsilon
-                trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
+                # Compute and set partial derivative
+                partial_derivative = (current_losses - initial_losses.item()) / epsilon
 
-        self._check_gradients_changed(trained_model, untrained_model)
+                # Set partial_derivative into the trained_model
+                trained_model.layers[l].weight_gradients[0, row_idx, col_idx] = partial_derivative
+
+        self._check_gradients_changed(trained_model, initial_weight_gradients)
 
         return trained_model
 
