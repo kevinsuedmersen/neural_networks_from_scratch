@@ -59,7 +59,9 @@ class TestBackwardPropagation(TestConfig):
 
     @staticmethod
     def _init_parameters(shape):
-        return np.ones(shape) / 100
+        np.random.seed(c.RANDOM_STATE)
+
+        return np.random.randn(*shape)
 
     @pytest.fixture
     def untrained_model(self, config_parser):
@@ -86,11 +88,13 @@ class TestBackwardPropagation(TestConfig):
 
         return x_train_0, ytrue_train_0
 
-    def _check_parameters(self, some_model):
+    def _check_parameters(self, some_untrained_model):
         """Checks that each type of learning algorithm is initialized with the same parameters"""
-        for layer in some_model.layers[1:]:
-            np.testing.assert_array_equal(layer.weights, self._init_parameters(layer.weights.shape))
-            np.testing.assert_array_equal(layer.biases, self._init_parameters(layer.biases.shape))
+        for layer in some_untrained_model.layers[1:]:
+            weights = self._init_parameters(layer.weights.shape)
+            biases = self._init_parameters(layer.biases.shape)
+            np.testing.assert_array_equal(layer.weights, weights)
+            np.testing.assert_array_equal(layer.biases, biases)
 
     def _check_intial_settings(self, single_training_tuple, some_model):
         """Conducts a series of checks to make sure each type of learning algorithm starts with the
@@ -115,7 +119,8 @@ class TestBackwardPropagation(TestConfig):
                 untrained_layer.weight_gradients,
                 np.zeros(untrained_layer.weights.shape)
             )
-            # Verify that the gradients have changed
+
+            # Verify that the gradients of the trained model have changed
             is_equal = np.array_equal(trained_layer.weight_gradients, untrained_layer.weight_gradients)
             assert not is_equal
 
@@ -194,7 +199,7 @@ class TestBackwardPropagation(TestConfig):
                 partial_derivative = (loss_changed_parameters - loss_unchanged_parameters) / epsilon
                 trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
 
-        self._check_gradients_changed(trained_model)
+        self._check_gradients_changed(trained_model, untrained_model)
 
         return trained_model
 
@@ -219,7 +224,7 @@ class TestBackwardPropagation(TestConfig):
             logger.info(f"Mean Absolute Percentage Error of {gradient_type} in layer {l}: {mae}")
             np.testing.assert_allclose(gradients_backprop, gradients_brute_force)
 
-    def test_weight_gradients(self, trained_model_backprop, trained_model_brute_force, config_parser, untrained_model):
+    def test_weight_gradients(self, trained_model_backprop, trained_model_brute_force, config_parser):
         """Tests that the backward propagation algorithm computes the correct weight gradients"""
         self._compare_gradients(trained_model_backprop, trained_model_brute_force, "weight_gradients")
         self._compare_gradients(trained_model_backprop, trained_model_brute_force, "bias_gradients")
