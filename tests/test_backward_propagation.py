@@ -2,6 +2,7 @@ import copy
 import itertools
 import logging
 import os
+import pickle
 
 import numpy as np
 import pytest
@@ -22,8 +23,9 @@ class TestBackwardPropagation(TestConfig):
     if not os.path.exists("results"):
         os.makedirs("results")
 
-    x_train_0_path = os.path.join("results", "x_train_0.npy")
-    ytrue_train_0_path = os.path.join("results", "ytrue_train_0.npy")
+    x_train_0_path = os.path.join("fixtures", "x_train_0.npy")
+    ytrue_train_0_path = os.path.join("fixtures", "ytrue_train_0.npy")
+    untrained_model_path = os.path.join("fixtures", "untrained_model.pickle")
 
     initial_costs_backprop = None
     initial_cost_brute_force = None
@@ -44,8 +46,7 @@ class TestBackwardPropagation(TestConfig):
 
         return img_gen_train
 
-    @staticmethod
-    def _create_new_img_data(img_gen_train):
+    def _create_new_img_data(self, img_gen_train):
         """Creates new image data using the image data generator"""
         # Retrieve the first image array and first ground truth labels
         x_train, ytrue_train = next(img_gen_train)
@@ -56,7 +57,11 @@ class TestBackwardPropagation(TestConfig):
         x_train_0 = x_train_0[np.newaxis, ...]
         ytrue_train_0 = ytrue_train_0[np.newaxis, ...]
 
-        return ytrue_train_0, ytrue_train_0
+        # Save to disk for subsequent tests
+        np.save(self.x_train_0_path, x_train_0)
+        np.save(self.ytrue_train_0_path, ytrue_train_0)
+
+        return x_train_0, ytrue_train_0
 
     def _load_img_data_from_disk(self):
         """Loads existing image data training tuple from disk"""
@@ -87,15 +92,34 @@ class TestBackwardPropagation(TestConfig):
 
         return ytrue_train_0
 
-    @pytest.fixture
-    def untrained_model(self, config_parser):
-        """Untrained model instance and set weights and biases to a single value"""
-        model = get_tiny_mlp_model(
+    def _create_new_untrained_model(self, config_parser):
+        """Creates a new untrained model instance and saves it to disk"""
+        untrained_model = get_tiny_mlp_model(
             img_height=config_parser.img_height,
             img_width=config_parser.img_width,
             n_color_channels=config_parser.n_color_channels
         )
-        return model
+        with open(self.untrained_model_path, "wb") as file:
+            pickle.dump(untrained_model, file)
+
+        return untrained_model
+
+    def _load_untrained_model_from_disk(self):
+        """Loads an untrained model from disk"""
+        with open(self.untrained_model_path, "rb") as file:
+            untrained_model = pickle.load(file)
+
+        return untrained_model
+
+    @pytest.fixture
+    def untrained_model(self, config_parser):
+        """Untrained model instance and set weights and biases to a single value"""
+        if not os.path.exists(self.untrained_model_path):
+            untrained_model = self._create_new_untrained_model(config_parser)
+        else:
+            untrained_model = self._load_untrained_model_from_disk()
+
+        return untrained_model
 
     @pytest.fixture
     def initial_weights(self, untrained_model):
