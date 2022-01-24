@@ -21,8 +21,12 @@ class TestBackwardPropagation(TestConfig):
     """
     if not os.path.exists("results"):
         os.makedirs("results")
+
     x_train_0_path = os.path.join("results", "x_train_0.npy")
     ytrue_train_0_path = os.path.join("results", "ytrue_train_0.npy")
+
+    initial_costs_backprop = None
+    initial_cost_brute_force = None
 
     @pytest.fixture
     def img_gen_train(self, config_parser):
@@ -134,18 +138,19 @@ class TestBackwardPropagation(TestConfig):
 
         # Run the forward and backward pass on that single image
         trained_model.train_step(x_train_0, ytrue_train_0)
+        self.initial_costs_backprop = trained_model.costs[0]
 
         self._check_gradients_changed(trained_model, untrained_model)
 
         return trained_model
 
     @staticmethod
-    def _compute_loss(untrained_model, x_train_0, ytrue_train_0):
+    def _compute_losses(untrained_model, x_train_0, ytrue_train_0):
         """Computes the loss with unchanged parameters"""
         activations_out, dendritic_potentials_out = untrained_model._forward_pass(x_train_0)
         loss = untrained_model.loss.compute_losses(ytrue_train_0, activations_out)
 
-        return loss.item()
+        return loss
 
     @pytest.fixture
     def trained_model_brute_force(self, untrained_model, single_training_tuple, epsilon=1):
@@ -158,7 +163,11 @@ class TestBackwardPropagation(TestConfig):
         x_train_0, ytrue_train_0 = self._check_intial_settings(single_training_tuple, untrained_model)
 
         # Compute the loss with unchange parameters once
-        loss_unchanged_parameters = self._compute_loss(untrained_model, x_train_0, ytrue_train_0)
+        losses_unchanged_parameters = self._compute_losses(untrained_model, x_train_0, ytrue_train_0)
+        self.initial_cost_brute_force = untrained_model.loss.compute_cost(losses_unchanged_parameters)
+
+        # Make sure the initial costs of both learning algorithms are equal
+        assert self.initial_costs_backprop == self.initial_cost_brute_force
 
         # Innit a model which will contain all trained/updated weight gradients
         trained_model = copy.deepcopy(untrained_model)
@@ -193,10 +202,10 @@ class TestBackwardPropagation(TestConfig):
                 slightly_changed_model.layers[l].weights[:, row_idx, col_idx] += epsilon
 
                 # Compute loss with changed parameters
-                loss_changed_parameters = self._compute_loss(slightly_changed_model, x_train_0, ytrue_train_0)
+                loss_changed_parameters = self._compute_losses(slightly_changed_model, x_train_0, ytrue_train_0)
 
                 # Compute and set partial derivative into the trained model
-                partial_derivative = (loss_changed_parameters - loss_unchanged_parameters) / epsilon
+                partial_derivative = (loss_changed_parameters - losses_unchanged_parameters.item()) / epsilon
                 trained_model.layers[l].weight_gradients[:, row_idx, col_idx] = partial_derivative
 
         self._check_gradients_changed(trained_model, untrained_model)
