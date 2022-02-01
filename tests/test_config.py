@@ -8,6 +8,7 @@ from src.config_parser import ConfigParser
 from src.utils import set_root_logger
 
 set_root_logger()
+np.random.seed(1)
 
 
 class TestConfig:
