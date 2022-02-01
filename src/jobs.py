@@ -2,7 +2,7 @@ import logging
 
 import src.constants as c
 from src.config_parser import ConfigParser
-from src.data_generators.factory import get_data_generator
+from src.lib.data_generators.factory import get_data_generator
 from src.model_architectures import get_model
 
 logger = logging.getLogger(__name__)

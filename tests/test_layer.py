@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from src.layers.dense import DenseLayer
+from src.lib.layers.dense import DenseLayer
 from tests.test_config import TestConfig
 
 

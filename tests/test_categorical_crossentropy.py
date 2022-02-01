@@ -1,8 +1,8 @@
 import numpy as np
 import pytest
 
-from src.activation_functions import softmax_forward
-from src.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
+from src.lib.activation_functions import softmax_forward
+from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
 from tests.test_config import TestConfig
 
 

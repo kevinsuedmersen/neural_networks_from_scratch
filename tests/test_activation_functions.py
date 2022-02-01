@@ -2,9 +2,10 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.activation_functions import softmax_forward, relu_forward, linear_backward, linear_forward, \
+from src.lib.activation_functions import softmax_forward, relu_forward, linear_backward, \
+    linear_forward, \
     relu_backward, sigmoid_forward, sigmoid_backward, tanh_forward, tanh_backward
-from src.activation_functions.softmax import softmax_backward
+from src.lib.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
 
 
