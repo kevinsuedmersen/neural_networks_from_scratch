@@ -16,7 +16,7 @@ from tests.test_config import TestConfig
 logger = logging.getLogger(__name__)
 
 
-class TestBackwardPropagation(TestConfig):
+class TestGradientComputation(TestConfig):
     """Tests that the backpropagation algorithm computes the correct gradients, i.e. the same gradients
     which are computed using a brute force method
     """
