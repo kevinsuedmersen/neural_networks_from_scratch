@@ -3,7 +3,7 @@ from typing import Dict, List, Tuple
 import numpy as np
 import pytest
 
-from src.data_generators.image import ImageDataGenerator
+from src.lib.data_generators.image import ImageDataGenerator
 from tests.test_config import TestConfig
 
 
