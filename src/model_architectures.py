@@ -25,14 +25,14 @@ def get_simple_mlp_model(
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer()
     )
-    mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels), layer_idx=0))
-    mlp.add_layer(DenseLayer(512, "tanh", layer_idx=1))
-    mlp.add_layer(DenseLayer(256, "tanh", layer_idx=2))
-    mlp.add_layer(DenseLayer(128, "tanh", layer_idx=3))
-    mlp.add_layer(DenseLayer(64, "tanh", layer_idx=4))
-    mlp.add_layer(DenseLayer(32, "tanh", layer_idx=5))
-    mlp.add_layer(DenseLayer(16, "tanh", layer_idx=6))
-    mlp.add_layer(DenseLayer(2, "softmax", layer_idx=7))
+    mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels)))
+    mlp.add_layer(DenseLayer(512, "tanh"))
+    mlp.add_layer(DenseLayer(256, "tanh"))
+    mlp.add_layer(DenseLayer(128, "tanh"))
+    mlp.add_layer(DenseLayer(64, "tanh"))
+    mlp.add_layer(DenseLayer(32, "tanh"))
+    mlp.add_layer(DenseLayer(16, "tanh"))
+    mlp.add_layer(DenseLayer(2, "softmax"))
 
     return mlp
 
@@ -49,9 +49,9 @@ def get_tiny_mlp_model(
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer()
     )
-    mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels), layer_idx=0))
-    mlp.add_layer(DenseLayer(32, "tanh", layer_idx=1))
-    mlp.add_layer(DenseLayer(2, "softmax", layer_idx=2))
+    mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels)))
+    mlp.add_layer(DenseLayer(32, "tanh"))
+    mlp.add_layer(DenseLayer(2, "softmax"))
 
     return mlp
 

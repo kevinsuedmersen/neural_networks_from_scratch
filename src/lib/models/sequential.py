@@ -41,15 +41,17 @@ class SequentialModel(Model):
 
     def add_layer(self, layer: Union[InputLayer, DenseLayer]):
         """Adds a fully initialized layer to the model"""
-        # if self.layers is empty
+        # self.layers is empty ==> `layer` is the input layer
         if not self.layers:
             n_neurons_prev = layer.input_shape[1]
 
-        # if self.layers contains at least one layer
+        # self.layers contains at least one layer ==> `layer` is hidden or output layer
         else:
             n_neurons_prev = self.layers[-1].output_shape[1]
 
         layer.init_parameters(n_neurons_prev)
+        # Set layer index before appending it, because index = length - 1
+        layer.layer_idx = len(self.layers)
         self.layers.append(layer)
         self.n_layers = len(self.layers)
 

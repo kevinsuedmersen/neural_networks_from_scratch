@@ -10,20 +10,14 @@ logger = logging.getLogger(__name__)
 
 
 class InputLayer(Layer):
-    def __init__(self, input_shape: Tuple, layer_idx: int = None):
+    def __init__(self, input_shape: Tuple):
         super().__init__()
         self.input_shape = input_shape
-        self.layer_idx = layer_idx
 
         # in self.forward(), all but the batch dimensions will be flattened. So, the size of the
         # flattened dimension will the product of all dimensions except for the batch dimension
         flattened_dim = reduce(lambda x, y: x*y, input_shape[1:])
         self.output_shape = (input_shape[0], flattened_dim)
-        self.activations = None
-        self.weights = None
-        self.biases = None
-        self.weight_gradients = None
-        self.bias_gradients = None
 
     def init_parameters(self, *args, **kwargs):
         """This method is called in the model.add_layer method and hence, it must be implemented here"""

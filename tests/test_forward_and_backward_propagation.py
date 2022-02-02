@@ -10,6 +10,10 @@ from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDes
 from tests.test_config import TestConfig
 
 
+def get_random_scalar():
+    return np.random.rand(1).item()
+
+
 class TestForwardAndBackwardPropManaually(TestConfig):
     """Testing forward and backpropagation by computing the gradients manually
     with the chain rule and then asserting that the program returns the same gradients.
@@ -28,9 +32,9 @@ class TestForwardAndBackwardPropManaually(TestConfig):
     @pytest.fixture
     def input_data(self):
         """Some fixed input data"""
-        a_0_1 = np.random.rand(1)
-        a_0_2 = np.random.rand(1)
-        a_0_3 = np.random.rand(1)
+        a_0_1 = get_random_scalar()
+        a_0_2 = get_random_scalar()
+        a_0_3 = get_random_scalar()
 
         return a_0_1, a_0_2, a_0_3
 
@@ -38,22 +42,22 @@ class TestForwardAndBackwardPropManaually(TestConfig):
     def weights_1(self):
         """Weights in layer 1"""
         # Weights connecting to neuron 1 in layer 1
-        w_1_11 = np.random.rand(1)
-        w_1_12 = np.random.rand(1)
-        w_1_13 = np.random.randn(1)
+        w_1_11 = get_random_scalar()
+        w_1_12 = get_random_scalar()
+        w_1_13 = get_random_scalar()
 
         # Weights connecting to neuron 2 in layer 1
-        w_1_21 = np.random.rand(1)
-        w_1_22 = np.random.rand(1)
-        w_1_23 = np.random.rand(1)
+        w_1_21 = get_random_scalar()
+        w_1_22 = get_random_scalar()
+        w_1_23 = get_random_scalar()
 
         return w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23
 
     @pytest.fixture
     def biases_1(self):
         """Biases in layer 1"""
-        b_1_1 = np.random.randn(1)
-        b_1_2 = np.random.randn(1)
+        b_1_1 = get_random_scalar()
+        b_1_2 = get_random_scalar()
 
         return b_1_1, b_1_2
 
@@ -61,20 +65,20 @@ class TestForwardAndBackwardPropManaually(TestConfig):
     def weights_2(self):
         """Weights in layer 2"""
         # Weights connecting to neuron 1 in layer 2
-        w_2_11 = np.random.randn(1)
-        w_2_12 = np.random.randn(1)
+        w_2_11 = get_random_scalar()
+        w_2_12 = get_random_scalar()
 
         # Weights connecting to neuron 2 in layer 2
-        w_2_21 = np.random.randn(1)
-        w_2_22 = np.random.randn(1)
+        w_2_21 = get_random_scalar()
+        w_2_22 = get_random_scalar()
 
         return w_2_11, w_2_12, w_2_21, w_2_22
 
     @pytest.fixture
     def biases_2(self):
         """Biases in layer 2"""
-        b_2_1 = np.random.randn(1)
-        b_2_2 = np.random.randn(1)
+        b_2_1 = get_random_scalar()
+        b_2_2 = get_random_scalar()
 
         return b_2_1, b_2_2
 
@@ -117,9 +121,9 @@ class TestForwardAndBackwardPropManaually(TestConfig):
             metrics_val=[Accuracy("acc_val")],
             optimizer=StochasticGradientDescentOptimizer()
         )
-        _simple_model.add_layer(InputLayer(input_shape=(None, 3), layer_idx=0))
-        _simple_model.add_layer(DenseLayer(2, "tanh", layer_idx=1))
-        _simple_model.add_layer(DenseLayer(2, "tanh", layer_idx=2))
+        _simple_model.add_layer(InputLayer(input_shape=(None, 3)))
+        _simple_model.add_layer(DenseLayer(2, "tanh"))
+        _simple_model.add_layer(DenseLayer(2, "tanh"))
 
         # Put weights and biases into matrices of the correct shape
         _weights_1 = np.asarray(weights_1).reshape((1, 2, 3))  # (batch_size, n_neurons, n_neurons_prev)
@@ -143,11 +147,13 @@ class TestForwardAndBackwardPropManaually(TestConfig):
             fixed_model
     ):
         """Tests that the forward propagation to layer 1 has been done correctly"""
+        a_0_1, a_0_2, a_0_3 = input_data
         z_1_1_expected, z_1_2_expected = dendritic_potentials_1
         a_1_1_expected, a_1_2_expected = activations_1
 
         # Use the model to compute the forward pass
-        activations, dendritic_potentials = fixed_model._forward_pass(input_data)
+        x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
+        activations, dendritic_potentials = fixed_model._forward_pass(x_train)
         np.testing.assert_array_equal(dendritic_potentials, fixed_model.layers[2].dendritic_potentials)
         np.testing.assert_array_equal(activations, fixed_model.layers[2].activations)
 

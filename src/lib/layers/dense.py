@@ -14,24 +14,15 @@ class DenseLayer(Layer):
     def __init__(
             self,
             n_neurons: int,
-            activation_function_name: str,
-            layer_idx: int = None
+            activation_function_name: str
     ):
+        super().__init__()
         self.n_neurons = n_neurons
+        self.output_shape = (None, self.n_neurons)
         self.activation_function_name = activation_function_name
-        self.layer_idx = layer_idx
-
         self.activation_function_forward, self.activation_function_backward = get_activation_function(
             activation_function_name
         )
-        self.weights = None
-        self.biases = None
-        self.output_shape = None
-        self.dendritic_potentials = None
-        self.activations = None
-        self.errors = None
-        self.weight_gradients = None
-        self.bias_gradients = None
 
     def _init_weights(self, n_neurons_prev: int):
         """Init weight matrices"""
@@ -54,7 +45,6 @@ class DenseLayer(Layer):
         self._init_biases()
         self._init_weight_gradients()
         self._init_bias_gradients()
-        self.output_shape = (None, self.n_neurons)
 
     def forward_propagate(self, activations_prev: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Computes the activations of the current layer"""

@@ -5,6 +5,17 @@ logger = logging.getLogger(__name__)
 
 
 class Layer(ABC):
+    def __init__(self):
+        self.weights = None
+        self.biases = None
+        self.output_shape = None
+        self.dendritic_potentials = None
+        self.activations = None
+        self.errors = None
+        self.weight_gradients = None
+        self.bias_gradients = None
+        self.layer_idx = None
+
     @abstractmethod
     def init_parameters(self, *args, **kwargs):
         """Initializes weights and biases of the current layer"""
