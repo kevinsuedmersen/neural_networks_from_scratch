@@ -189,6 +189,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         a_2_1_expected, a_2_2_expected = activations_2
 
         # Use the model to compute the forward pass
+        # TODO: Put state of forward passed model into fixture
         x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
         activations, dendritic_potentials = fixed_model._forward_pass(x_train)
 
@@ -215,3 +216,41 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         assert z_2_2_expected == z_2_2_actual
         assert a_2_1_expected == a_2_1_actual
         assert a_2_2_expected == a_2_2_actual
+
+    @pytest.fixture
+    def ytrue(self):
+        """Ground truth labels"""
+        return 1, 0
+
+    @pytest.fixture
+    def weight_gradients_2(self, activations_1, activations_2):
+        """Manually computed weight gradients of layer with index 2, i.e.
+        dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
+        """
+        a_1_1, a_1_2 = activations_1
+        a_2_1, a_2_2 = activations_2
+        # Gradient of the loss w.r.t. the activations in layer 2
+        dL__a_2 = np.array([-1/a_2_1, 0]).reshape(1, 2)  # 0 because ytrue[1] = 0
+
+        # Jacobian of the activations in layer 2 w.r.t. the dendritic potentials in layer 2
+        da_2__dz_2 = np.array([
+            [a_2_1*(1-a_2_2), -a_2_1*a_2_2],
+            [-a_2_2*a_2_1, a_2_2*(1-a_2_2)]
+        ]).reshape(2, 2)
+
+        # Jacobian of the dendritic potentials in layer 2 w.r.t. the weights in layer 2
+        dz_2__d_W_2 = np.array([
+            [a_1_1, a_1_2, 0, 0],
+            [0, 0, a_1_1, a_1_2]
+        ]).reshape(2, 4)
+
+        # Put it all together
+        tmp = np.matmul(dL__a_2, da_2__dz_2)
+        dL__W_2 = np.matmul(tmp, dz_2__d_W_2)
+        dL__W_2 = dL__W_2.reshape(2, 2)
+
+        return dL__W_2
+
+    def test_backward_propagation(self, weight_gradients_2):
+        """Tests whether the gradients of layer 2 have been computed correctly"""
+        pass
