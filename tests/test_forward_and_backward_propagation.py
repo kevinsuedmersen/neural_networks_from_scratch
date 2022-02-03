@@ -40,7 +40,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @pytest.fixture
     def weights_1(self):
-        """Weights in layer 1"""
+        """Weights in layer with index 1"""
         # Weights connecting to neuron 1 in layer 1
         w_1_11 = get_random_scalar()
         w_1_12 = get_random_scalar()
@@ -55,7 +55,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @pytest.fixture
     def biases_1(self):
-        """Biases in layer 1"""
+        """Biases in layer with index 1"""
         b_1_1 = get_random_scalar()
         b_1_2 = get_random_scalar()
 
@@ -63,7 +63,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @pytest.fixture
     def weights_2(self):
-        """Weights in layer 2"""
+        """Weights in layer with index 2"""
         # Weights connecting to neuron 1 in layer 2
         w_2_11 = get_random_scalar()
         w_2_12 = get_random_scalar()
@@ -76,7 +76,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @pytest.fixture
     def biases_2(self):
-        """Biases in layer 2"""
+        """Biases in layer with index 2"""
         b_2_1 = get_random_scalar()
         b_2_2 = get_random_scalar()
 
@@ -84,7 +84,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @pytest.fixture
     def dendritic_potentials_1(self, input_data, weights_1, biases_1):
-        """Dendritic potentials in layer 1"""
+        """Dendritic potentials in layer with index 1"""
         a_0_1, a_0_2, a_0_3 = input_data
         w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23 = weights_1
         b_1_1, b_1_2 = biases_1
@@ -97,11 +97,12 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
     @staticmethod
     def _sigmoid_forward(z):
+        """Naive implementation of the sigmoid function if z is 1 dimensional"""
         return 1 / (1 + np.exp(-z))
 
     @pytest.fixture
     def activations_1(self, dendritic_potentials_1):
-        """Activations in layer 1"""
+        """Activations in layer with index 1"""
         z_1_1, z_1_2 = dendritic_potentials_1
 
         # Compute activations in layer 1
@@ -109,6 +110,37 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         a_1_2 = self._sigmoid_forward(z_1_2)
 
         return a_1_1, a_1_2
+
+    @pytest.fixture
+    def dendritic_potentials_2(self, activations_1, weights_2, biases_2):
+        """Dendritic potentials of layer with index 2"""
+        a_1_1, a_1_2 = activations_1
+        w_2_11, w_2_12, w_2_21, w_2_22 = weights_2
+        b_2_1, b_2_2 = biases_2
+
+        z_2_1 = a_1_1*w_2_11 + a_1_2*w_2_12 + b_2_1
+        z_2_2 = a_1_1*w_2_21 + a_1_2*w_2_22 + b_2_2
+
+        return z_2_1, z_2_2
+
+    @staticmethod
+    def _softmax_forward(z):
+        """Naive implementation of the softmax function if z is 1 dimensional"""
+        exp = np.exp(z)
+        exp_sum = exp.sum()
+
+        return exp / exp_sum
+
+    @pytest.fixture
+    def activations_2(self, dendritic_potentials_2):
+        """Activations of layer with index 2, i.e. predictions"""
+        dendritic_potentials_2 = np.asarray(dendritic_potentials_2)
+        a_2_1, a_2_2 = self._softmax_forward(dendritic_potentials_2)
+
+        # Just making sure the softmax function works
+        assert a_2_1 + a_2_2 == 1
+
+        return a_2_1, a_2_2
 
     @pytest.fixture
     def fixed_model(self, weights_1, biases_1, weights_2, biases_2):
@@ -121,9 +153,9 @@ class TestForwardAndBackwardPropManaually(TestConfig):
             metrics_val=[Accuracy("acc_val")],
             optimizer=StochasticGradientDescentOptimizer()
         )
-        _simple_model.add_layer(InputLayer(input_shape=(None, 3)))
-        _simple_model.add_layer(DenseLayer(2, "tanh"))
-        _simple_model.add_layer(DenseLayer(2, "tanh"))
+        _simple_model.add_layer(InputLayer(input_shape=(None, 3, 1)))  # TODO: Why do I need to provide input_shape?
+        _simple_model.add_layer(DenseLayer(2, "sigmoid"))
+        _simple_model.add_layer(DenseLayer(2, "softmax"))
 
         # Put weights and biases into matrices of the correct shape
         _weights_1 = np.asarray(weights_1).reshape((1, 2, 3))  # (batch_size, n_neurons, n_neurons_prev)
@@ -139,30 +171,47 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
         return _simple_model
 
-    def test_forward_propagation_layer_1(
+    def test_forward_propagation(
             self,
             input_data,
             dendritic_potentials_1,
             activations_1,
+            dendritic_potentials_2,
+            activations_2,
             fixed_model
     ):
         """Tests that the forward propagation to layer 1 has been done correctly"""
+        # Unpack fixtures
         a_0_1, a_0_2, a_0_3 = input_data
         z_1_1_expected, z_1_2_expected = dendritic_potentials_1
         a_1_1_expected, a_1_2_expected = activations_1
+        z_2_1_expected, z_2_2_expected = dendritic_potentials_2
+        a_2_1_expected, a_2_2_expected = activations_2
 
         # Use the model to compute the forward pass
         x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
         activations, dendritic_potentials = fixed_model._forward_pass(x_train)
+
+        # Just assure something obvoious
         np.testing.assert_array_equal(dendritic_potentials, fixed_model.layers[2].dendritic_potentials)
         np.testing.assert_array_equal(activations, fixed_model.layers[2].activations)
 
         # Extract results from layer 1
-        z_1_1_actual, z_1_2_actual = fixed_model.layers[1].dendritic_potentials
-        a_1_1_actual, a_1_2_actual = fixed_model.layers[1].activations
+        z_1_1_actual, z_1_2_actual = np.squeeze(fixed_model.layers[1].dendritic_potentials)
+        a_1_1_actual, a_1_2_actual = np.squeeze(fixed_model.layers[1].activations)
 
         # Verfiy resutls of layer 1
         assert z_1_1_expected == z_1_1_actual
         assert z_1_2_expected == z_1_2_actual
         assert a_1_1_expected == a_1_1_actual
         assert a_1_2_expected == a_1_2_actual
+
+        # Extract results of layer 2
+        z_2_1_actual, z_2_2_actual = np.squeeze(fixed_model.layers[2].dendritic_potentials)
+        a_2_1_actual, a_2_2_actual = np.squeeze(fixed_model.layers[2].activations)
+
+        # Verify results of layer 2
+        assert z_2_1_expected == z_2_1_actual
+        assert z_2_2_expected == z_2_2_actual
+        assert a_2_1_expected == a_2_1_actual
+        assert a_2_2_expected == a_2_2_actual
