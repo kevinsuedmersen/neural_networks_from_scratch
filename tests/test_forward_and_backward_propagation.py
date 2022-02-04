@@ -236,19 +236,22 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         assert a_2_2_expected == a_2_2_actual
 
     @pytest.fixture
-    def weight_gradients_2(self, activations_1, activations_2):
+    def weight_gradients_2(self, activations_1, activations_2, ytrue_train):
         """Manually computed weight gradients of layer with index 2, i.e.
         dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
         """
+        # Unpack fixtures
         a_1_1, a_1_2 = activations_1
         a_2_1, a_2_2 = activations_2
+        y_1, y_2 = ytrue_train
+
         # Gradient of the loss w.r.t. the activations in layer 2
-        dL__a_2 = np.array([-1/a_2_1, 0]).reshape(1, 2)  # 0 because ytrue[1] = 0
+        dL__a_2 = np.array([-y_1/a_2_1, y_2/a_2_2]).reshape(1, 2)
 
         # Jacobian of the activations in layer 2 w.r.t. the dendritic potentials in layer 2
         da_2__dz_2 = np.array([
-            [a_2_1*(1-a_2_2), -a_2_1*a_2_2],
-            [-a_2_2*a_2_1, a_2_2*(1-a_2_2)]
+            [a_2_1 * (1 - a_2_1), -a_2_1 * a_2_2],
+            [-a_2_2 * a_2_1, a_2_2 * (1 - a_2_2)]
         ]).reshape(2, 2)
 
         # Jacobian of the dendritic potentials in layer 2 w.r.t. the weights in layer 2
@@ -264,6 +267,24 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
         return dL__W_2
 
-    def test_backward_propagation(self, weight_gradients_2):
-        """Tests whether the gradients of layer 2 have been computed correctly"""
-        pass
+    @staticmethod
+    def _compute_euclidean_distance(actual, expected):
+        _actual = actual.ravel()
+        _expected = expected.ravel()
+        assert _actual.shape == _expected.shape
+        squared_distances = (_actual - _expected)**2
+        euclidean_distance = np.sqrt(np.sum(squared_distances))
+
+        return euclidean_distance
+
+    def _assert_euclidean_distance(self, actual, expected, absolute_tolerance=1e-6):
+        """Asserts that the euclidean distance is below a certain threshold"""
+        euclidean_distance = self._compute_euclidean_distance(actual, expected)
+        assert euclidean_distance < absolute_tolerance
+
+    def test_backward_propagation(self, weight_gradients_2, trained_model):
+        """Tests whether the gradients of layer 2 have been computed"""
+        weight_gradients_2_actual = trained_model.layers[2].weight_gradients
+        weight_gradients_2_expected = weight_gradients_2
+
+        self._assert_euclidean_distance(weight_gradients_2_actual, weight_gradients_2_expected)
