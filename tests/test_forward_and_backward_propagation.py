@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pytest
 
@@ -143,7 +145,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return a_2_1, a_2_2
 
     @pytest.fixture
-    def fixed_model(self, weights_1, biases_1, weights_2, biases_2):
+    def untrained_model(self, weights_1, biases_1, weights_2, biases_2):
         """A simple MLP model with fixed weights and biases and the same architecture used in this
         test
         """
@@ -171,6 +173,28 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
         return _simple_model
 
+    @pytest.fixture
+    def ytrue_train(self):
+        """Ground truth labels"""
+        return 1, 0
+
+    @pytest.fixture
+    def trained_model(self, untrained_model, input_data, ytrue_train):
+        """Model trained on 1 input example"""
+        # Unpack fixtures
+        a_0_1, a_0_2, a_0_3 = input_data
+        y1, y2 = ytrue_train
+
+        # Put data into correct shapes
+        x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
+        ytrue_train = np.array([y1, y2]).reshape((1, 2, 1))
+
+        # Run forward and backward pass
+        trained_model = copy.deepcopy(untrained_model)
+        trained_model.train_step(x_train, ytrue_train)
+
+        return trained_model
+
     def test_forward_propagation(
             self,
             input_data,
@@ -178,28 +202,22 @@ class TestForwardAndBackwardPropManaually(TestConfig):
             activations_1,
             dendritic_potentials_2,
             activations_2,
-            fixed_model
+            trained_model
     ):
         """Tests that the forward propagation to layer 1 has been done correctly"""
         # Unpack fixtures
-        a_0_1, a_0_2, a_0_3 = input_data
         z_1_1_expected, z_1_2_expected = dendritic_potentials_1
         a_1_1_expected, a_1_2_expected = activations_1
         z_2_1_expected, z_2_2_expected = dendritic_potentials_2
         a_2_1_expected, a_2_2_expected = activations_2
 
-        # Use the model to compute the forward pass
-        # TODO: Put state of forward passed model into fixture
-        x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
-        activations, dendritic_potentials = fixed_model._forward_pass(x_train)
-
-        # Just assure something obvoious
-        np.testing.assert_array_equal(dendritic_potentials, fixed_model.layers[2].dendritic_potentials)
-        np.testing.assert_array_equal(activations, fixed_model.layers[2].activations)
+        # TODO: Write separate test that the activations have been correctly forward propagated through the model
+        # np.testing.assert_array_equal(dendritic_potentials, untrained_model.layers[2].dendritic_potentials)
+        # np.testing.assert_array_equal(activations, untrained_model.layers[2].activations)
 
         # Extract results from layer 1
-        z_1_1_actual, z_1_2_actual = np.squeeze(fixed_model.layers[1].dendritic_potentials)
-        a_1_1_actual, a_1_2_actual = np.squeeze(fixed_model.layers[1].activations)
+        z_1_1_actual, z_1_2_actual = np.squeeze(trained_model.layers[1].dendritic_potentials)
+        a_1_1_actual, a_1_2_actual = np.squeeze(trained_model.layers[1].activations)
 
         # Verfiy resutls of layer 1
         assert z_1_1_expected == z_1_1_actual
@@ -208,19 +226,14 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         assert a_1_2_expected == a_1_2_actual
 
         # Extract results of layer 2
-        z_2_1_actual, z_2_2_actual = np.squeeze(fixed_model.layers[2].dendritic_potentials)
-        a_2_1_actual, a_2_2_actual = np.squeeze(fixed_model.layers[2].activations)
+        z_2_1_actual, z_2_2_actual = np.squeeze(trained_model.layers[2].dendritic_potentials)
+        a_2_1_actual, a_2_2_actual = np.squeeze(trained_model.layers[2].activations)
 
         # Verify results of layer 2
         assert z_2_1_expected == z_2_1_actual
         assert z_2_2_expected == z_2_2_actual
         assert a_2_1_expected == a_2_1_actual
         assert a_2_2_expected == a_2_2_actual
-
-    @pytest.fixture
-    def ytrue(self):
-        """Ground truth labels"""
-        return 1, 0
 
     @pytest.fixture
     def weight_gradients_2(self, activations_1, activations_2):
