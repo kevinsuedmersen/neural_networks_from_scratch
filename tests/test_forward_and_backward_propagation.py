@@ -344,14 +344,30 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
 
-    def test_backward_propagation_layer_2(self, dL__dW_2, trained_model):
+    def test_errors_layer_2(self):
+        # TODO: Implement!
+        pass
+
+    def test_errors_layer_1(self):
+        # TODO: Implement!
+        pass
+
+    def test_weight_gradients_layer_2(self, dL__dW_2, trained_model):
         """Tests whether the gradients of layer 2 have been computed correctly"""
         dL__dW_2_actual = trained_model.layers[2].weight_gradients
         dL__dW_2_expected = dL__dW_2
         self._assert_euclidean_distance(dL__dW_2_actual, dL__dW_2_expected)
 
-    def test_backward_propagation_layer_1(self, dL__dW_1, trained_model):
+    def test_weight_gradients_layer_1(self, dL__dW_1, trained_model):
         """Tests whether the gradients of layer 1 have been computed correctly"""
         dL__dW_1_actual = trained_model.layers[1].weight_gradients
         dL__dW_1_expected = dL__dW_1
         self._assert_euclidean_distance(dL__dW_1_actual, dL__dW_1_expected)
+
+    def test_bias_gradients_layer_2(self):
+        # TODO: Implement!
+        pass
+
+    def test_bias_gradiets_layer_1(self):
+        # TODO: Implement!
+        pass
