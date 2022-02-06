@@ -276,8 +276,6 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
         """
         # Unpack fixtures
-        da_2__dz_2 = da_2__dz_2
-        dL__da_2 = dL__da_2
         a_1_1, a_1_2 = a_1
 
         # Jacobian of the dendritic potentials in layer 2 w.r.t. the weights in layer 2
@@ -294,21 +292,21 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return dL__dW_2
 
     @pytest.fixture
-    def dL__dW_1(self, dL__da_2, da_2__dz_2, W_1, a_1, a_0):
+    def dL__dW_1(self, dL__da_2, da_2__dz_2, W_2, a_1, a_0):
         """Manually computed weight gradients of layer with index 1, i.e.
         dL/dW_1 = dL/da_2 * da_2/dz_2 * dz_2/da_1 * da_1/dz_1 * dz_1/dW_1
         fff
         Note that this assumes that the weights in layer 2 are fixed for now.
         """
         # Unpack fixtures
-        w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23 = W_1
+        w_2_11, w_2_12, w_2_21, w_2_22 = W_2
         a_1_1, a_1_2 = a_1
         a_0_1, a_0_2, a_0_3 = a_0
         
         # Derivative of the dendritic potentials in layer 2 w.r.t. the activations in layer 1
         dz_2__da_1 = np.array([
-            [w_1_11, w_1_12],
-            [w_1_21, w_1_22]
+            [w_2_11, w_2_12],
+            [w_2_21, w_2_22]
         ])
         
         # Derivative of the activations in layer 1 w.r.t. the dendritic potentials in layer 1, given
