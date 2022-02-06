@@ -7,9 +7,6 @@ from tests.test_config import TestConfig
 
 
 class TestCategoricalCrossEntropyLoss(TestConfig):
-    batch_size = 32
-    n_neurons_out = 10
-
     @pytest.fixture
     def cce_simplified(self) -> CategoricalCrossEntropyLoss:
         cce = CategoricalCrossEntropyLoss(

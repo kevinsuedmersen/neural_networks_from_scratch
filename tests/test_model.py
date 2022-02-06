@@ -17,10 +17,13 @@ def get_random_scalar():
     return np.random.rand(1).item()
 
 
-class TestForwardAndBackwardPropManaually(TestConfig):
-    """Testing forward and backpropagation by computing the gradients manually
-    with the chain rule and then asserting that the program returns the same gradients.
-    The network to be tested has the following nr of neurons in the following layers:
+class TestSimpleMLPModel(TestConfig):
+    """Testing the complete forward and backward pass of a simple Multi Layer Perceptron (MLP)
+    model. The expected dendritic potentials, activations, errors and gradients of each layer are
+    computed manually. The actual values are computed during a single forward and backward pass of
+    a single training example with the SequantialModel class.
+
+    The network to be tested has the following architecture:
 
     - Input layer: 3 neurons
     - Hidden layer: 2 neurons with sigmoid activation function
@@ -343,6 +346,14 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         """Asserts that the euclidean distance is below a certain threshold"""
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
+
+    def test_jacobian_layer_2(self):
+        # TODO: Implement!
+        pass
+
+    def test_jacobian_layer_1(self):
+        # TODO: Implement!
+        pass
 
     def test_errors_layer_2(self):
         # TODO: Implement!
