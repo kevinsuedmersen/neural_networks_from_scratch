@@ -34,9 +34,10 @@ class TestForwardAndBackwardPropManaually(TestConfig):
     - b_l represents the vector of all biases in layer l
     - w_l_jk represents the weight that connects neuron j in layer l with neuron k in layer l-1
     - W_l represents the matrix of all weights in layer l
+    - dx__dy represents the derivative of x with respect to (w.r.t.) y
     """
     @pytest.fixture
-    def input_data(self):
+    def a_0(self):
         """Some fixed input data"""
         a_0_1 = get_random_scalar()
         a_0_2 = get_random_scalar()
@@ -45,7 +46,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return a_0_1, a_0_2, a_0_3
 
     @pytest.fixture
-    def weights_1(self):
+    def w_1(self):
         """Weights in layer with index 1"""
         # Weights connecting to neuron 1 in layer 1
         w_1_11 = get_random_scalar()
@@ -60,7 +61,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23
 
     @pytest.fixture
-    def biases_1(self):
+    def b_1(self):
         """Biases in layer with index 1"""
         b_1_1 = get_random_scalar()
         b_1_2 = get_random_scalar()
@@ -68,7 +69,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return b_1_1, b_1_2
 
     @pytest.fixture
-    def weights_2(self):
+    def w_2(self):
         """Weights in layer with index 2"""
         # Weights connecting to neuron 1 in layer 2
         w_2_11 = get_random_scalar()
@@ -81,7 +82,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return w_2_11, w_2_12, w_2_21, w_2_22
 
     @pytest.fixture
-    def biases_2(self):
+    def b_2(self):
         """Biases in layer with index 2"""
         b_2_1 = get_random_scalar()
         b_2_2 = get_random_scalar()
@@ -89,11 +90,11 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return b_2_1, b_2_2
 
     @pytest.fixture
-    def dendritic_potentials_1(self, input_data, weights_1, biases_1):
+    def z_1(self, a_0, w_1, b_1):
         """Dendritic potentials in layer with index 1"""
-        a_0_1, a_0_2, a_0_3 = input_data
-        w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23 = weights_1
-        b_1_1, b_1_2 = biases_1
+        a_0_1, a_0_2, a_0_3 = a_0
+        w_1_11, w_1_12, w_1_13, w_1_21, w_1_22, w_1_23 = w_1
+        b_1_1, b_1_2 = b_1
 
         # Compute dendritic potentials in layer 1
         z_1_1 = a_0_1*w_1_11 + a_0_2*w_1_12 + a_0_3*w_1_13 + b_1_1
@@ -107,9 +108,9 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return 1 / (1 + np.exp(-z))
 
     @pytest.fixture
-    def activations_1(self, dendritic_potentials_1):
+    def a_1(self, z_1):
         """Activations in layer with index 1"""
-        z_1_1, z_1_2 = dendritic_potentials_1
+        z_1_1, z_1_2 = z_1
 
         # Compute activations in layer 1
         a_1_1 = self._sigmoid_forward(z_1_1)
@@ -118,11 +119,11 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return a_1_1, a_1_2
 
     @pytest.fixture
-    def dendritic_potentials_2(self, activations_1, weights_2, biases_2):
+    def z_2(self, a_1, w_2, b_2):
         """Dendritic potentials of layer with index 2"""
-        a_1_1, a_1_2 = activations_1
-        w_2_11, w_2_12, w_2_21, w_2_22 = weights_2
-        b_2_1, b_2_2 = biases_2
+        a_1_1, a_1_2 = a_1
+        w_2_11, w_2_12, w_2_21, w_2_22 = w_2
+        b_2_1, b_2_2 = b_2
 
         z_2_1 = a_1_1*w_2_11 + a_1_2*w_2_12 + b_2_1
         z_2_2 = a_1_1*w_2_21 + a_1_2*w_2_22 + b_2_2
@@ -138,10 +139,10 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return exp / exp_sum
 
     @pytest.fixture
-    def activations_2(self, dendritic_potentials_2):
+    def a_2(self, z_2):
         """Activations of layer with index 2, i.e. predictions"""
-        dendritic_potentials_2 = np.asarray(dendritic_potentials_2)
-        a_2_1, a_2_2 = self._softmax_forward(dendritic_potentials_2)
+        z_2 = np.asarray(z_2)
+        a_2_1, a_2_2 = self._softmax_forward(z_2)
 
         # Just making sure the softmax function works
         assert a_2_1 + a_2_2 == 1
@@ -149,7 +150,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return a_2_1, a_2_2
 
     @pytest.fixture
-    def untrained_model(self, weights_1, biases_1, weights_2, biases_2):
+    def untrained_model(self, w_1, b_1, w_2, b_2):
         """A simple MLP model with fixed weights and biases and the same architecture used in this
         test
         """
@@ -164,10 +165,10 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         _simple_model.add_layer(DenseLayer(2, "softmax"))
 
         # Put weights and biases into matrices of the correct shape
-        _weights_1 = np.asarray(weights_1).reshape((1, 2, 3))  # (batch_size, n_neurons, n_neurons_prev)
-        _biases_1 = np.asarray(biases_1).reshape((1, 2, 1))  # (batch_size, n_neurons, 1)
-        _weights_2 = np.asarray(weights_2).reshape((1, 2, 2))  # (batch_size, n_neurons, n_neurons_prev)
-        _biases_2 = np.asarray(biases_2).reshape((1, 2, 1))  # (batch_size, n_neurons, 1)
+        _weights_1 = np.asarray(w_1).reshape((1, 2, 3))  # (batch_size, n_neurons, n_neurons_prev)
+        _biases_1 = np.asarray(b_1).reshape((1, 2, 1))  # (batch_size, n_neurons, 1)
+        _weights_2 = np.asarray(w_2).reshape((1, 2, 2))  # (batch_size, n_neurons, n_neurons_prev)
+        _biases_2 = np.asarray(b_2).reshape((1, 2, 1))  # (batch_size, n_neurons, 1)
 
         # Replace weights and biases in the model
         _simple_model.layers[1].weights = _weights_1
@@ -178,7 +179,7 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return _simple_model
 
     @pytest.fixture
-    def ytrue_train(self):
+    def y(self):
         """Ground truth labels"""
         y_1 = 1
         y_2 = 0
@@ -186,11 +187,11 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return y_1, y_2
 
     @pytest.fixture
-    def trained_model(self, untrained_model, input_data, ytrue_train):
+    def trained_model(self, untrained_model, a_0, y):
         """Model trained on 1 input example"""
         # Unpack fixtures
-        a_0_1, a_0_2, a_0_3 = input_data
-        y1, y2 = ytrue_train
+        a_0_1, a_0_2, a_0_3 = a_0
+        y1, y2 = y
 
         # Put data into correct shapes
         x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
@@ -202,21 +203,13 @@ class TestForwardAndBackwardPropManaually(TestConfig):
 
         return trained_model
 
-    def test_forward_propagation(
-            self,
-            input_data,
-            dendritic_potentials_1,
-            activations_1,
-            dendritic_potentials_2,
-            activations_2,
-            trained_model
-    ):
+    def test_forward_propagation(self, a_0, z_1, a_1, z_2, a_2, trained_model):
         """Tests that the forward propagation to layer 1 has been done correctly"""
         # Unpack fixtures
-        z_1_1_expected, z_1_2_expected = dendritic_potentials_1
-        a_1_1_expected, a_1_2_expected = activations_1
-        z_2_1_expected, z_2_2_expected = dendritic_potentials_2
-        a_2_1_expected, a_2_2_expected = activations_2
+        z_1_1_expected, z_1_2_expected = z_1
+        a_1_1_expected, a_1_2_expected = a_1
+        z_2_1_expected, z_2_2_expected = z_2
+        a_2_1_expected, a_2_2_expected = a_2
 
         # TODO: Write separate test that the activations have been correctly forward propagated through the model
         # np.testing.assert_array_equal(dendritic_potentials, untrained_model.layers[2].dendritic_potentials)
@@ -244,25 +237,25 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         assert a_2_2_expected == a_2_2_actual
 
     @pytest.fixture
-    def loss_gradient(self, ytrue_train, activations_2):
+    def dL__da_2(self, y, a_2):
         """Gradient of the loss w.r.t. the activations in layer 2, given that the loss function
         is the categorical cross entropy loss function
         """
         # Unpack fixtures
-        y_1, y_2 = ytrue_train
-        a_2_1, a_2_2 = activations_2
+        y_1, y_2 = y
+        a_2_1, a_2_2 = a_2
 
         dL__da_2 = np.array([-y_1 / a_2_1, y_2 / a_2_2]).reshape(1, 2)
 
         return dL__da_2
 
     @pytest.fixture
-    def jacobian_activations_2_wrt_dendritic_potentials_2(self, activations_2):
+    def da_2__dz_2(self, a_2):
         """Jacobian of the activations in layer 2 w.r.t. the dendritic potentials in layer 2, given
         that the activation function in layer 2 is the softmax function
         """
         # Unpack fixtures
-        a_2_1, a_2_2 = activations_2
+        a_2_1, a_2_2 = a_2
 
         da_2__dz_2 = np.array([
             [a_2_1 * (1 - a_2_1), -a_2_1 * a_2_2],
@@ -272,19 +265,19 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return da_2__dz_2
 
     @pytest.fixture
-    def weight_gradients_2(
+    def dL__dW_2(
             self,
-            loss_gradient,
-            jacobian_activations_2_wrt_dendritic_potentials_2,
-            activations_1
+            dL__da_2,
+            da_2__dz_2,
+            a_1
     ):
         """Manually computed weight gradients of layer with index 2, i.e.
         dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
         """
         # Unpack fixtures
-        da_2__dz_2 = jacobian_activations_2_wrt_dendritic_potentials_2
-        dL__da_2 = loss_gradient
-        a_1_1, a_1_2 = activations_1
+        da_2__dz_2 = da_2__dz_2
+        dL__da_2 = dL__da_2
+        a_1_1, a_1_2 = a_1
 
         # Jacobian of the dendritic potentials in layer 2 w.r.t. the weights in layer 2
         dz_2__dW_2 = np.array([
@@ -300,14 +293,13 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return dL__dW_2
 
     @pytest.fixture
-    def weight_gradients_1(self, loss_gradient, activations_1, input_data):
+    def dL__dW_1(self, dL__da_2, a_1, a_0):
         """Manually computed weight gradients of layer with index 1, i.e.
         dL/dW_1 = dL/da_2 * da_2/dz_2 * dz_2/da_1 * da_1/dz_1 * dz_1/dW_1
         """
         # Unpack fixtures
-        dL__da_2 = loss_gradient
-        a_1_1, a_1_2 = activations_1
-        a_0_1, a_0_2, a_0_3 = input_data
+        a_1_1, a_1_2 = a_1
+        a_0_1, a_0_2, a_0_3 = a_0
 
         # Jacobian of the activations in layer 1 w.r.t. the dendritic potentials in layer 1,
         # given that the activation function in layer 1 is the sigmoid function
@@ -343,14 +335,14 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
 
-    def test_backward_propagation_layer_2(self, weight_gradients_2, trained_model):
+    def test_backward_propagation_layer_2(self, dL__dW_2, trained_model):
         """Tests whether the gradients of layer 2 have been computed correctly"""
         weight_gradients_2_actual = trained_model.layers[2].weight_gradients
-        weight_gradients_2_expected = weight_gradients_2
+        weight_gradients_2_expected = dL__dW_2
         self._assert_euclidean_distance(weight_gradients_2_actual, weight_gradients_2_expected)
 
-    def test_backward_propagation_layer_1(self, weight_gradients_1, trained_model):
+    def test_backward_propagation_layer_1(self, dL__dW_1, trained_model):
         """Tests whether the gradients of layer 1 have been computed correctly"""
         weight_gradients_1_actual = trained_model.layers[1].weight_gradients
-        weight_gradients_1_expected = weight_gradients_1
+        weight_gradients_1_expected = dL__dW_1
         self._assert_euclidean_distance(weight_gradients_1_actual, weight_gradients_1_expected)
