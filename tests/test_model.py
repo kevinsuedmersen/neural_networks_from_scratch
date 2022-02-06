@@ -347,9 +347,15 @@ class TestSimpleMLPModel(TestConfig):
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
 
-    def test_jacobian_layer_2(self):
-        # TODO: Implement!
-        pass
+    def test_jacobian_layer_2(self, da_2__dz_2, a_2, z_2, trained_model):
+        """Test the output of the jacobian function in layer 2, i.e. da_2/dz_2, given that the
+        activation function in layer 2 is the softmax function
+        """
+        jacobian_expected = da_2__dz_2
+        z_2 = np.asarray(z_2).reshape((1, 2, 1))
+        a_2 = np.asarray(a_2).reshape((1, 2, 1))
+        jacobian_actual = trained_model.layers[2].activation_function_backward(z_2, a_2)
+        self._assert_euclidean_distance(jacobian_actual, jacobian_expected)
 
     def test_jacobian_layer_1(self):
         # TODO: Implement!
