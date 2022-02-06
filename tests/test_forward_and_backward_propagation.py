@@ -257,21 +257,34 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return dL__da_2
 
     @pytest.fixture
-    def weight_gradients_2(self, activations_1, activations_2, loss_gradient):
-        """Manually computed weight gradients of layer with index 2, i.e.
-        dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
+    def jacobian_activations_2_wrt_dendritic_potentials_2(self, activations_2):
+        """Jacobian of the activations in layer 2 w.r.t. the dendritic potentials in layer 2, given
+        that the activation function in layer 2 is the softmax function
         """
         # Unpack fixtures
-        a_1_1, a_1_2 = activations_1
         a_2_1, a_2_2 = activations_2
-        dL__da_2 = loss_gradient
 
-        # Jacobian of the activations in layer 2 w.r.t. the dendritic potentials in layer 2, given
-        # that the activation function in layer 2 is the softmax function
         da_2__dz_2 = np.array([
             [a_2_1 * (1 - a_2_1), -a_2_1 * a_2_2],
             [-a_2_2 * a_2_1, a_2_2 * (1 - a_2_2)]
         ]).reshape(2, 2)
+
+        return da_2__dz_2
+
+    @pytest.fixture
+    def weight_gradients_2(
+            self,
+            loss_gradient,
+            jacobian_activations_2_wrt_dendritic_potentials_2,
+            activations_1
+    ):
+        """Manually computed weight gradients of layer with index 2, i.e.
+        dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
+        """
+        # Unpack fixtures
+        da_2__dz_2 = jacobian_activations_2_wrt_dendritic_potentials_2
+        dL__da_2 = loss_gradient
+        a_1_1, a_1_2 = activations_1
 
         # Jacobian of the dendritic potentials in layer 2 w.r.t. the weights in layer 2
         dz_2__dW_2 = np.array([
@@ -287,11 +300,12 @@ class TestForwardAndBackwardPropManaually(TestConfig):
         return dL__dW_2
 
     @pytest.fixture
-    def weight_gradients_1(self, activations_1, input_data):
+    def weight_gradients_1(self, loss_gradient, activations_1, input_data):
         """Manually computed weight gradients of layer with index 1, i.e.
         dL/dW_1 = dL/da_2 * da_2/dz_2 * dz_2/da_1 * da_1/dz_1 * dz_1/dW_1
         """
         # Unpack fixtures
+        dL__da_2 = loss_gradient
         a_1_1, a_1_2 = activations_1
         a_0_1, a_0_2, a_0_3 = input_data
 
