@@ -347,19 +347,41 @@ class TestSimpleMLPModel(TestConfig):
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
 
+    def _assert_jacobians(self, jacobian_expected, z, a, trained_model, layer_idx):
+        """Asserts that both jacobians are equal"""
+        z = np.asarray(z).reshape((1, 2, 1))
+        a = np.asarray(a).reshape((1, 2, 1))
+        jacobian_actual = trained_model.layers[layer_idx].activation_function_backward(z, a)
+        self._assert_euclidean_distance(jacobian_actual, jacobian_expected)
+
     def test_jacobian_layer_2(self, da_2__dz_2, a_2, z_2, trained_model):
         """Test the output of the jacobian function in layer 2, i.e. da_2/dz_2, given that the
         activation function in layer 2 is the softmax function
         """
         jacobian_expected = da_2__dz_2
-        z_2 = np.asarray(z_2).reshape((1, 2, 1))
-        a_2 = np.asarray(a_2).reshape((1, 2, 1))
-        jacobian_actual = trained_model.layers[2].activation_function_backward(z_2, a_2)
-        self._assert_euclidean_distance(jacobian_actual, jacobian_expected)
+        self._assert_jacobians(jacobian_expected, z_2, a_2, trained_model, 2)
 
-    def test_jacobian_layer_1(self):
-        # TODO: Implement!
-        pass
+    @pytest.fixture
+    def da_1__dz_1(self, a_1):
+        """Jacobian of the activations in layer 1 w.r.t. the dendritic potentials in layer 1, given
+        that the activation function in layer 1 is the sigmoid function
+        """
+        # Unpack fixtures
+        a_1_1, a_1_2 = a_1
+
+        da_1__dz_1 = np.array([
+            [a_1_1 * (1 - a_1_1), 0],
+            [0, a_1_2 * (1 - a_1_2)]
+        ]).reshape(2, 2)
+
+        return da_1__dz_1
+
+    def test_jacobian_layer_1(self, da_1__dz_1, a_1, z_1, trained_model):
+        """Test the output of the jacobian function in layer 1, i.e. da_1/dz_1, given that the
+        activation function in layer 2 is the sigmoid function
+        """
+        jacobian_expected = da_1__dz_1
+        self._assert_jacobians(jacobian_expected, z_1, a_1, trained_model, 1)
 
     def test_errors_layer_2(self):
         # TODO: Implement!
