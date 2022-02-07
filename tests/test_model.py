@@ -383,9 +383,11 @@ class TestSimpleMLPModel(TestConfig):
         jacobian_expected = da_1__dz_1
         self._assert_jacobians(jacobian_expected, z_1, a_1, trained_model, 1)
 
-    def test_errors_layer_2(self):
-        # TODO: Implement!
-        pass
+    def test_errors_layer_2(self, trained_model, dL__da_2, da_2__dz_2):
+        """Tests that the errors in layer 1 have been computed correctly"""
+        errors_actual = trained_model.layers[2].errors
+        errors_expected = np.matmul(da_2__dz_2, dL__da_2.T)
+        self._assert_euclidean_distance(errors_actual, errors_expected)
 
     def test_errors_layer_1(self):
         # TODO: Implement!
