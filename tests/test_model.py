@@ -327,7 +327,7 @@ class TestSimpleMLPModel(TestConfig):
         
         # Putting it all together
         derivatives = [dL__da_2, da_2__dz_2, dz_2__da_1, da_1__dz_1, dz_1__dW_1]
-        dL__dW_1 = reduce(lambda left, right: np.matmul(left, right), derivatives)
+        dL__dW_1 = reduce(np.matmul, derivatives)
         dL__dW_1 = dL__dW_1.reshape(2, 3)
         
         return dL__dW_1
@@ -392,6 +392,7 @@ class TestSimpleMLPModel(TestConfig):
     @pytest.fixture
     def errors_2(self, trained_model, dL__da_2, da_2__dz_2):
         """Error of layer 2"""
+        # TODO: Keep using the same notation as before, so transpose the below and also transpose errors_actual in the tests
         errors_2 = np.matmul(da_2__dz_2, dL__da_2.T)
 
         return errors_2
