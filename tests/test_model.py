@@ -149,7 +149,7 @@ class TestSimpleMLPModel(TestConfig):
         a_2_1, a_2_2 = self._softmax_forward(z_2)
 
         # Just making sure the softmax function works
-        assert a_2_1 + a_2_2 == 1
+        assert (a_2_1 + a_2_2) - 1 < 1e-6
 
         return a_2_1, a_2_2
 
@@ -385,9 +385,9 @@ class TestSimpleMLPModel(TestConfig):
 
     def test_errors_layer_2(self, trained_model, dL__da_2, da_2__dz_2):
         """Tests that the errors in layer 1 have been computed correctly"""
-        errors_actual = trained_model.layers[2].errors
-        errors_expected = np.matmul(da_2__dz_2, dL__da_2.T)
-        self._assert_euclidean_distance(errors_actual, errors_expected)
+        errors_2_actual = trained_model.layers[2].errors
+        errors_2_expected = np.matmul(da_2__dz_2, dL__da_2.T)
+        self._assert_euclidean_distance(errors_2_actual, errors_2_expected)
 
     @pytest.fixture
     def errors_2(self, trained_model, dL__da_2, da_2__dz_2):
@@ -399,11 +399,11 @@ class TestSimpleMLPModel(TestConfig):
 
     def test_errors_layer_1(self, trained_model, da_1__dz_1, W_2, errors_2):
         """Tests that the errors of layer 1 have been computed correctly"""
-        errors_actual = trained_model.layers[1].errors
+        errors_1_actual = trained_model.layers[1].errors
         # TODO: Put weights into numpy array
         W_2 = np.asarray(W_2).reshape(2, 2)
-        errors_expected = reduce(np.matmul, [da_1__dz_1, W_2.T, errors_2])
-        self._assert_euclidean_distance(errors_actual, errors_expected)
+        errors_2_expected = reduce(np.matmul, [da_1__dz_1, W_2.T, errors_2])
+        self._assert_euclidean_distance(errors_1_actual, errors_2_expected)
 
     def test_weight_gradients_layer_2(self, dL__dW_2, trained_model):
         """Tests whether the gradients of layer 2 have been computed correctly"""
