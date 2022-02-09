@@ -423,9 +423,15 @@ class TestSimpleMLPModel(TestConfig):
         self._assert_euclidean_distance(dL__dW_1_actual, dL__dW_1_expected)
 
     @pytest.fixture
-    def dL__db_2(self):
+    def dL__db_2(self, dL__da_2, da_2__dz_2):
         """Bias gradients in layer 2"""
-        pass
+        dz_2__db_2 = np.array([
+            [1, 0],
+            [0, 1]
+        ])
+        dL__db_2 = reduce(np.matmul, [dL__da_2, da_2__dz_2, dz_2__db_2])
+
+        return dL__db_2
 
     @pytest.fixture
     def dL__db_1(self, dL__da_2, da_2__dz_2, dz_2__da_1, da_1__dz_1):
@@ -438,11 +444,13 @@ class TestSimpleMLPModel(TestConfig):
 
         return dL__db_1
 
-    def test_bias_gradients_layer_2(self, trained_model):
+    def test_bias_gradients_layer_2(self, trained_model, dL__db_2):
         """Tests that the bias gradients in layer 2 have been computed correctly"""
+        dL__db_2_actual = trained_model.layers[2].bias_gradients
+        dL__db_2_expected = dL__db_2.T
+        self._assert_euclidean_distance(dL__db_2_actual, dL__db_2_expected)
 
-        dL__db_1_actual = trained_model.layers[2].bias_gradients
-
-    def test_bias_gradiets_layer_1(self):
-        # TODO: Implement!
-        pass
+    def test_bias_gradiets_layer_1(self, trained_model, dL__db_1):
+        dL__db_1_actual = trained_model.layers[1].bias_gradients
+        dL__db_1_expected = dL__db_1.T
+        self._assert_euclidean_distance(dL__db_1_actual, dL__db_1_expected)
