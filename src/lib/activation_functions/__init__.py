@@ -1,8 +1,8 @@
-from src.activation_functions.linear import linear_forward, linear_backward
-from src.activation_functions.relu import relu_forward, relu_backward
-from src.activation_functions.sigmoid import sigmoid_forward, sigmoid_backward
-from src.activation_functions.softmax import softmax_forward, softmax_backward, softmax_backward
-from src.activation_functions.tanh import tanh_forward, tanh_backward
+from src.lib.activation_functions.linear import linear_forward, linear_backward
+from src.lib.activation_functions.relu import relu_forward, relu_backward
+from src.lib.activation_functions.sigmoid import sigmoid_forward, sigmoid_backward
+from src.lib.activation_functions.softmax import softmax_forward, softmax_backward
+from src.lib.activation_functions.tanh import tanh_forward, tanh_backward
 
 
 def get_activation_function(activation_function_name: str):

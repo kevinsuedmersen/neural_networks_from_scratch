@@ -1,13 +1,12 @@
 import numpy as np
 import pytest
 
-from src.layers.dense import DenseLayer
+from src.lib.layers.dense import DenseLayer
 from tests.test_config import TestConfig
 
 
 class TestLayer(TestConfig):
-    n_neurons_prev = 8
-    n_neurons_next = 32
+    activation_function_name = "tanh"
 
     @pytest.fixture
     def weights(self):
@@ -40,25 +39,42 @@ class TestDenseLayer(TestLayer):
     def activations_prev(self):
         return np.random.randn(self.batch_size, self.n_neurons_prev, 1)
 
-    def _init_layer(self, activation_function_name, activations_prev):
-        dense_layer = DenseLayer(self.n_neurons, activation_function_name)
+    @pytest.fixture
+    def layer(self):
+        dense_layer = DenseLayer(self.n_neurons, self.activation_function_name)
         dense_layer.init_parameters(self.n_neurons_prev)
 
         return dense_layer
 
-    def test_forward_propagate(self, activations_prev):
+    def test_forward_propagate(self, layer, activations_prev):
         """Tests that the shape of the dendritic_potentials and activations is as expected for all
         activation functions
         """
-        for activation_function_name in self.activation_function_names:
-            dense_layer = self._init_layer(activation_function_name, activations_prev)
-            activations, dendritic_potentials = dense_layer.forward_propagate(activations_prev)
-            assert activations.shape == dendritic_potentials.shape == (self.batch_size, self.n_neurons, 1)
+        activations, dendritic_potentials = layer.forward_propagate(activations_prev)
+        assert activations.shape == dendritic_potentials.shape == (self.batch_size, self.n_neurons, 1)
 
-    def test_backward_propagate(self, error_next, weights_next, activations_prev):
+    @pytest.fixture
+    def forward_propagated_layer(self, layer, activations_prev):
+        activations, dendritic_potentials = layer.forward_propagate(activations_prev)
+
+        return layer
+
+    def test_backward_propagate(self, forward_propagated_layer, error_next, weights_next, activations_prev):
         """Tests that the shape of the returned errors is as expected for all activation functions"""
-        for activation_function_name in self.activation_function_names:
-            dense_layer = self._init_layer(activation_function_name, activations_prev)
-            _ = dense_layer.forward_propagate(activations_prev)
-            error = dense_layer.backward_propagate(error_next, weights_next)
-            assert error.shape == (self.batch_size, self.n_neurons, 1)
+        error = forward_propagated_layer.backward_propagate(error_next, weights_next)
+        assert error.shape == (self.batch_size, self.n_neurons, 1)
+
+    @pytest.fixture
+    def backward_propagated_layer(self, forward_propagated_layer, error_next, weights_next):
+        error = forward_propagated_layer.backward_propagate(error_next, weights_next)
+
+        return forward_propagated_layer
+
+    def test_compute_weight_gradients(self, backward_propagated_layer, activations_prev):
+        """Test that the shape of the computed weight gradients is as expected"""
+        backward_propagated_layer.compute_weight_gradients(activations_prev)
+        assert backward_propagated_layer.weight_gradients.shape == (1, self.n_neurons, self.n_neurons_prev)
+
+    def test_compute_bias_gradients(self, backward_propagated_layer):
+        backward_propagated_layer.compute_bias_gradients()
+        assert backward_propagated_layer.bias_gradients.shape == (1, self.n_neurons, 1)

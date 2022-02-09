@@ -7,7 +7,7 @@ import cv2
 import numpy as np
 import numpy.typing as npt
 
-from src.data_generators import DataGenerator
+from src.lib.data_generators import DataGenerator
 
 logger = logging.getLogger(__name__)
 
@@ -198,6 +198,8 @@ class ImageDataGenerator(DataGenerator):
 
         else:
             raise ValueError(f"Unknown dataset provided: {dataset}")
+
+        logger.info(f"Number of images in the '{dataset}' dataset: {n_samples}")
 
         return data_gen, n_samples
 

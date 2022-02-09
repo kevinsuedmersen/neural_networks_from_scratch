@@ -3,8 +3,8 @@ import logging
 import numpy as np
 import numpy.typing as npt
 
-from src.losses import Loss
-from src.losses.decorators import simplify_init_error
+from src.lib.losses import Loss
+from src.lib.losses.decorators import simplify_init_error
 
 logger = logging.getLogger(__name__)
 
@@ -44,7 +44,8 @@ class CategoricalCrossEntropyLoss(Loss):
             activations_out: npt.NDArray
     ) -> npt.NDArray:
         """
-        Initializes the error at the output layer
+        Initializes the error at the output layer. The error initialization is different for every
+        loss function, so I decided to model it as a method of the Loss class
         :param ytrue: Ground truth
         :param dendritic_potentials_out: Dendritic potentials at the output layer
         :param activations_out: Activations at the output layer, i.e. predictions

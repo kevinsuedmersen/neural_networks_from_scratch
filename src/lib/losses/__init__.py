@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 import numpy.typing as npt
 
-from src.activation_functions import get_activation_function
+from src.lib.activation_functions import get_activation_function
 
 logger = logging.getLogger(__name__)
 

@@ -3,12 +3,12 @@ from typing import List, Tuple, Generator, Union
 
 import numpy.typing as npt
 
-from src.layers.dense import DenseLayer
-from src.layers.input import InputLayer
-from src.losses import Loss
-from src.metrics import Metric
-from src.models import Model
-from src.optimizers import Optimizer
+from src.lib.layers.dense import DenseLayer
+from src.lib.layers.input import InputLayer
+from src.lib.losses import Loss
+from src.lib.metrics import Metric
+from src.lib.models import Model
+from src.lib.optimizers import Optimizer
 from src.utils import log_progress
 
 logger = logging.getLogger(__name__)
@@ -20,14 +20,15 @@ class SequentialModel(Model):
             loss: Loss,
             metrics_train: List[Metric],
             metrics_val: List[Metric],
-            optimizer: Optimizer,
+            optimizer: Optimizer
     ):
         """
-        Instantiates a Multi Layer Perceptron model
+        Instantiates a model consisting of a sequential stack of layers
         :param layers: List of layers from [0, L], where layer 0 represents the input layer and L the output layer
-        :param loss:
-        :param metrics_train:
-        :param optimizer:
+        :param loss: Loss instance computing losses, cost and initializing backpropagation
+        :param metrics_train: List of metrics to be evaluated on the training set
+        :param metrics_val: List of metrics to be evaluated on the validation set
+        :param optimizer: Optimizer instance applying weight updates
         """
         self.loss = loss
         self.metrics_train = metrics_train
@@ -40,19 +41,21 @@ class SequentialModel(Model):
 
     def add_layer(self, layer: Union[InputLayer, DenseLayer]):
         """Adds a fully initialized layer to the model"""
-        # if self.layers is empty
+        # self.layers is empty ==> `layer` is the input layer
         if not self.layers:
             n_neurons_prev = layer.input_shape[1]
 
-        # if self.layers contains at least one layer
+        # self.layers contains at least one layer ==> `layer` is hidden or output layer
         else:
             n_neurons_prev = self.layers[-1].output_shape[1]
 
         layer.init_parameters(n_neurons_prev)
+        # Set layer index before appending it, because index = length - 1
+        layer.layer_idx = len(self.layers)
         self.layers.append(layer)
         self.n_layers = len(self.layers)
 
-    def _forward_pass(self, x_train: npt.NDArray):
+    def _forward_pass(self, x_train: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
         activations = self.layers[0].forward_propagate(x_train)
@@ -70,23 +73,27 @@ class SequentialModel(Model):
             ypred_train: npt.NDArray,
             dendritic_potentials_out: npt.NDArray
     ):
-        """Propagate the error backward from layer L to layer 1"""
-        # Init backprop: Compute error at layer L, the output layer
-        error = self.loss.init_error(
+        """Propagate the errors backward from layer L to layer 1"""
+        # Init backprop: Intitially, at layer L (the output layer), compute errors and gradients
+        errors = self.loss.init_error(
             ytrue=ytrue_train,
             dendritic_potentials_out=dendritic_potentials_out,
             activations_out=ypred_train
         )
+        self.layers[-1].errors = errors
+        self.layers[-1].compute_weight_gradients(activations_prev=self.layers[-2].activations)
+        self.layers[-1].compute_bias_gradients()
+        self.layers[-1].update_parameters()
 
-        # Backprop the error from layer L-1 to layer 1
-        for l in range((self.n_layers - 1), 1, -1):
-            # layers[l] ==> layer l-1
-            # input error ==> layer l
-            # output error ==> layer l-1
-            error = self.layers[l - 1].backward_propagate(error, self.layers[l].weights)
-            self.layers[l - 1].compute_weight_gradients()
-            self.layers[l - 1].compute_bias_gradients()
-            self.layers[l - 1].update_parameters()
+        # Continue to backprop the errors from layer with index L-2 (layer before output layer) to layer with
+        # index 1 (layer after input layer)
+        for l in range((self.n_layers - 2), 0, -1):
+            # input errors ==> layer l+1
+            # output errors ==> layer l
+            errors = self.layers[l].backward_propagate(errors, self.layers[l + 1].weights)
+            self.layers[l].compute_weight_gradients(self.layers[l - 1].activations)
+            self.layers[l].compute_bias_gradients()
+            self.layers[l].update_parameters()
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""

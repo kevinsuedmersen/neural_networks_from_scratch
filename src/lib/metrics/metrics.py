@@ -1,6 +1,6 @@
 import logging
 
-from src.metrics import Metric
+from src.lib.metrics import Metric
 
 logger = logging.getLogger(__name__)
 

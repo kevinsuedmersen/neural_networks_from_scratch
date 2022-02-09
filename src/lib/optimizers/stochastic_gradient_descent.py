@@ -1,6 +1,6 @@
 import logging
 
-from src.optimizers import Optimizer
+from src.lib.optimizers import Optimizer
 
 logger = logging.getLogger(__name__)
 
