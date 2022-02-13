@@ -49,3 +49,9 @@ class InputLayer(Layer):
             "The input layer has no parameters, so no bias gradients should be computed during "
             "backpropagation"
         )
+
+    def update_parameters(self):
+        raise NotImplementedError(
+            "The input layer has no parameters, so no parameter updates should be computed during "
+            "backpropagation"
+        )

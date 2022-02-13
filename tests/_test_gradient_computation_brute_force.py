@@ -174,7 +174,7 @@ class TestGradientComputation(TestConfig):
     @staticmethod
     def _compute_losses(untrained_model, x_train_0, ytrue_train_0):
         """Simply computes losses without backpropagation"""
-        activations_out, dendritic_potentials_out = untrained_model._forward_pass(x_train_0)
+        activations_out, dendritic_potentials_out = untrained_model._forward_propagate_activations(x_train_0)
         losses = untrained_model.loss.compute_losses(ytrue_train_0, activations_out)
 
         return losses
