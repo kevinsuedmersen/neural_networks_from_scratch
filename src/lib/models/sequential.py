@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import List, Tuple, Generator, Union
 
 import numpy.typing as npt
@@ -54,8 +55,10 @@ class SequentialModel(Model):
         layer.layer_idx = len(self.layers)
         self.layers.append(layer)
         self.n_layers = len(self.layers)
+        # Make sure each layer gets access to the optimizer
+        layer.optimizer = self.optimizer
 
-    def _forward_pass(self, x_train: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
+    def _forward_propagate_activations(self, x_train: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Propagate activations from layer 0 to layer L"""
         # Init forward prop
         activations = self.layers[0].forward_propagate(x_train)
@@ -67,7 +70,7 @@ class SequentialModel(Model):
 
         return activations, dendritic_potentials
 
-    def _backward_pass(
+    def _backward_propagate_errors(
             self,
             ytrue_train: npt.NDArray,
             ypred_train: npt.NDArray,
@@ -83,7 +86,6 @@ class SequentialModel(Model):
         self.layers[-1].errors = errors
         self.layers[-1].compute_weight_gradients(activations_prev=self.layers[-2].activations)
         self.layers[-1].compute_bias_gradients()
-        self.layers[-1].update_parameters()
 
         # Continue to backprop the errors from layer with index L-2 (layer before output layer) to layer with
         # index 1 (layer after input layer)
@@ -93,22 +95,32 @@ class SequentialModel(Model):
             errors = self.layers[l].backward_propagate(errors, self.layers[l + 1].weights)
             self.layers[l].compute_weight_gradients(self.layers[l - 1].activations)
             self.layers[l].compute_bias_gradients()
-            self.layers[l].update_parameters()
+
+    def _update_parameters(self):
+        """Updates the parameters of each layer using gradient descent. Note that parameter updates
+        must be done separately after backpropagating all errors, because during backpropagation,
+        all parameters must be kept constant. If parameters are changed during backpropagation,
+        the error at layer l might be calculated wrongly, because it is also a fucntion of the
+        weights in layer l+1 (see line 95 above)
+        """
+        for layer in self.layers[1:]:
+            layer.update_parameters()
 
     def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
-        activations_out, dendritic_potentials_out = self._forward_pass(x_train)
+        activations_out, dendritic_potentials_out = self._forward_propagate_activations(x_train)
         losses = self.loss.compute_losses(ytrue_train, activations_out)
         cost = self.loss.compute_cost(losses)
         self.costs.append(cost)
-        self._backward_pass(
+        self._backward_propagate_errors(
             ytrue_train=ytrue_train,
             ypred_train=activations_out,
             dendritic_potentials_out=dendritic_potentials_out
         )
+        self._update_parameters()
 
     def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
-        pass
+        raise NotImplementedError
 
     def train(
             self,
@@ -122,17 +134,20 @@ class SequentialModel(Model):
     ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
+        n_batches_train = math.ceil(n_samples_train / batch_size)
+        n_batches_val = math.ceil(n_samples_val / batch_size)
+
         logger.info("Training started")
         for epoch_counter in range(n_epochs):
             # Train on batches of training data until there is no data left
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
                 self.train_step(x_train, ytrue_train)
-                log_progress(train_batch_counter, n_samples_train, topic="Train batch")
+                log_progress(train_batch_counter, n_batches_train, topic="Train batch")
 
             # Evaluate on the validation set
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
                 self.val_step(x_val, ytrue_val)
-                log_progress(val_batch_counter, n_samples_val, topic="Validation batch")
+                log_progress(val_batch_counter, n_batches_val, topic="Validation batch")
 
             log_progress(epoch_counter, n_epochs, 1, "Epoch")
 

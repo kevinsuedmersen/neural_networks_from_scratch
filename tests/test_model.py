@@ -1,5 +1,6 @@
 import copy
 from functools import reduce
+from typing import List
 
 import numpy as np
 import pytest
@@ -162,7 +163,7 @@ class TestSimpleMLPModel(TestConfig):
             loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
             metrics_train=[Accuracy("acc_train")],
             metrics_val=[Accuracy("acc_val")],
-            optimizer=StochasticGradientDescentOptimizer()
+            optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)
         )
         _simple_model.add_layer(InputLayer(input_shape=(None, 3, 1)))  # TODO: Why do I need to provide input_shape?
         _simple_model.add_layer(DenseLayer(2, "sigmoid"))
@@ -191,17 +192,24 @@ class TestSimpleMLPModel(TestConfig):
         return y_1, y_2
 
     @pytest.fixture
-    def trained_model(self, untrained_model, a_0, y):
-        """Model trained on 1 input example"""
-        # Unpack fixtures
+    def x_train(self, a_0):
+        """One training input in the correct shape"""
         a_0_1, a_0_2, a_0_3 = a_0
-        y1, y2 = y
-
-        # Put data into correct shapes
         x_train = np.array([a_0_1, a_0_2, a_0_3]).reshape((1, 3, 1))
+
+        return x_train
+
+    @pytest.fixture
+    def ytrue_train(self, y):
+        """One training output in the correct shape"""
+        y1, y2 = y
         ytrue_train = np.array([y1, y2]).reshape((1, 2, 1))
 
-        # Run forward and backward pass
+        return ytrue_train
+
+    @pytest.fixture
+    def trained_model(self, untrained_model, x_train, ytrue_train):
+        """Model trained on 1 input example"""
         trained_model = copy.deepcopy(untrained_model)
         trained_model.train_step(x_train, ytrue_train)
 
@@ -278,7 +286,7 @@ class TestSimpleMLPModel(TestConfig):
 
         return euclidean_distance
 
-    def _assert_euclidean_distance(self, actual, expected, absolute_tolerance=1e-6):
+    def _assert_euclidean_distance(self, actual, expected, absolute_tolerance=1e-15):
         """Asserts that the euclidean distance is below a certain threshold"""
         euclidean_distance = self._compute_euclidean_distance(actual, expected)
         assert euclidean_distance < absolute_tolerance
@@ -454,3 +462,20 @@ class TestSimpleMLPModel(TestConfig):
         dL__db_1_actual = trained_model.layers[1].bias_gradients
         dL__db_1_expected = dL__db_1.T
         self._assert_euclidean_distance(dL__db_1_actual, dL__db_1_expected)
+
+    @staticmethod
+    def _assert_all_decreasing(values: List[float]):
+        """Asserts that all values in `values` are decreasing"""
+        current_values = np.asarray(values[:-1])
+        next_values = np.asarray(values[1:])
+        assert ((next_values - current_values) < 0).all()
+
+    def test_gradient_descent(self, untrained_model, x_train, ytrue_train):
+        """Tests that the gradient descent mechanism works by verifying that the cost decreases
+        after each training step (using the same input example!)
+        """
+        trained_model = copy.deepcopy(untrained_model)
+        train_steps = 10
+        for _step in range(train_steps):
+            trained_model.train_step(x_train, ytrue_train)
+        self._assert_all_decreasing(trained_model.costs)
