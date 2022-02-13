@@ -1,4 +1,5 @@
 import logging
+import math
 from typing import List, Tuple, Generator, Union
 
 import numpy.typing as npt
@@ -54,6 +55,8 @@ class SequentialModel(Model):
         layer.layer_idx = len(self.layers)
         self.layers.append(layer)
         self.n_layers = len(self.layers)
+        # Make sure each layer gets access to the optimizer
+        layer.optimizer = self.optimizer
 
     def _forward_pass(self, x_train: npt.NDArray) -> Tuple[npt.NDArray, npt.NDArray]:
         """Propagate activations from layer 0 to layer L"""
@@ -108,7 +111,7 @@ class SequentialModel(Model):
         )
 
     def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
-        pass
+        raise NotImplementedError
 
     def train(
             self,
@@ -122,17 +125,20 @@ class SequentialModel(Model):
     ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
+        n_batches_train = math.ceil(n_samples_train / batch_size)
+        n_batches_val = math.ceil(n_samples_val / batch_size)
+
         logger.info("Training started")
         for epoch_counter in range(n_epochs):
             # Train on batches of training data until there is no data left
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
                 self.train_step(x_train, ytrue_train)
-                log_progress(train_batch_counter, n_samples_train, topic="Train batch")
+                log_progress(train_batch_counter, n_batches_train, topic="Train batch")
 
             # Evaluate on the validation set
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
                 self.val_step(x_val, ytrue_val)
-                log_progress(val_batch_counter, n_samples_val, topic="Validation batch")
+                log_progress(val_batch_counter, n_batches_val, topic="Validation batch")
 
             log_progress(epoch_counter, n_epochs, 1, "Epoch")
 

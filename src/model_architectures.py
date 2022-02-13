@@ -23,7 +23,7 @@ def get_simple_mlp_model(
         loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
         metrics_val=[Accuracy("acc_val")],
-        optimizer=StochasticGradientDescentOptimizer()
+        optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)
     )
     mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels)))
     mlp.add_layer(DenseLayer(512, "tanh"))

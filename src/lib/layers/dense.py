@@ -6,6 +6,7 @@ import numpy.typing as npt
 
 from src.lib.activation_functions import get_activation_function
 from src.lib.layers import Layer
+from src.lib.optimizers import Optimizer
 
 logger = logging.getLogger(__name__)
 
@@ -18,11 +19,14 @@ class DenseLayer(Layer):
     ):
         super().__init__()
         self.n_neurons = n_neurons
-        self.output_shape = (None, self.n_neurons)
         self.activation_function_name = activation_function_name
+
+        self.output_shape = (None, self.n_neurons)
         self.activation_function_forward, self.activation_function_backward = get_activation_function(
             activation_function_name
         )
+        # Optimizer will be set in SequentialModel.add_layer()
+        self.optimizer: Optimizer = None
 
     def _init_weights(self, n_neurons_prev: int):
         """Init weight matrices"""
@@ -91,4 +95,6 @@ class DenseLayer(Layer):
         self.bias_gradients = np.mean(self.errors, axis=0, keepdims=True)
 
     def update_parameters(self):
-        logger.warning("the update_parameters method is not implemented yet and currently does nothing")
+        """Updates the layer's weights and biases"""
+        self.weights = self.optimizer.update_parameters(self.weights, self.weight_gradients)
+        self.biases = self.optimizer.update_parameters(self.biases, self.bias_gradients)

@@ -32,6 +32,17 @@ class ImageDataGenerator(DataGenerator):
         self.img_extensions = img_extensions
 
         self.label_2_index: Dict[str, int] = {}
+        self._validate_args()
+
+    def _validate_args(self):
+        """Validates arguments"""
+        # Make sure we have images to train with
+        if not os.path.exists(self.data_dir):
+            raise ValueError(f"data directory {self.data_dir} does not exist")
+        else:
+            dirnames = os.listdir(self.data_dir)
+            if not dirnames:
+                raise ValueError(f"data directory {self.data_dir} is empty")
 
     def _get_img_paths_2_labels(self) -> Dict[str, List[str]]:
         """Maps absolute image filepaths to their corresponding labels. It is assumed that all images
