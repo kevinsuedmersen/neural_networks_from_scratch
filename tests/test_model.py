@@ -1,5 +1,6 @@
 import copy
 from functools import reduce
+from typing import List
 
 import numpy as np
 import pytest
@@ -462,7 +463,19 @@ class TestSimpleMLPModel(TestConfig):
         dL__db_1_expected = dL__db_1.T
         self._assert_euclidean_distance(dL__db_1_actual, dL__db_1_expected)
 
-    def test_gradient_descent(self, untrained_model):
+    @staticmethod
+    def _assert_all_decreasing(values: List[float]):
+        """Asserts that all values in `values` are decreasing"""
+        current_values = np.asarray(values[:-1])
+        next_values = np.asarray(values[1:])
+        assert ((next_values - current_values) < 0).all()
+
+    def test_gradient_descent(self, untrained_model, x_train, ytrue_train):
         """Tests that the gradient descent mechanism works by verifying that the cost decreases
         after each training step (using the same input example!)
         """
+        trained_model = copy.deepcopy(untrained_model)
+        train_steps = 10
+        for _step in range(train_steps):
+            trained_model.train_step(x_train, ytrue_train)
+        self._assert_all_decreasing(trained_model.costs)
