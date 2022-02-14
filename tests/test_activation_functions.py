@@ -65,6 +65,8 @@ class TestSigmoidActivationFunction(TestConfig):
         assert activations.shape == (self.batch_size, self.n_neurons, 1)
         assert np.all((activations >= 0) & (activations <= 1))
 
+        # TODO: Test that the new implementation yields the same results as the original, naive implementation
+
     @pytest.fixture
     def activations(self, dendritic_potentials):
         return sigmoid_forward(dendritic_potentials)
