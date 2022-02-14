@@ -1,18 +1,18 @@
 name: neural_networks_from_scratch
 channels:
-  - https://repo.anaconda.com/pkgs/main
   - defaults
 dependencies:
-  - ca-certificates=2021.9.30
+  - ca-certificates=2021.10.26
   - certifi=2021.10.8
-  - openssl=1.1.1l
-  - pip=21.0.1
-  - python=3.8.12
+  - openssl=1.1.1m
+  - pip=21.2.4
+  - python=3.9.7
   - setuptools=58.0.4
-  - sqlite=3.36.0
+  - sqlite=3.37.2
+  - tzdata=2021e
   - vc=14.2
   - vs2015_runtime=14.27.29016
-  - wheel=0.37.0
+  - wheel=0.37.1
   - wincertstore=0.2
   - pip:
     - atomicwrites==1.4.0
@@ -20,7 +20,7 @@ dependencies:
     - colorama==0.4.4
     - configobj==5.0.6
     - iniconfig==1.1.1
-    - numpy==1.21.2
+    - numpy==1.22.2
     - opencv-python==4.5.5.62
     - packaging==21.0
     - pluggy==1.0.0
