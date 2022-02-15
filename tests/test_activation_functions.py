@@ -93,12 +93,20 @@ class TestSigmoidActivationFunction(TestConfig):
 
 class TestTanhActivationFunction(TestConfig):
     def test_tanh_forward(self, dendritic_potentials):
-        """Tests that the shape of the activations make sense and that all activations are between
-        -1 and 1
+        """Tests that
+        - The shape of the activations make sense
+        - All activations are between -1 and 1
+        - Our optimized implementation yields the same results as f(z) = (e^z - e^(-z)) / (e^z + e^(-z))
         """
-        activations = tanh_forward(dendritic_potentials)
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
-        assert np.all((activations >= -1) & (activations <= 1))
+        actual_activations = tanh_forward(dendritic_potentials)
+        assert actual_activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((actual_activations >= -1) & (actual_activations <= 1))
+
+        expected_activations = (
+            (np.exp(dendritic_potentials) - np.exp(-dendritic_potentials)) /
+            (np.exp(dendritic_potentials) + np.exp(-dendritic_potentials))
+        )
+        assert_euclidean_distance(actual_activations, expected_activations, 1e-14)
 
     @pytest.fixture
     def activations(self, dendritic_potentials):
@@ -135,6 +143,8 @@ class TestSoftmaxActivationFunction(TestConfig):
         assert actual_activation_sums.shape == (self.batch_size, 1, 1)
         expected_activation_sums = np.ones(actual_activation_sums.shape)
         np.testing.assert_almost_equal(actual_activation_sums, expected_activation_sums)
+
+        # TODO: Check that the naive implementation of the sigmoid function yields the same results
 
     @pytest.fixture
     def activations(self, dendritic_potentials: npt.NDArray) -> npt.NDArray:

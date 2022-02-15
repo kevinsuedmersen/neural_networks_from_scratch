@@ -7,9 +7,24 @@ def tanh_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
     :return: shape=(batch_size, n_neurons_current_layer, 1)
     """
-    activations = (
-        (np.exp(dendritic_potentials) - np.exp(-dendritic_potentials)) /
-        (np.exp(dendritic_potentials) + np.exp(-dendritic_potentials))
+    # TODO: Use separate function for computing the first parts of sigmoid_forward and tanh_forward
+    # Get the indices of the positive/negative inputs
+    positive = dendritic_potentials >= 0
+    negative = dendritic_potentials < 0
+
+    # Init activations
+    activations = np.zeros(dendritic_potentials.shape)
+
+    # tanh version for positive inputs
+    activations[positive] = (
+            (1 - np.exp(-2 * dendritic_potentials[positive])) /
+            (1 + np.exp(-2 * dendritic_potentials[positive]))
+    )
+
+    # tanh version of negative inputs
+    activations[negative] = (
+            (np.exp(2 * dendritic_potentials[negative]) - 1) /
+            (np.exp(2 * dendritic_potentials[negative]) + 1)
     )
 
     return activations
