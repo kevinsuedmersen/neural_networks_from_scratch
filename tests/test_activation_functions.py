@@ -7,6 +7,7 @@ from src.lib.activation_functions import softmax_forward, relu_forward, linear_b
     relu_backward, sigmoid_forward, sigmoid_backward, tanh_forward, tanh_backward
 from src.lib.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
+from tests.utils import assert_euclidean_distance
 
 
 class TestLinearActivationFunction(TestConfig):
@@ -58,14 +59,17 @@ class TestReluActivationFunction(TestConfig):
 
 class TestSigmoidActivationFunction(TestConfig):
     def test_sigmoid_forward(self, dendritic_potentials):
-        """Tests that the shape of the activations make sense and that all activations are between
-        0 and 1
+        """Tests that:
+        - The shape of the activations make sense
+        - All activations are between 0 and 1
+        - Our optimized implementation yields the same results as f(z) = 1 / (1 + e^(-z))
         """
-        activations = sigmoid_forward(dendritic_potentials)
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
-        assert np.all((activations >= 0) & (activations <= 1))
+        actual_activations = sigmoid_forward(dendritic_potentials)
+        assert actual_activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((actual_activations >= 0) & (actual_activations <= 1))
 
-        # TODO: Test that the new implementation yields the same results as the original, naive implementation
+        expected_activations = 1 / (1 + np.exp(-dendritic_potentials))
+        assert_euclidean_distance(actual_activations, expected_activations)
 
     @pytest.fixture
     def activations(self, dendritic_potentials):
