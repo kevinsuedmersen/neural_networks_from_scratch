@@ -1,19 +1,15 @@
 import numpy as np
 import numpy.typing as npt
 
+from src.lib.activation_functions.utils import init_sigmoid_tanh
+
 
 def tanh_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     """Implements the forward pass of the tanh function
     :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
     :return: shape=(batch_size, n_neurons_current_layer, 1)
     """
-    # TODO: Use separate function for computing the first parts of sigmoid_forward and tanh_forward
-    # Get the indices of the positive/negative inputs
-    positive = dendritic_potentials >= 0
-    negative = dendritic_potentials < 0
-
-    # Init activations
-    activations = np.zeros(dendritic_potentials.shape)
+    positive, negative, activations = init_sigmoid_tanh(dendritic_potentials)
 
     # tanh version for positive inputs
     activations[positive] = (

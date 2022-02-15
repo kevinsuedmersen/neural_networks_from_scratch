@@ -1,6 +1,8 @@
 import numpy as np
 import numpy.typing as npt
 
+from src.lib.activation_functions.utils import init_sigmoid_tanh
+
 
 def sigmoid_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     """Implements the forward pass of the sigmoid function. For positive inputs, we will define the
@@ -12,12 +14,7 @@ def sigmoid_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
     :return: shape=(batch_size, n_neurons_current_layer, 1)
     """
-    # Get the indices of the positive/negative inputs
-    positive = dendritic_potentials >= 0
-    negative = dendritic_potentials < 0
-
-    # Init activations
-    activations = np.zeros(dendritic_potentials.shape)
+    positive, negative, activations = init_sigmoid_tanh(dendritic_potentials)
 
     # For positive inputs, we use the usual version of the sigmoid function
     activations[positive] = 1 / (1 + np.exp(-dendritic_potentials[positive]))
