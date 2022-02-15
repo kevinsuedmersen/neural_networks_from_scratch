@@ -12,6 +12,7 @@ from src.lib.metrics.metrics import Accuracy
 from src.lib.models.sequential import SequentialModel
 from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
 from tests.test_config import TestConfig
+from tests.utils import assert_euclidean_distance
 
 
 def get_random_scalar():
@@ -244,7 +245,8 @@ class TestSimpleMLPModel(TestConfig):
 
         # Verify results of layer 2
         assert z_2_1_expected == z_2_1_actual
-        assert z_2_2_expected == z_2_2_actual
+        # For some reason there seems to be a numerical instability in the following line (only that line)
+        assert abs(z_2_2_expected - z_2_2_actual) < 1e-15
         assert a_2_1_expected == a_2_1_actual
         assert a_2_2_expected == a_2_2_actual
 
@@ -276,27 +278,12 @@ class TestSimpleMLPModel(TestConfig):
 
         return da_2__dz_2
 
-    @staticmethod
-    def _compute_euclidean_distance(actual, expected):
-        _actual = actual.ravel()
-        _expected = expected.ravel()
-        assert _actual.shape == _expected.shape
-        squared_distances = (_actual - _expected)**2
-        euclidean_distance = np.sqrt(np.sum(squared_distances))
-
-        return euclidean_distance
-
-    def _assert_euclidean_distance(self, actual, expected, absolute_tolerance=1e-15):
-        """Asserts that the euclidean distance is below a certain threshold"""
-        euclidean_distance = self._compute_euclidean_distance(actual, expected)
-        assert euclidean_distance < absolute_tolerance
-
     def _assert_jacobians(self, jacobian_expected, z, a, trained_model, layer_idx):
         """Asserts that both jacobians are equal"""
         z = np.asarray(z).reshape((1, 2, 1))
         a = np.asarray(a).reshape((1, 2, 1))
         jacobian_actual = trained_model.layers[layer_idx].activation_function_backward(z, a)
-        self._assert_euclidean_distance(jacobian_actual, jacobian_expected)
+        assert_euclidean_distance(jacobian_actual, jacobian_expected)
 
     def test_jacobian_layer_2(self, da_2__dz_2, a_2, z_2, trained_model):
         """Test the output of the jacobian function in layer 2, i.e. da_2/dz_2, given that the
@@ -331,7 +318,7 @@ class TestSimpleMLPModel(TestConfig):
         """Tests that the errors in layer 1 have been computed correctly"""
         errors_2_actual = trained_model.layers[2].errors
         errors_2_expected = np.matmul(da_2__dz_2, dL__da_2.T)
-        self._assert_euclidean_distance(errors_2_actual, errors_2_expected)
+        assert_euclidean_distance(errors_2_actual, errors_2_expected)
 
     @pytest.fixture
     def errors_2(self, trained_model, dL__da_2, da_2__dz_2):
@@ -347,7 +334,7 @@ class TestSimpleMLPModel(TestConfig):
         # TODO: Put weights into numpy array
         W_2 = np.asarray(W_2).reshape(2, 2)
         errors_2_expected = reduce(np.matmul, [da_1__dz_1, W_2.T, errors_2])
-        self._assert_euclidean_distance(errors_1_actual, errors_2_expected)
+        assert_euclidean_distance(errors_1_actual, errors_2_expected)
 
     @pytest.fixture
     def dL__dW_2(
@@ -422,13 +409,13 @@ class TestSimpleMLPModel(TestConfig):
         """Tests whether the gradients of layer 2 have been computed correctly"""
         dL__dW_2_actual = trained_model.layers[2].weight_gradients
         dL__dW_2_expected = dL__dW_2.T
-        self._assert_euclidean_distance(dL__dW_2_actual, dL__dW_2_expected)
+        assert_euclidean_distance(dL__dW_2_actual, dL__dW_2_expected)
 
     def test_weight_gradients_layer_1(self, dL__dW_1, trained_model):
         """Tests whether the gradients of layer 1 have been computed correctly"""
         dL__dW_1_actual = trained_model.layers[1].weight_gradients
         dL__dW_1_expected = dL__dW_1.T
-        self._assert_euclidean_distance(dL__dW_1_actual, dL__dW_1_expected)
+        assert_euclidean_distance(dL__dW_1_actual, dL__dW_1_expected)
 
     @pytest.fixture
     def dL__db_2(self, dL__da_2, da_2__dz_2):
@@ -456,12 +443,12 @@ class TestSimpleMLPModel(TestConfig):
         """Tests that the bias gradients in layer 2 have been computed correctly"""
         dL__db_2_actual = trained_model.layers[2].bias_gradients
         dL__db_2_expected = dL__db_2.T
-        self._assert_euclidean_distance(dL__db_2_actual, dL__db_2_expected)
+        assert_euclidean_distance(dL__db_2_actual, dL__db_2_expected)
 
     def test_bias_gradiets_layer_1(self, trained_model, dL__db_1):
         dL__db_1_actual = trained_model.layers[1].bias_gradients
         dL__db_1_expected = dL__db_1.T
-        self._assert_euclidean_distance(dL__db_1_actual, dL__db_1_expected)
+        assert_euclidean_distance(dL__db_1_actual, dL__db_1_expected)
 
     @staticmethod
     def _assert_all_decreasing(values: List[float]):

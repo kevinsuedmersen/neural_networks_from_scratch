@@ -7,6 +7,7 @@ from src.lib.activation_functions import softmax_forward, relu_forward, linear_b
     relu_backward, sigmoid_forward, sigmoid_backward, tanh_forward, tanh_backward
 from src.lib.activation_functions.softmax import softmax_backward
 from tests.test_config import TestConfig
+from tests.utils import assert_euclidean_distance
 
 
 class TestLinearActivationFunction(TestConfig):
@@ -58,12 +59,17 @@ class TestReluActivationFunction(TestConfig):
 
 class TestSigmoidActivationFunction(TestConfig):
     def test_sigmoid_forward(self, dendritic_potentials):
-        """Tests that the shape of the activations make sense and that all activations are between
-        0 and 1
+        """Tests that:
+        - The shape of the activations make sense
+        - All activations are between 0 and 1
+        - Our optimized implementation yields the same results as f(z) = 1 / (1 + e^(-z))
         """
-        activations = sigmoid_forward(dendritic_potentials)
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
-        assert np.all((activations >= 0) & (activations <= 1))
+        actual_activations = sigmoid_forward(dendritic_potentials)
+        assert actual_activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((actual_activations >= 0) & (actual_activations <= 1))
+
+        expected_activations = 1 / (1 + np.exp(-dendritic_potentials))
+        assert_euclidean_distance(actual_activations, expected_activations)
 
     @pytest.fixture
     def activations(self, dendritic_potentials):
@@ -87,12 +93,20 @@ class TestSigmoidActivationFunction(TestConfig):
 
 class TestTanhActivationFunction(TestConfig):
     def test_tanh_forward(self, dendritic_potentials):
-        """Tests that the shape of the activations make sense and that all activations are between
-        -1 and 1
+        """Tests that
+        - The shape of the activations make sense
+        - All activations are between -1 and 1
+        - Our optimized implementation yields the same results as f(z) = (e^z - e^(-z)) / (e^z + e^(-z))
         """
-        activations = tanh_forward(dendritic_potentials)
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
-        assert np.all((activations >= -1) & (activations <= 1))
+        actual_activations = tanh_forward(dendritic_potentials)
+        assert actual_activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert np.all((actual_activations >= -1) & (actual_activations <= 1))
+
+        expected_activations = (
+            (np.exp(dendritic_potentials) - np.exp(-dendritic_potentials)) /
+            (np.exp(dendritic_potentials) + np.exp(-dendritic_potentials))
+        )
+        assert_euclidean_distance(actual_activations, expected_activations, 1e-14)
 
     @pytest.fixture
     def activations(self, dendritic_potentials):
@@ -116,19 +130,28 @@ class TestTanhActivationFunction(TestConfig):
 
 class TestSoftmaxActivationFunction(TestConfig):
     def test_softmax_forward(self, dendritic_potentials):
-        """Tests expected shape of activations and whether the softmax_forward activation function
-        makes sure that the sum of neurons in the current layer sums up to 1
+        """Tests that
+        - Shape of activations makes sense
+        - The softmax_forward activation function makes sure that the sum of neurons in the current
+            layer sums up to 1
+        - Our optimized implementation yiels the same results as  (e^z) / (sum(e^z))
         """
-        activations = softmax_forward(dendritic_potentials)
+        actual_activations = softmax_forward(dendritic_potentials)
 
         # Test that the shape makes sense
-        assert activations.shape == (self.batch_size, self.n_neurons, 1)
+        assert actual_activations.shape == (self.batch_size, self.n_neurons, 1)
 
         # Test that the sum of neurons in the current layer equals 1
-        actual_activation_sums = np.sum(activations, axis=1, keepdims=True)
+        actual_activation_sums = np.sum(actual_activations, axis=1, keepdims=True)
         assert actual_activation_sums.shape == (self.batch_size, 1, 1)
         expected_activation_sums = np.ones(actual_activation_sums.shape)
         np.testing.assert_almost_equal(actual_activation_sums, expected_activation_sums)
+
+        # Check that the naive implementation of the sigmoid function yields the same results
+        exp = np.exp(dendritic_potentials)
+        exp_sum = np.sum(exp, axis=1, keepdims=True)
+        expected_activations = exp / exp_sum
+        assert_euclidean_distance(actual_activations, expected_activations)
 
     @pytest.fixture
     def activations(self, dendritic_potentials: npt.NDArray) -> npt.NDArray:
