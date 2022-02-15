@@ -1,7 +1,7 @@
 import numpy as np
 import numpy.typing as npt
 
-from src.lib.activation_functions.utils import init_sigmoid_tanh
+from src.lib.activation_functions.utils import init_sigmoid_tanh_forward, init_sigmoid_tanh_backward
 
 
 def sigmoid_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
@@ -14,7 +14,7 @@ def sigmoid_forward(dendritic_potentials: npt.NDArray) -> npt.NDArray:
     :param dendritic_potentials: shape=(batch_size, n_neurons_current_layer, 1)
     :return: shape=(batch_size, n_neurons_current_layer, 1)
     """
-    positive, negative, activations = init_sigmoid_tanh(dendritic_potentials)
+    positive, negative, activations = init_sigmoid_tanh_forward(dendritic_potentials)
 
     # For positive inputs, we use the usual version of the sigmoid function
     activations[positive] = 1 / (1 + np.exp(-dendritic_potentials[positive]))
@@ -36,12 +36,7 @@ def sigmoid_backward(dendritic_potentials: npt.NDArray, activations: npt.NDArray
     :param activations: shape=(batch_size, n_neurons_current_layer, 1)
     :return: shape=(batch_size, n_neurons_current_layer, n_neurons_current_layer))
     """
-    # Get dimensions
-    batch_size = activations.shape[0]
-    n_neurons = activations.shape[1]
-
-    # Init jacobians with zeros
-    jacobians = np.zeros((batch_size, n_neurons, n_neurons))
+    batch_size, n_neurons, jacobians = init_sigmoid_tanh_backward(activations)
 
     # Replace diagonal elements
     diagonal_elements = np.squeeze(activations * (1 - activations))
