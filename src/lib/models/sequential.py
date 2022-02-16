@@ -1,9 +1,10 @@
 import logging
 import math
-from typing import List, Tuple, Generator, Union
+from typing import List, Tuple, Generator, Union, Dict
 
 import numpy.typing as npt
 
+import src.constants as c
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
 from src.lib.losses import Loss
@@ -39,6 +40,16 @@ class SequentialModel(Model):
         self.costs = []
         self.layers: List[Union[InputLayer, DenseLayer]] = []
         self.n_layers = None
+        self.history = self._init_history()
+
+    def _init_history(self) -> Dict:
+        """Initializes history object"""
+        history = {
+            c.TRAIN: {metric.name: [] for metric in self.metrics_train},
+            c.VAL: {metric.name: [] for metric in self.metrics_val}
+        }
+
+        return history
 
     def add_layer(self, layer: Union[InputLayer, DenseLayer]):
         """Adds a fully initialized layer to the model"""
@@ -106,7 +117,33 @@ class SequentialModel(Model):
         for layer in self.layers[1:]:
             layer.update_parameters()
 
-    def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
+    def _evaluate_metrics(
+            self,
+            ytrue: npt.NDArray,
+            ypred: npt.NDArray,
+            dataset: str
+    ):
+        """Evaluates metrics on a given labeled dataset"""
+        # Get the desired metrics
+        if dataset == c.TRAIN:
+            metrics = self.metrics_train
+        else:
+            assert dataset == c.VAL
+            metrics = self.metrics_val
+
+        # Evaluate and cache metrics
+        metric_names_2_metric_values = []
+        for metric in metrics:
+            metric_value = metric.evaluate(ytrue, ypred)
+            self.history[dataset][metric.name].append(metric_value)
+            metric_names_2_metric_values.append(f"{metric.name}={metric_value:.2f}")
+
+        # Log metrics
+        metrics_log = ", ".join(metric_names_2_metric_values)
+        log_msg = f"Results on {dataset} dataset: {metrics_log}"
+        logger.info(log_msg)
+
+    def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray) -> npt.NDArray:
         """Includes the forward pass, cost computation, backward pass and parameter update"""
         activations_out, dendritic_potentials_out = self._forward_propagate_activations(x_train)
         losses = self.loss.compute_losses(ytrue_train, activations_out)
@@ -119,7 +156,9 @@ class SequentialModel(Model):
         )
         self._update_parameters()
 
-    def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
+        return activations_out
+
+    def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray) -> npt.NDArray:
         raise NotImplementedError
 
     def train(
@@ -130,6 +169,7 @@ class SequentialModel(Model):
             batch_size: int,
             n_samples_train: int = None,
             n_samples_val: int = None,
+            logging_frequency: int = 100,
             **kwargs
     ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
@@ -141,15 +181,19 @@ class SequentialModel(Model):
         for epoch_counter in range(n_epochs):
             # Train on batches of training data until there is no data left
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
-                self.train_step(x_train, ytrue_train)
-                log_progress(train_batch_counter, n_batches_train, topic="Train batch")
+                ypred_train = self.train_step(x_train, ytrue_train)
+                if (train_batch_counter % logging_frequency) == 0:
+                    log_progress(train_batch_counter, n_batches_train, "Training on batches")
+                    self._evaluate_metrics(ytrue_train, ypred_train, c.TRAIN)
 
             # Evaluate on the validation set
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
-                self.val_step(x_val, ytrue_val)
-                log_progress(val_batch_counter, n_batches_val, topic="Validation batch")
+                ypred_val = self.val_step(x_val, ytrue_val)
+                if (val_batch_counter % logging_frequency) == 0:
+                    log_progress(val_batch_counter, n_batches_val, "Validating on batches")
+                    self._evaluate_metrics(ytrue_val, ypred_val, c.VAL)
 
-            log_progress(epoch_counter, n_epochs, 1, "Epoch")
+            log_progress(epoch_counter, n_epochs, "Epoch completed")
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
         pass
