@@ -29,14 +29,16 @@ def get_cli_args():
 def log_progress(
         counter: int,
         total: int,
-        log_msg: str = None
+        log_msg: str = None,
+        logging_frequency: int = 50
 ):
     """Logs progress of a long computation"""
-    progress = f"(Progress: {counter + 1}/{total} = {(counter + 1)/total*100:.2f}%)"
+    if (counter % logging_frequency) == 0:
+        progress = f"Progress: {counter + 1}/{total} = {(counter + 1)/total*100:.2f}%"
 
-    if log_msg is not None:
-        log_msg = f"{log_msg}. {progress}"
-    else:
-        log_msg = progress
+        if log_msg is not None:
+            log_msg = f"{log_msg}. ({progress})"
+        else:
+            log_msg = progress
 
-    logger.info(log_msg)
+        logger.info(log_msg)

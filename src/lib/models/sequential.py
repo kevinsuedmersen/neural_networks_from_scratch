@@ -119,31 +119,33 @@ class SequentialModel(Model):
 
     def _evaluate_metrics(
             self,
-            ytrue: npt.NDArray,
-            ypred: npt.NDArray,
+            metrics: List[Metric],
             dataset: str
     ):
-        """Evaluates metrics on a given labeled dataset"""
-        # Get the desired metrics
-        if dataset == c.TRAIN:
-            metrics = self.metrics_train
-        else:
-            assert dataset == c.VAL
-            metrics = self.metrics_val
-
+        """Evaluates and caches metrics' results"""
         # Evaluate and cache metrics
-        metric_names_2_metric_values = []
+        metric_log = []
         for metric in metrics:
-            metric_value = metric.evaluate(ytrue, ypred)
+            metric_value = metric.result()
             self.history[dataset][metric.name].append(metric_value)
-            metric_names_2_metric_values.append(f"{metric.name}={metric_value:.2f}")
+            metric_log.append(f"{metric.name} = {metric_value:.2f}")
 
         # Log metrics
-        metrics_log = ", ".join(metric_names_2_metric_values)
-        log_msg = f"Results on {dataset} dataset: {metrics_log}"
+        metric_logs = ", ".join(metric_log)
+        log_msg = f"Results on {dataset} dataset: {metric_logs}"
         logger.info(log_msg)
 
-    def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray) -> npt.NDArray:
+    @staticmethod
+    def _update_metrics(
+            ytrue: npt.NDArray,
+            ypred: npt.NDArray,
+            metrics: List[Metric]
+    ):
+        """Updates the state of each metric"""
+        for metric in metrics:
+            metric.update_state(ytrue, ypred)
+
+    def train_step(self, x_train: npt.NDArray, ytrue_train: npt.NDArray):
         """Includes the forward pass, cost computation, backward pass and parameter update"""
         activations_out, dendritic_potentials_out = self._forward_propagate_activations(x_train)
         losses = self.loss.compute_losses(ytrue_train, activations_out)
@@ -155,11 +157,12 @@ class SequentialModel(Model):
             dendritic_potentials_out=dendritic_potentials_out
         )
         self._update_parameters()
+        self._update_metrics(ytrue_train, activations_out, self.metrics_train)
 
-        return activations_out
-
-    def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray) -> npt.NDArray:
-        raise NotImplementedError
+    def val_step(self, x_val: npt.NDArray, ytrue_val: npt.NDArray):
+        """Updates metrics' states on the validation set"""
+        activations_out, _ = self._forward_propagate_activations(x_val)
+        self._update_metrics(ytrue_val, activations_out, self.metrics_val)
 
     def train(
             self,
@@ -181,18 +184,17 @@ class SequentialModel(Model):
         for epoch_counter in range(n_epochs):
             # Train on batches of training data until there is no data left
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
-                ypred_train = self.train_step(x_train, ytrue_train)
-                if (train_batch_counter % logging_frequency) == 0:
-                    log_progress(train_batch_counter, n_batches_train, "Training on batches")
-                    self._evaluate_metrics(ytrue_train, ypred_train, c.TRAIN)
+                self.train_step(x_train, ytrue_train)
+                log_progress(train_batch_counter, n_batches_train, "Training on batches")
 
             # Evaluate on the validation set
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
-                ypred_val = self.val_step(x_val, ytrue_val)
-                if (val_batch_counter % logging_frequency) == 0:
-                    log_progress(val_batch_counter, n_batches_val, "Validating on batches")
-                    self._evaluate_metrics(ytrue_val, ypred_val, c.VAL)
+                self.val_step(x_val, ytrue_val)
+                log_progress(val_batch_counter, n_batches_val, "Validating on batches")
 
+            # Evaluate metrics once per epoch
+            self._evaluate_metrics(self.metrics_train, c.TRAIN)
+            self._evaluate_metrics(self.metrics_val, c.VAL)
             log_progress(epoch_counter, n_epochs, "Epoch completed")
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
