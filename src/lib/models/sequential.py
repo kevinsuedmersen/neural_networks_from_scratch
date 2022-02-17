@@ -164,6 +164,12 @@ class SequentialModel(Model):
         activations_out, _ = self._forward_propagate_activations(x_val)
         self._update_metrics(ytrue_val, activations_out, self.metrics_val)
 
+    @staticmethod
+    def _reset_metrics(metrics: List[Metric]):
+        """Resets the metrics' states"""
+        for metric in metrics:
+            metric.reset_state()
+
     def train(
             self,
             data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
@@ -182,17 +188,21 @@ class SequentialModel(Model):
 
         logger.info("Training started")
         for epoch_counter in range(n_epochs):
-            # Train on batches of training data until there is no data left
+            # Reset metrics
+            self._reset_metrics(self.metrics_train)
+            self._reset_metrics(self.metrics_val)
+
+            # Train the model and update training metrics
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
                 self.train_step(x_train, ytrue_train)
                 log_progress(train_batch_counter, n_batches_train, "Training on batches")
 
-            # Evaluate on the validation set
+            # Update validation metrics
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
                 self.val_step(x_val, ytrue_val)
                 log_progress(val_batch_counter, n_batches_val, "Validating on batches")
 
-            # Evaluate metrics once per epoch
+            # Evaluate metrics
             self._evaluate_metrics(self.metrics_train, c.TRAIN)
             self._evaluate_metrics(self.metrics_val, c.VAL)
             log_progress(epoch_counter, n_epochs, "Epoch completed")
