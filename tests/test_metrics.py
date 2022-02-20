@@ -34,6 +34,16 @@ class TestMetric(TestConfig):
 
         return random_ypred
 
+    @staticmethod
+    def _assert_metric_result(metric, expected_result, ytrue, ypred):
+        """Tests whether the metric value is computed correctly 10 consecutive times"""
+        for epoch in range(10):
+            metric.reset_state()
+            for batch in range(10):
+                metric.update_state(ytrue, ypred)
+            actual_result = metric.result()
+            assert actual_result == expected_result
+
 
 class TestScoreMetric(TestMetric):
     @pytest.fixture
@@ -72,16 +82,6 @@ class TestScoreMetric(TestMetric):
     def accuracy(self):
         return Accuracy("accuracy", self.threshold)
 
-    @staticmethod
-    def _assert_metric_result(metric, expected_result, ytrue, ypred):
-        """Tests whether the metric value is computed correctly 10 consecutive times"""
-        for epoch in range(10):
-            metric.reset_state()
-            for batch in range(10):
-                metric.update_state(ytrue, ypred)
-            actual_result = metric.result()
-            assert actual_result == expected_result
-
     def test_accuracy(self, accuracy, ytrue, ypred, binarized_ypred):
         """Test accuracy computation using micro averaging"""
         expected_result = metrics.accuracy_score(ytrue.ravel(), binarized_ypred.ravel())
@@ -108,8 +108,11 @@ class TestScoreMetric(TestMetric):
 
 class TestCostMetric(TestMetric):
     @pytest.fixture
-    def categorical_crossentropy_metric(self):
+    def cce_metric(self):
         return CategoricalCrossEntropyMetric("categorical_crossentropy")
 
-    def test_categorical_crossentropy(self, categorical_crossentropy_metric):
-        pass
+    def test_cce(self, cce_metric, ytrue, ypred):
+        """Test categorical cross entroppy computation"""
+        # TODO: Handle the case when ypred is either 0 or 1 (see parameter `eps` in https://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html)
+        expected_result = metrics.log_loss(ytrue, ypred)
+        self._assert_metric_result(cce_metric, expected_result, ytrue, ypred)

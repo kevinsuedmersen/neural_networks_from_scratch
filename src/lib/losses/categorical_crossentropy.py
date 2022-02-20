@@ -16,8 +16,8 @@ class CategoricalCrossEntropyLoss(Loss):
 
     def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
         """Computes the losses for each training example in the current batch"""
-        logs = ytrue * np.log(ypred)
-        losses = -np.sum(logs, axis=1, keepdims=True)
+        log_likelihoods = ytrue * np.log(ypred)
+        losses = -np.sum(log_likelihoods, axis=1, keepdims=True)
 
         return losses
 
