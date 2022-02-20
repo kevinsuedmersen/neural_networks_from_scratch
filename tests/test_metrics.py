@@ -5,6 +5,7 @@ from sklearn import metrics
 from src.lib.activation_functions import sigmoid_forward
 from src.lib.metrics.accuracy import Accuracy
 from src.lib.metrics.precision import Precision
+from src.lib.metrics.recall import Recall
 from tests.test_config import TestConfig
 
 
@@ -91,3 +92,12 @@ class TestMetric(TestConfig):
         """Test precision computation using micro averaging"""
         expected_result = metrics.precision_score(ytrue.ravel(), binarized_ypred.ravel())
         self._assert_metric_result(precision, expected_result, ytrue, ypred)
+
+    @pytest.fixture
+    def recall(self):
+        return Recall("recall", self.threshold)
+
+    def test_recall(self, recall, ytrue, ypred, binarized_ypred):
+        """Test recall computation using micro averaging"""
+        expected_result = metrics.recall_score(ytrue.ravel(), binarized_ypred.ravel())
+        self._assert_metric_result(recall, expected_result, ytrue, ypred)
