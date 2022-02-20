@@ -4,6 +4,7 @@ from sklearn import metrics
 
 from src.lib.activation_functions import sigmoid_forward
 from src.lib.metrics.accuracy import Accuracy
+from src.lib.metrics.precision import Precision
 from tests.test_config import TestConfig
 
 
@@ -78,6 +79,15 @@ class TestMetric(TestConfig):
             assert actual_result == expected_result
 
     def test_accuracy(self, accuracy, ytrue, ypred, binarized_ypred):
-        # Calculate the expected accuracy using micro averaging
+        """Test accuracy computation using micro averaging"""
         expected_result = metrics.accuracy_score(ytrue.ravel(), binarized_ypred.ravel())
         self._assert_metric_result(accuracy, expected_result, ytrue, ypred)
+
+    @pytest.fixture
+    def precision(self):
+        return Precision("precision", self.threshold)
+
+    def test_precision(self, precision, ytrue, ypred, binarized_ypred):
+        """Test precision computation using micro averaging"""
+        expected_result = metrics.precision_score(ytrue.ravel(), binarized_ypred.ravel())
+        self._assert_metric_result(precision, expected_result, ytrue, ypred)

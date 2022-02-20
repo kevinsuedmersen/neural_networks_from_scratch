@@ -14,8 +14,8 @@ class Accuracy(Metric):
         self.average_type = average_type
 
         # Internal counters / state trackers
-        self.n_correct_preds = 0
-        self.n_all_preds = 0
+        self.all_correct_preds = 0
+        self.all_preds = 0
 
     def _validate_input(self):
         supported_average_types = ["micro"]
@@ -32,16 +32,16 @@ class Accuracy(Metric):
             ypred,
             self.threshold
         )
-        self.n_correct_preds += (n_true_positives + n_true_negatives)
-        self.n_all_preds += (n_true_positives + n_false_positives + n_true_negatives + n_false_negatives)
+        self.all_correct_preds += (n_true_positives + n_true_negatives)
+        self.all_preds += (n_true_positives + n_false_positives + n_true_negatives + n_false_negatives)
 
     def result(self):
         """Returns the percentage of correct predictions from all predictions"""
-        accuracy_value = self.n_correct_preds / self.n_all_preds
+        accuracy_value = self.all_correct_preds / self.all_preds
 
         return accuracy_value
 
     def reset_state(self):
         """Resets internal counters"""
-        self.n_correct_preds = 0
-        self.n_all_preds = 0
+        self.all_correct_preds = 0
+        self.all_preds = 0
