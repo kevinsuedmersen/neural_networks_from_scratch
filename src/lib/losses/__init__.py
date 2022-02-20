@@ -22,13 +22,18 @@ class Loss(ABC):
         _, self.activation_function_backward = get_activation_function(output_activation)
 
     @abstractmethod
-    def compute_losses(self, *args, **kwargs):
+    def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
         pass
 
     @abstractmethod
-    def compute_cost(self, losses: npt.NDArray):
+    def compute_cost(self, losses: npt.NDArray) -> float:
         pass
 
     @abstractmethod
-    def init_error(self, *args, **kwargs):
+    def init_error(
+            self,
+            ytrue: npt.NDArray,
+            dendritic_potentials_out: npt.NDArray,
+            activations_out: npt.NDArray
+    ) -> npt.NDArray:
         pass

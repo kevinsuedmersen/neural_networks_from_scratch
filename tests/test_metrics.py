@@ -4,6 +4,7 @@ from sklearn import metrics
 
 from src.lib.activation_functions import sigmoid_forward
 from src.lib.metrics.accuracy import Accuracy
+from src.lib.metrics.categorical_crossentropy import CategoricalCrossEntropyMetric
 from src.lib.metrics.precision import Precision
 from src.lib.metrics.recall import Recall
 from tests.test_config import TestConfig
@@ -33,6 +34,8 @@ class TestMetric(TestConfig):
 
         return random_ypred
 
+
+class TestScoreMetric(TestMetric):
     @pytest.fixture
     def binarized_ypred(self, ypred):
         # Make sure our metric calculation is not dependent on how the threshold value is handled
@@ -101,3 +104,12 @@ class TestMetric(TestConfig):
         """Test recall computation using micro averaging"""
         expected_result = metrics.recall_score(ytrue.ravel(), binarized_ypred.ravel())
         self._assert_metric_result(recall, expected_result, ytrue, ypred)
+
+
+class TestCostMetric(TestMetric):
+    @pytest.fixture
+    def categorical_crossentropy_metric(self):
+        return CategoricalCrossEntropyMetric("categorical_crossentropy")
+
+    def test_categorical_crossentropy(self, categorical_crossentropy_metric):
+        pass

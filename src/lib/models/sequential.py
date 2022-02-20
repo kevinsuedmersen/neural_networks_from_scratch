@@ -117,21 +117,17 @@ class SequentialModel(Model):
         for layer in self.layers[1:]:
             layer.update_parameters()
 
-    def _evaluate_metrics(
-            self,
-            metrics: List[Metric],
-            dataset: str
-    ):
+    def _evaluate_metrics(self, metrics: List[Metric], dataset: str):
         """Evaluates and caches metrics' results"""
         # Evaluate and cache metrics
         metric_log = []
         for metric in metrics:
             metric_value = metric.result()
             self.history[dataset][metric.name].append(metric_value)
-            metric_log.append(f"{metric.name} = {metric_value:.2f}")
+            metric_log.append(f"{metric.name}: {metric_value:.2f}")
 
         # Log metrics
-        metric_logs = ", ".join(metric_log)
+        metric_logs = ". ".join(metric_log)
         log_msg = f"Results on {dataset} dataset: {metric_logs}"
         logger.info(log_msg)
 

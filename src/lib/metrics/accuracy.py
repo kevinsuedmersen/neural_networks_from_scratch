@@ -1,11 +1,11 @@
 import logging
 
-from src.lib.metrics import Metric
+from src.lib.metrics.score_metric import ScoreMetric
 
 logger = logging.getLogger(__name__)
 
 
-class Accuracy(Metric):
+class Accuracy(ScoreMetric):
     def result(self):
         """Returns the percentage of correct predictions from all predictions"""
         accuracy_value = (

@@ -14,14 +14,14 @@ class CategoricalCrossEntropyLoss(Loss):
         super().__init__(output_activation, task)
         assert task in ["multi_class_classification", "multi_label_classification"]
 
-    def compute_losses(self, ytrue_batch: npt.NDArray, ypred_batch: npt.NDArray) -> npt.NDArray:
+    def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
         """Computes the losses for each training example in the current batch"""
-        logs = ytrue_batch * np.log(ypred_batch)
+        logs = ytrue * np.log(ypred)
         losses = -np.sum(logs, axis=1, keepdims=True)
 
         return losses
 
-    def compute_cost(self, losses: npt.NDArray):
+    def compute_cost(self, losses: npt.NDArray) -> float:
         """Computes the cost, i.e. average loss over all training examples in the current batch"""
         cost = np.mean(losses, axis=0, keepdims=True)
 
