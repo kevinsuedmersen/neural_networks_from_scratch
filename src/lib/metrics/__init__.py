@@ -1,6 +1,8 @@
 import logging
 from abc import ABC, abstractmethod
+from typing import Tuple
 
+import numpy as np
 import numpy.typing as npt
 
 logger = logging.getLogger(__name__)
@@ -20,6 +22,29 @@ class Metric(ABC):
         binarized_ypred[ypred < threshold] = 0
 
         return binarized_ypred
+
+    def _count(
+            self,
+            ytrue: npt.NDArray,
+            ypred: npt.NDArray,
+            threshold: float
+    ) -> Tuple[int, int, int, int]:
+        """Counts true positives, false positives, true negatives, false negatives"""
+        binarized_ypred = self._binarize(ypred, threshold)
+
+        n_true_positives = np.sum((binarized_ypred == 1) & (ytrue == 1)).item()
+        n_false_positives = np.sum((binarized_ypred == 1) & (ytrue == 0)).item()
+        n_true_negatives = np.sum((binarized_ypred == 0) & (ytrue == 0)).item()
+        n_false_negatives = np.sum((binarized_ypred == 0) & (ytrue == 1)).item()
+
+        # Verify we left out no predictions
+        assert (
+            (n_true_positives + n_false_positives + n_true_negatives + n_false_negatives) ==
+            ytrue.size ==
+            binarized_ypred.size
+        )
+
+        return n_true_positives, n_false_positives, n_true_negatives, n_false_negatives
 
     @abstractmethod
     def update_state(self, ytrue: npt.NDArray, ypred: npt.NDArray):
