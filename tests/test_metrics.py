@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+from sklearn import metrics
 
 from src.lib.activation_functions import sigmoid_forward
 from src.lib.metrics.accuracy import Accuracy
@@ -32,6 +33,8 @@ class TestMetric(TestConfig):
 
     @pytest.fixture
     def binarized_ypred(self, ypred):
+        # Make sure our metric calculation is not dependent on how the threshold value is handled
+        ypred[ypred == 0.5] = 0.001
         binarized_ypred = Accuracy._binarize(ypred, self.threshold)
 
         return binarized_ypred
@@ -64,42 +67,17 @@ class TestMetric(TestConfig):
     def accuracy(self):
         return Accuracy("accuracy", self.threshold)
 
-    def test_accuracy(
-            self,
-            accuracy,
-            ytrue,
-            ypred,
-            binarized_ypred,
-            n_true_positives,
-            n_false_positives,
-            n_true_negatives,
-            n_false_negatives
-    ):
-        n_correct_preds = np.sum(binarized_ypred == ytrue).item()
-        n_all_preds = ytrue.size
-        expected_result = n_correct_preds / n_all_preds * 100
-
-        for epoch in range(100):
-            accuracy.reset_state()
-            for batch in range(100):
-                accuracy.update_state(ytrue, ypred)
-            actual_result = accuracy.result()
+    @staticmethod
+    def _assert_metric_result(metric, expected_result, ytrue, ypred):
+        """Tests whether the metric value is computed correctly 10 consecutive times"""
+        for epoch in range(10):
+            metric.reset_state()
+            for batch in range(10):
+                metric.update_state(ytrue, ypred)
+            actual_result = metric.result()
             assert actual_result == expected_result
 
-
-class TestAccuracy(TestMetric):
-    @pytest.fixture
-    def accuracy(self):
-        return Accuracy("accuracy")
-
-    def test_update_state_and_return_result(self, accuracy, ytrue, ypred):
-        n_correct_preds = []
-        n_all_preds = []
-        results = []
-        for i in range(10):
-            accuracy.update_state(ytrue, ypred)
-            n_correct_preds.append(accuracy.n_correct_preds)
-            n_all_preds.append(accuracy.n_all_preds)
-            results.append(accuracy.result())
-
-        assert len(set(results)) == 1
+    def test_accuracy(self, accuracy, ytrue, ypred, binarized_ypred):
+        # Calculate the expected accuracy using micro averaging
+        expected_result = metrics.accuracy_score(ytrue.ravel(), binarized_ypred.ravel())
+        self._assert_metric_result(accuracy, expected_result, ytrue, ypred)
