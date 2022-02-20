@@ -113,6 +113,5 @@ class TestCostMetric(TestMetric):
 
     def test_cce(self, cce_metric, ytrue, ypred):
         """Test categorical cross entroppy computation"""
-        # TODO: Handle the case when ypred is either 0 or 1 (see parameter `eps` in https://scikit-learn.org/stable/modules/generated/sklearn.metrics.log_loss.html)
-        expected_result = metrics.log_loss(ytrue, ypred)
+        expected_result = metrics.log_loss(np.squeeze(ytrue), np.squeeze(ypred))
         self._assert_metric_result(cce_metric, expected_result, ytrue, ypred)

@@ -10,14 +10,15 @@ logger = logging.getLogger(__name__)
 
 
 class CategoricalCrossEntropyLoss(Loss):
-    def __init__(self, output_activation, task):
-        super().__init__(output_activation, task)
+    def __init__(self, output_activation, task, epsilon: float = 1e-15):
+        super().__init__(output_activation, task, epsilon)
         assert task in ["multi_class_classification", "multi_label_classification"]
 
     def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
         """Computes the losses for each training example in the current batch"""
-        log_likelihoods = ytrue * np.log(ypred)
-        losses = -np.sum(log_likelihoods, axis=1, keepdims=True)
+        ypred_clipped = self._clip_ypred(ypred)
+        log_losses = ytrue * np.log(ypred_clipped)
+        losses = -np.sum(log_losses, axis=1, keepdims=True)
 
         return losses
 

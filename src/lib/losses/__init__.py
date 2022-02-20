@@ -1,6 +1,7 @@
 import logging
 from abc import ABC, abstractmethod
 
+import numpy as np
 import numpy.typing as npt
 
 from src.lib.activation_functions import get_activation_function
@@ -9,7 +10,7 @@ logger = logging.getLogger(__name__)
 
 
 class Loss(ABC):
-    def __init__(self, output_activation: str, task: str):
+    def __init__(self, output_activation: str, task: str, epsilon: float):
         """
         Instantiates a loss object
         :param output_activation: Activation function at the output layer
@@ -19,7 +20,14 @@ class Loss(ABC):
         assert task in ["multi_class_classification", "multi_label_classification", "regression"]
         self.output_activation = output_activation
         self.task = task
+        self.epsilon = epsilon
         _, self.activation_function_backward = get_activation_function(output_activation)
+
+    def _clip_ypred(self, ypred: npt.NDArray) -> npt.NDArray:
+        """Clip ypred into the range [epsilon, (1-epsilon)] TODO: Test this method"""
+        ypred_clipped = np.maximum(self.epsilon, np.minimum(1-self.epsilon, ypred))
+
+        return ypred_clipped
 
     @abstractmethod
     def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
