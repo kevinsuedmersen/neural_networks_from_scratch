@@ -3,10 +3,10 @@ import pytest
 from sklearn import metrics
 
 from src.lib.activation_functions import sigmoid_forward
-from src.lib.metrics.accuracy import Accuracy
-from src.lib.metrics.categorical_crossentropy import CategoricalCrossEntropyMetric
-from src.lib.metrics.precision import Precision
-from src.lib.metrics.recall import Recall
+from src.lib.metrics.cost.categorical_crossentropy import CategoricalCrossEntropyMetric
+from src.lib.metrics.score.accuracy import Accuracy
+from src.lib.metrics.score.precision import Precision
+from src.lib.metrics.score.recall import Recall
 from tests.test_config import TestConfig
 
 

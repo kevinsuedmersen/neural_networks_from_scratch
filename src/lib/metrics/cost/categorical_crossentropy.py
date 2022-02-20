@@ -1,7 +1,7 @@
 import logging
 
 from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
-from src.lib.metrics.cost_metric import CostMetric
+from src.lib.metrics.cost import CostMetric
 
 logger = logging.getLogger(__name__)
 

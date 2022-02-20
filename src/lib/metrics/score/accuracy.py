@@ -1,6 +1,6 @@
 import logging
 
-from src.lib.metrics.score_metric import ScoreMetric
+from src.lib.metrics.score import ScoreMetric
 
 logger = logging.getLogger(__name__)
 
