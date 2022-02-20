@@ -8,7 +8,7 @@ import pytest
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
 from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
-from src.lib.metrics.metrics import Accuracy
+from src.lib.metrics.accuracy import Accuracy
 from src.lib.models.sequential import SequentialModel
 from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
 from tests.test_config import TestConfig
