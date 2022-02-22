@@ -234,7 +234,8 @@ class TestSimpleMLPModel(TestConfig):
 
         # Verfiy resutls of layer 1
         assert z_1_1_expected == z_1_1_actual
-        assert z_1_2_expected == z_1_2_actual
+        # There seems to be a rounding error just for z_1_2
+        assert abs(z_1_2_expected - z_1_2_actual) < 1e-15
         assert a_1_1_expected == a_1_1_actual
         assert a_1_2_expected == a_1_2_actual
 
@@ -245,7 +246,7 @@ class TestSimpleMLPModel(TestConfig):
 
         # Verify results of layer 2
         assert z_2_1_expected == z_2_1_actual
-        # For some reason there seems to be a numerical instability in the following line (only that line)
+        # TODO: Put below assertion into function assert_scalar_almost_equal and use it for every scalar assertion
         assert abs(z_2_2_expected - z_2_2_actual) < 1e-15
         assert a_2_1_expected == a_2_1_actual
         assert a_2_2_expected == a_2_2_actual
