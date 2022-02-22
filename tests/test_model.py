@@ -7,7 +7,7 @@ import pytest
 
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
-from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
+from src.lib.losses.categorical_crossentropy import CategoricalCrossentropyLoss
 from src.lib.metrics.score.accuracy import Accuracy
 from src.lib.models.sequential import SequentialModel
 from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
@@ -161,7 +161,7 @@ class TestSimpleMLPModel(TestConfig):
         test
         """
         _simple_model = SequentialModel(
-            loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
+            loss=CategoricalCrossentropyLoss("softmax", "multi_class_classification"),
             metrics_train=[Accuracy("acc_train")],
             metrics_val=[Accuracy("acc_val")],
             optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)

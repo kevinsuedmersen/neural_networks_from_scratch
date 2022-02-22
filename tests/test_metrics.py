@@ -2,8 +2,8 @@ import numpy as np
 import pytest
 from sklearn import metrics
 
-from src.lib.activation_functions import sigmoid_forward
-from src.lib.metrics.cost.categorical_crossentropy import CategoricalCrossEntropyMetric
+from src.lib.activation_functions import softmax_forward
+from src.lib.metrics.cost.categorical_crossentropy import CategoricalCrossentropyMetric
 from src.lib.metrics.score.accuracy import Accuracy
 from src.lib.metrics.score.precision import Precision
 from src.lib.metrics.score.recall import Recall
@@ -29,8 +29,8 @@ class TestMetric(TestConfig):
     @pytest.fixture
     def ypred(self):
         random_floats = np.random.randn(self.batch_size, self.n_neurons_out, 1)
-        # Make sure predictions are between 0 and 1
-        random_ypred = sigmoid_forward(random_floats)
+        # Make sure predictions are between 0 and 1 and that they all sum up to 1
+        random_ypred = softmax_forward(random_floats)
 
         return random_ypred
 
@@ -109,7 +109,7 @@ class TestScoreMetric(TestMetric):
 class TestCostMetric(TestMetric):
     @pytest.fixture
     def cce_metric(self):
-        return CategoricalCrossEntropyMetric("categorical_crossentropy")
+        return CategoricalCrossentropyMetric("categorical_crossentropy")
 
     def test_cce(self, cce_metric, ytrue, ypred):
         """Test categorical cross entroppy computation"""

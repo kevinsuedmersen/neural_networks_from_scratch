@@ -4,8 +4,8 @@ import numpy as np
 
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
-from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
-from src.lib.metrics.metrics import Accuracy
+from src.lib.losses.categorical_crossentropy import CategoricalCrossentropyLoss
+from src.lib.metrics.score.accuracy import Accuracy
 from src.lib.models import Model
 from src.lib.models.sequential import SequentialModel
 from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
@@ -20,7 +20,7 @@ def get_simple_mlp_model(
 ) -> SequentialModel:
     """Creates a simple Multi Layer Perceptron network"""
     mlp = SequentialModel(
-        loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
+        loss=CategoricalCrossentropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)
@@ -44,7 +44,7 @@ def get_tiny_mlp_model(
 ) -> SequentialModel:
     """Creates a tiny Multi Layer Perceptron network for gradient computation tests"""
     mlp = SequentialModel(
-        loss=CategoricalCrossEntropyLoss("softmax", "multi_class_classification"),
+        loss=CategoricalCrossentropyLoss("softmax", "multi_class_classification"),
         metrics_train=[Accuracy("acc_train")],
         metrics_val=[Accuracy("acc_val")],
         optimizer=StochasticGradientDescentOptimizer()
