@@ -216,6 +216,10 @@ class TestSimpleMLPModel(TestConfig):
 
         return trained_model
 
+    @staticmethod
+    def _assert_scalar_almost_equal(scalar_1: float, scalar_2: float, precision: int = 15):
+        assert round(scalar_1, precision) == round(scalar_2, precision)
+
     def test_forward_propagation(self, a_0, z_1, a_1, z_2, a_2, trained_model):
         """Tests that the forward propagation to layer 1 has been done correctly"""
         # Unpack fixtures
@@ -224,7 +228,6 @@ class TestSimpleMLPModel(TestConfig):
         z_2_1_expected, z_2_2_expected = z_2
         a_2_1_expected, a_2_2_expected = a_2
 
-        # TODO: Write separate test that the activations have been correctly forward propagated through the model
         # np.testing.assert_array_equal(dendritic_potentials, untrained_model.layers[2].dendritic_potentials)
         # np.testing.assert_array_equal(activations, untrained_model.layers[2].activations)
 
@@ -233,23 +236,20 @@ class TestSimpleMLPModel(TestConfig):
         a_1_1_actual, a_1_2_actual = np.squeeze(trained_model.layers[1].activations)
 
         # Verfiy resutls of layer 1
-        assert z_1_1_expected == z_1_1_actual
-        # There seems to be a rounding error just for z_1_2
-        assert abs(z_1_2_expected - z_1_2_actual) < 1e-15
-        assert a_1_1_expected == a_1_1_actual
-        assert a_1_2_expected == a_1_2_actual
+        self._assert_scalar_almost_equal(z_1_1_expected, z_1_1_actual)
+        self._assert_scalar_almost_equal(z_1_2_expected, z_1_2_actual)
+        self._assert_scalar_almost_equal(a_1_1_expected, a_1_1_actual)
+        self._assert_scalar_almost_equal(a_1_2_expected, a_1_2_actual)
 
-        # TODO: Put below code into separate test method
         # Extract results of layer 2
         z_2_1_actual, z_2_2_actual = np.squeeze(trained_model.layers[2].dendritic_potentials)
         a_2_1_actual, a_2_2_actual = np.squeeze(trained_model.layers[2].activations)
 
         # Verify results of layer 2
-        assert z_2_1_expected == z_2_1_actual
-        # TODO: Put below assertion into function assert_scalar_almost_equal and use it for every scalar assertion
-        assert abs(z_2_2_expected - z_2_2_actual) < 1e-15
-        assert a_2_1_expected == a_2_1_actual
-        assert a_2_2_expected == a_2_2_actual
+        self._assert_scalar_almost_equal(z_2_1_expected, z_2_1_actual)
+        self._assert_scalar_almost_equal(z_2_2_expected, z_2_2_actual)
+        self._assert_scalar_almost_equal(a_2_1_expected, a_2_1_actual)
+        self._assert_scalar_almost_equal(a_2_2_expected, a_2_2_actual)
 
     @pytest.fixture
     def dL__da_2(self, y, a_2):
@@ -279,7 +279,8 @@ class TestSimpleMLPModel(TestConfig):
 
         return da_2__dz_2
 
-    def _assert_jacobians(self, jacobian_expected, z, a, trained_model, layer_idx):
+    @staticmethod
+    def _assert_jacobians(jacobian_expected, z, a, trained_model, layer_idx):
         """Asserts that both jacobians are equal"""
         z = np.asarray(z).reshape((1, 2, 1))
         a = np.asarray(a).reshape((1, 2, 1))
@@ -338,12 +339,7 @@ class TestSimpleMLPModel(TestConfig):
         assert_euclidean_distance(errors_1_actual, errors_2_expected)
 
     @pytest.fixture
-    def dL__dW_2(
-            self,
-            dL__da_2,
-            da_2__dz_2,
-            a_1
-    ):
+    def dL__dW_2(self, dL__da_2, da_2__dz_2, a_1):
         """Manually computed weight gradients of layer with index 2, i.e.
         dL/dW_2 = dL/a_2 * da_2/dz_2 * dz_2/dW_2, assuming that ytrue = [1, 0]
         """
