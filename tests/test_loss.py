@@ -2,24 +2,24 @@ import numpy as np
 import pytest
 
 from src.lib.activation_functions import softmax_forward
-from src.lib.losses.categorical_crossentropy import CategoricalCrossEntropyLoss
+from src.lib.losses.categorical_crossentropy import CategoricalCrossentropyLoss
 from tests.test_config import TestConfig
 
 
 class TestCategoricalCrossEntropyLoss(TestConfig):
     @pytest.fixture
-    def cce_simplified(self) -> CategoricalCrossEntropyLoss:
-        cce = CategoricalCrossEntropyLoss(
+    def cce_simplified(self) -> CategoricalCrossentropyLoss:
+        cce = CategoricalCrossentropyLoss(
             output_activation="softmax",
             task="multi_class_classification"
         )
         return cce
 
     @pytest.fixture
-    def cce_general(self) -> CategoricalCrossEntropyLoss:
+    def cce_general(self) -> CategoricalCrossentropyLoss:
         # Choose any output_activation and task other than "softmax" and "multi_class_classification"
         # to invoke the call of the actual ``init_error`` method
-        cce = CategoricalCrossEntropyLoss(
+        cce = CategoricalCrossentropyLoss(
             output_activation="softmax",
             task="multi_label_classification"
         )

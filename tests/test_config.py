@@ -16,7 +16,7 @@ class TestConfig:
     n_neurons_prev = 32
     n_neurons = 16
     n_neurons_next = 8
-    n_neurons_out = 10
+    n_neurons_out = 2
     activation_function_names = ["linear", "relu", "sigmoid", "tanh", "softmax"]
 
     @pytest.fixture

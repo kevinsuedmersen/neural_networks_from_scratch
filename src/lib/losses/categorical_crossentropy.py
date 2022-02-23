@@ -9,19 +9,20 @@ from src.lib.losses.decorators import simplify_init_error
 logger = logging.getLogger(__name__)
 
 
-class CategoricalCrossEntropyLoss(Loss):
-    def __init__(self, output_activation, task):
-        super().__init__(output_activation, task)
+class CategoricalCrossentropyLoss(Loss):
+    def __init__(self, output_activation, task, epsilon: float = 1e-15):
+        super().__init__(output_activation, task, epsilon)
         assert task in ["multi_class_classification", "multi_label_classification"]
 
-    def compute_losses(self, ytrue_batch: npt.NDArray, ypred_batch: npt.NDArray) -> npt.NDArray:
+    def compute_losses(self, ytrue: npt.NDArray, ypred: npt.NDArray) -> npt.NDArray:
         """Computes the losses for each training example in the current batch"""
-        logs = ytrue_batch * np.log(ypred_batch)
-        losses = -np.sum(logs, axis=1, keepdims=True)
+        ypred_clipped = self._clip_ypred(ypred)
+        ypred_normalized = self._ensure_normalized(ypred_clipped)
+        log_losses = -np.sum(ytrue * np.log(ypred_normalized), axis=1, keepdims=True)
 
-        return losses
+        return log_losses
 
-    def compute_cost(self, losses: npt.NDArray):
+    def compute_cost(self, losses: npt.NDArray) -> float:
         """Computes the cost, i.e. average loss over all training examples in the current batch"""
         cost = np.mean(losses, axis=0, keepdims=True)
 

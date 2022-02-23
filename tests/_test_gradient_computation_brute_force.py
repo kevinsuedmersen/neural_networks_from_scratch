@@ -218,8 +218,7 @@ class TestGradientComputation(TestConfig):
                 log_progress(
                     counter=counter,
                     total=(n_rows * n_cols),
-                    topic=f"Computing gradients of layer_index {l} using brute force",
-                    frequency=10_000
+                    log_msg=f"Computing gradients of layer_index {l} using brute force",
                 )
 
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
