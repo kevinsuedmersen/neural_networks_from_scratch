@@ -156,10 +156,13 @@ class ImageDataGenerator(DataGenerator):
     def _load_and_preprocess(self, img_path: str) -> npt.NDArray:
         """Loads an image from disk, resizes and rescales it"""
         img_array = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        img_resized = cv2.resize(img_array, (self.img_height, self.img_width))
-        img_rescaled = img_resized / 255
+        # Resize the image if provided dimensions don't match its actual dimensions
+        # TODO: Check if below works as expected
+        if not img_array.shape[:-1] == (self.img_height, self.img_width):
+            img_array = cv2.resize(img_array, (self.img_height, self.img_width))
+        img_array = img_array / 255
 
-        return img_rescaled
+        return img_array
 
     def _batch_generator(
             self,
@@ -192,9 +195,9 @@ class ImageDataGenerator(DataGenerator):
         img_paths_2_labels = self._get_img_paths_2_labels()
         img_paths_2_indices = self._convert_labels_2_indices(img_paths_2_labels)
         img_paths_2_one_hot = self._convert_indices_2_one_hot(img_paths_2_indices)
-        img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = self._train_val_test_split(
-            img_paths_2_one_hot
-        )
+        img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = \
+            self._train_val_test_split(img_paths_2_one_hot)
+
         if dataset == "train":
             data_gen = self._batch_generator(img_paths_2_one_hot_train)
             n_samples = len(img_paths_2_one_hot_train)
@@ -215,16 +218,10 @@ class ImageDataGenerator(DataGenerator):
         return data_gen, n_samples
 
     def train(self):
-        _data_gen_train, n_samples_train = self._get_data_gen("train")
-
-        return _data_gen_train, n_samples_train
+        return self._get_data_gen("train")
 
     def val(self):
-        _data_gen_val, n_samples_val = self._get_data_gen("val")
-
-        return _data_gen_val, n_samples_val
+        return self._get_data_gen("val")
 
     def test(self):
-        _data_gen_test, n_samples_test = self._get_data_gen("test")
-
-        return _data_gen_test, n_samples_test
+        return self._get_data_gen("test")

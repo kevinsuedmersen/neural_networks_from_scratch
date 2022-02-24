@@ -11,7 +11,8 @@ class ConfigParser:
         config = ConfigObj(config_path, file_error=True, unrepr=True)
 
         self.data_gen_name = config["data"]["generator_name"]
-        self.data_dir = config["data"]["data_dir"]
+        self.data_dir_train = config["data"]["data_dir_train"]
+        self.data_dir_test = config["data"]["data_dir_test"]
         self.val_size = config["training"]["val_size"]
         self.test_size = config["training"]["test_size"]
         self.batch_size = config["training"]["batch_size"]
