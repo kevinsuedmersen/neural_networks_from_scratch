@@ -10,6 +10,7 @@ from src.lib.metrics import Metric
 class ScoreMetric(Metric):
     """Metrics reflecting a score, like accuracy"""
     def __init__(self, name: str, threshold: float = 0.5, average_type: str = "micro"):
+        super().__init__(name)
         self.name = name
         self.threshold = threshold
         self.average_type = average_type

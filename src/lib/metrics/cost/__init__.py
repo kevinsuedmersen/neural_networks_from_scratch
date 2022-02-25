@@ -10,7 +10,7 @@ from src.lib.metrics import Metric
 class CostMetric(Metric):
     """Metrics reflecting a cost, like mean square error"""
     def __init__(self, name: str):
-        self.name = name
+        super().__init__(name)
         # The loss instance will be filled in one of the child classes
         self.loss: Union[Loss, None] = None
         self.all_losses = None

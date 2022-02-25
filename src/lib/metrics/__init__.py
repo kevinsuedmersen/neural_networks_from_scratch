@@ -7,6 +7,9 @@ logger = logging.getLogger(__name__)
 
 
 class Metric(ABC):
+    def __init__(self, name: str):
+        self.name = name
+
     @abstractmethod
     def update_state(self, ytrue: npt.NDArray, ypred: npt.NDArray):
         pass
