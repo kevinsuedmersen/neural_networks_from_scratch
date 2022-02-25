@@ -156,8 +156,8 @@ class ImageDataGenerator(DataGenerator):
     def _load_and_preprocess(self, img_path: str) -> npt.NDArray:
         """Loads an image from disk, resizes and rescales it"""
         img_array = cv2.imread(img_path, cv2.IMREAD_COLOR)
-        # Resize the image if provided dimensions don't match its actual dimensions
-        # TODO: Check if below works as expected
+        # Resize the image if provided dimensions don't match its actual dimensions. Note that there
+        # is NO batch dimension at this point
         if not img_array.shape[:-1] == (self.img_height, self.img_width):
             img_array = cv2.resize(img_array, (self.img_height, self.img_width))
         img_array = img_array / 255
@@ -213,7 +213,7 @@ class ImageDataGenerator(DataGenerator):
         else:
             raise ValueError(f"Unknown dataset provided: {dataset}")
 
-        logger.info(f"Number of images in the '{dataset}' dataset: {n_samples}")
+        logger.info(f"Number of '{dataset}' images in '{self.data_dir}': {n_samples}")
 
         return data_gen, n_samples
 
