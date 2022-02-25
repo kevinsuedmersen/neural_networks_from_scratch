@@ -78,18 +78,18 @@ class ImageDataGenerator(DataGenerator):
 
     def _get_label_index(self, label: str) -> int:
         """Returns the index corresponding to ``label``"""
+        # If no mapping has been created yet, initialize it and return the first index
         if len(self.label_2_index.values()) == 0:
-            # If no mapping has been created yet, initialize it and return the first index
             self.label_2_index[label] = 0
             return 0
 
+        # If the mapping already exists, return the label's corresponding index
         elif label in self.label_2_index:
-            # If the mapping already exists, return the label's corresponding index
             return self.label_2_index[label]
 
+        # If a new mapping needs to be created, retrieve the largest index value, increment it,
+        # store the new mapping and return the new index
         else:
-            # If a new mapping needs to be created, retrieve the largest index value, increment it
-            # by 1, store the new mapping and return the new index
             old_max_idx = max(self.label_2_index.values())
             new_max_idx = old_max_idx + 1
             self.label_2_index[label] = new_max_idx
@@ -225,3 +225,7 @@ class ImageDataGenerator(DataGenerator):
 
     def test(self):
         return self._get_data_gen("test")
+
+    def get_n_classes(self):
+        """Returns the number of different classes"""
+        return len(self.label_2_index)

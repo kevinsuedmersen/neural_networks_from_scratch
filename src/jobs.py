@@ -13,13 +13,7 @@ class MLJob:
         self.cp = cp
         self.data_gen_train = None
         self.data_gen_test = None
-        self.model = get_model(
-            model_name=self.cp.model_name,
-            img_height=self.cp.img_height,
-            img_width=self.cp.img_width,
-            n_color_channels=self.cp.n_color_channels,
-            random_state=c.RANDOM_STATE
-        )
+        self.model = None
 
     def train_and_evaluate(self):
         """Trains and evaluates the model"""
@@ -37,6 +31,7 @@ class MLJob:
         data_gen_train, n_samples_train = self.data_gen_train.train()
         data_gen_val, n_samples_val = self.data_gen_train.val()
         data_gen_test, n_samples_test = self.data_gen_train.test()
+        n_classes = self.data_gen_train.get_n_classes()
 
         # If also a testing dir is provided, use it for testing
         if self.cp.data_dir_test is not None:
@@ -52,6 +47,14 @@ class MLJob:
             )
             data_gen_test, n_samples_test = self.data_gen_test.test()
 
+        self.model = get_model(
+            model_name=self.cp.model_name,
+            img_height=self.cp.img_height,
+            img_width=self.cp.img_width,
+            n_color_channels=self.cp.n_color_channels,
+            random_state=c.RANDOM_STATE,
+            n_classes=n_classes
+        )
         self.model.train(
             data_gen_train=data_gen_train,
             data_gen_val=data_gen_val,

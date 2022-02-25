@@ -34,6 +34,7 @@ class ScoreMetric(Metric):
         """Binarizes predictions into 0 or 1. `ypred` becomes 1 if `ypred >= threshold` and 0
         otherwise
         """
+        # TODO: In a multi-class classification setting with many classes, binarized_ypred will probably always be 0 everywhere, because a very low probability is assigned to each class
         binarized_ypred = ypred.copy()
         binarized_ypred[ypred >= threshold] = 1
         binarized_ypred[ypred < threshold] = 0
