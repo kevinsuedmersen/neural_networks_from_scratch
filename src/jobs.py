@@ -53,7 +53,8 @@ class MLJob:
             img_width=self.cp.img_width,
             n_color_channels=self.cp.n_color_channels,
             random_state=c.RANDOM_STATE,
-            n_classes=n_classes
+            n_classes=n_classes,
+            learning_rate=self.cp.learning_rate
         )
         self.model.train(
             data_gen_train=data_gen_train,

@@ -18,7 +18,8 @@ def get_simple_mlp_model(
         img_height: int,
         img_width: int,
         n_color_channels: int,
-        n_classes: int
+        n_classes: int,
+        learning_rate: float
 ) -> SequentialModel:
     """Creates a simple Multi Layer Perceptron network"""
     mlp = SequentialModel(
@@ -35,7 +36,7 @@ def get_simple_mlp_model(
             #Precision("precision_val"),
             #Recall("recall_val")
         ],
-        optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)
+        optimizer=StochasticGradientDescentOptimizer(learning_rate=learning_rate)
     )
     mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels)))
     mlp.add_layer(DenseLayer(512, "tanh"))
@@ -74,12 +75,13 @@ def get_model(
         img_width: int = None,
         n_color_channels: int = None,
         random_state: int = None,
-        n_classes: int = None
+        n_classes: int = None,
+        learning_rate: int = None
 ) -> Model:
     if random_state is not None:
         np.random.seed(random_state)
 
     if model_name == "simple_mlp":
-        return get_simple_mlp_model(img_height, img_width, n_color_channels, n_classes)
+        return get_simple_mlp_model(img_height, img_width, n_color_channels, n_classes, learning_rate)
     else:
         ValueError(f"Unknown or non-implemented model_name provided: {model_name}")

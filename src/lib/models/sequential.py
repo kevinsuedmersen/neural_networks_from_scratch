@@ -202,7 +202,7 @@ class SequentialModel(Model):
         n_batches_train = math.ceil(n_samples_train / batch_size)
         n_batches_val = math.ceil(n_samples_val / batch_size)
 
-        logger.info("Training started")
+        logger.info(f"Training started. Number of epochs: {n_epochs}")
         tic = time.time()
         for epoch_counter in range(n_epochs):
             # Reset metrics

@@ -24,6 +24,7 @@ class ConfigParser:
 
         self.model_name = config["training"]["model_name"]
         self.n_epochs = config["training"]["n_epochs"]
+        self.learning_rate = config["training"]["learning_rate"]
 
         self._validate_params()
         logger.info("Config file parsed and validated")
