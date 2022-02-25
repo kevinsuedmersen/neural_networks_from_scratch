@@ -24,21 +24,3 @@ def get_cli_args():
     args = parser.parse_args()
 
     return args
-
-
-def log_progress(
-        counter: int,
-        total: int,
-        log_msg: str = None,
-        logging_frequency: int = 50
-):
-    """Logs progress of a long computation"""
-    if (counter % logging_frequency) == 0:
-        progress = f"Progress: {counter + 1}/{total} = {(counter + 1)/total*100:.2f}%"
-
-        if log_msg is not None:
-            log_msg = f"{log_msg}. ({progress})"
-        else:
-            log_msg = progress
-
-        logger.info(log_msg)
