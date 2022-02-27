@@ -6,6 +6,7 @@ from typing import List, Tuple, Generator, Dict
 import cv2
 import numpy as np
 import numpy.typing as npt
+from PIL import Image
 
 from src.lib.data_generators import DataGenerator
 
@@ -21,7 +22,8 @@ class ImageDataGenerator(DataGenerator):
             batch_size: int,
             img_height: int,
             img_width: int,
-            img_extensions: Tuple[str] = (".png", ".bmp", ".jpeg", ".jpg")
+            img_format: str,
+            img_extensions: Tuple[str] = (".png", ".bmp", ".jpeg", ".jpg"),
     ):
         self.data_dir = data_dir
         self.val_size = val_size
@@ -29,10 +31,11 @@ class ImageDataGenerator(DataGenerator):
         self.batch_size = batch_size
         self.img_height = img_height
         self.img_width = img_width
+        self.img_format = img_format
         self.img_extensions = img_extensions
 
-        self.label_2_index: Dict[str, int] = {}
         self._validate_args()
+        self.label_2_index: Dict[str, int] = {}
 
     def _validate_args(self):
         """Validates arguments"""
@@ -43,6 +46,10 @@ class ImageDataGenerator(DataGenerator):
             dirnames = os.listdir(self.data_dir)
             if not dirnames:
                 raise ValueError(f"data directory {self.data_dir} is empty")
+
+        # Ensure a supported image format is used
+        if self.img_format not in ["rgb", "grayscale"]:
+            raise ValueError("Currently only RGB and grayscale images are supported")
 
     def _get_img_paths_2_labels(self) -> Dict[str, List[str]]:
         """Maps absolute image filepaths to their corresponding labels. It is assumed that all images
@@ -153,14 +160,29 @@ class ImageDataGenerator(DataGenerator):
 
         return train_subset, val_set, test_set
 
+    def _read_img(self, img_path: str) -> npt.NDArray:
+        """Reads an image and returns it with dimensions (height, width, color_channels)"""
+        img_array = np.array(Image.open(img_path))
+        if self.img_format == "grayscale":
+            if img_array.ndim == 2:
+                img_array = img_array[..., np.newaxis]
+            elif img_array.ndim == 3:
+                assert img_array.shape[2] == 1, \
+                    "If img_format='grayscale' and if img_array.ndim=3, the the image should only " \
+                    "have 1 color channel"
+
+        return img_array
+
     def _load_and_preprocess(self, img_path: str) -> npt.NDArray:
         """Loads an image from disk, resizes and rescales it"""
-        img_array = cv2.imread(img_path, cv2.IMREAD_COLOR)
+        img_array = self._read_img(img_path)
+
         # Resize the image if provided dimensions don't match its actual dimensions. Note that there
         # is NO batch dimension at this point
         if not img_array.shape[:-1] == (self.img_height, self.img_width):
             img_array = cv2.resize(img_array, (self.img_height, self.img_width))
-        img_array = img_array / 255
+
+        img_array = img_array/255
 
         return img_array
 

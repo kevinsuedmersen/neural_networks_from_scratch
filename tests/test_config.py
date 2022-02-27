@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.config_parser import ConfigParser
+from src.config_parser import ImageClassificationConfigParser
 from src.utils import set_root_logger
 
 set_root_logger()
@@ -27,8 +27,8 @@ class TestConfig:
         return dendritic_potentials_
 
     @pytest.fixture
-    def config_parser(self) -> ConfigParser:
-        cp = ConfigParser(os.path.join("..", "configs", "image_classification.ini"))
+    def config_parser(self) -> ImageClassificationConfigParser:
+        cp = ImageClassificationConfigParser(os.path.join("..", "configs", "image_classification.ini"))
         cp.data_dir = "fixtures"
 
         return cp

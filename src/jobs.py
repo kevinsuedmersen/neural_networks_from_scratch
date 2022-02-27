@@ -1,7 +1,7 @@
 import logging
 
 import src.constants as c
-from src.config_parser import ConfigParser
+from src.config_parser import ImageClassificationConfigParser
 from src.lib.data_generators.factory import get_data_generator
 from src.model_architectures import get_model
 
@@ -9,7 +9,7 @@ logger = logging.getLogger(__name__)
 
 
 class MLJob:
-    def __init__(self, cp: ConfigParser):
+    def __init__(self, cp: ImageClassificationConfigParser):
         self.cp = cp
         self.data_gen_train = None
         self.data_gen_test = None
@@ -26,7 +26,8 @@ class MLJob:
             batch_size=self.cp.batch_size,
             img_height=self.cp.img_height,
             img_width=self.cp.img_width,
-            random_state=c.RANDOM_STATE
+            random_state=c.RANDOM_STATE,
+            img_format=self.cp.img_format
         )
         data_gen_train, n_samples_train = self.data_gen_train.train()
         data_gen_val, n_samples_val = self.data_gen_train.val()
@@ -43,7 +44,8 @@ class MLJob:
                 batch_size=self.cp.batch_size,
                 img_height=self.cp.img_height,
                 img_width=self.cp.img_width,
-                random_state=c.RANDOM_STATE
+                random_state=c.RANDOM_STATE,
+                img_format=self.cp.img_format
             )
             data_gen_test, n_samples_test = self.data_gen_test.test()
 

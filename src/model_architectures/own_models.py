@@ -13,7 +13,7 @@ from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDes
 logger = logging.getLogger(__name__)
 
 
-def get_simple_mlp_model(
+def get_mlp_model(
         img_height: int,
         img_width: int,
         n_color_channels: int,

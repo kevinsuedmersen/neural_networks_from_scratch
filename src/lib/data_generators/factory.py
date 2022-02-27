@@ -16,7 +16,8 @@ def get_data_generator(
         batch_size: int,
         img_height: int = None,
         img_width: int = None,
-        random_state: int = None
+        random_state: int = None,
+        img_format: str = None
 ) -> DataGenerator:
     """Returns a train, validation and test data_generators generators"""
     if random_state is not None:
@@ -24,12 +25,13 @@ def get_data_generator(
 
     if data_gen_name == "image":
         data_gen = ImageDataGenerator(
-            data_dir,
-            val_size,
-            test_size,
-            batch_size,
-            img_height,
-            img_width
+            data_dir=data_dir,
+            val_size=val_size,
+            test_size=test_size,
+            batch_size=batch_size,
+            img_height=img_height,
+            img_width=img_width,
+            img_format=img_format
         )
     else:
         raise NotImplementedError(f"Data generator '{data_gen_name}' has not been implemented yet")
