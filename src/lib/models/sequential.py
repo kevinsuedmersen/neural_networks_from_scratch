@@ -1,5 +1,6 @@
 import logging
 import math
+import time
 from typing import List, Tuple, Generator, Union, Dict
 
 import numpy.typing as npt
@@ -11,7 +12,6 @@ from src.lib.losses import Loss
 from src.lib.metrics import Metric
 from src.lib.models import Model
 from src.lib.optimizers import Optimizer
-from src.utils import log_progress
 
 logger = logging.getLogger(__name__)
 
@@ -46,7 +46,8 @@ class SequentialModel(Model):
         """Initializes history object"""
         history = {
             c.TRAIN: {metric.name: [] for metric in self.metrics_train},
-            c.VAL: {metric.name: [] for metric in self.metrics_val}
+            c.VAL: {metric.name: [] for metric in self.metrics_val},
+            c.EPOCH: []
         }
 
         return history
@@ -117,20 +118,6 @@ class SequentialModel(Model):
         for layer in self.layers[1:]:
             layer.update_parameters()
 
-    def _evaluate_metrics(self, metrics: List[Metric], dataset: str):
-        """Evaluates and caches metrics' results"""
-        # Evaluate and cache metrics
-        metric_log = []
-        for metric in metrics:
-            metric_value = metric.result()
-            self.history[dataset][metric.name].append(metric_value)
-            metric_log.append(f"{metric.name}: {metric_value:.2f}")
-
-        # Log metrics
-        metric_logs = ". ".join(metric_log)
-        log_msg = f"Results on {dataset} dataset: {metric_logs}"
-        logger.info(log_msg)
-
     @staticmethod
     def _update_metrics(
             ytrue: npt.NDArray,
@@ -166,6 +153,39 @@ class SequentialModel(Model):
         for metric in metrics:
             metric.reset_state()
 
+    def _evaluate_metrics(self, metrics: List[Metric], dataset: str, epoch: int):
+        """Evaluates and caches metrics' results"""
+        # Evaluate and cache metrics
+        metric_log = []
+        for metric in metrics:
+            metric_value = metric.result()
+            metric_log.append(f"{metric.name}: {metric_value:.3f}")
+            self.history[dataset][metric.name].append(metric_value)
+            self.history[c.EPOCH].append(epoch)
+
+        # Log metrics
+        metric_logs = ". ".join(metric_log)
+        metric_log_msg = f"Results on {dataset} dataset: {metric_logs}"
+
+        return metric_log_msg
+
+    def _log_progress(
+            self,
+            counter: int,
+            total: int,
+            main_log_msg: str,
+            logging_frequency: int,
+            metrics: List[Metric],
+            dataset: str,
+            epoch: int
+    ):
+        """Logs progress of a long computation"""
+        if ((counter + 1) % logging_frequency) == 0:
+            progress = f"Progress: {counter + 1}/{total} = {(counter + 1) / total * 100:.2f}%"
+            metric_logs = self._evaluate_metrics(metrics, dataset, epoch)
+            complete_log_msg = f"{main_log_msg}. {metric_logs}. ({progress})"
+            logger.info(complete_log_msg)
+
     def train(
             self,
             data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
@@ -182,7 +202,8 @@ class SequentialModel(Model):
         n_batches_train = math.ceil(n_samples_train / batch_size)
         n_batches_val = math.ceil(n_samples_val / batch_size)
 
-        logger.info("Training started")
+        logger.info(f"Training started. Number of epochs: {n_epochs}")
+        tic = time.time()
         for epoch_counter in range(n_epochs):
             # Reset metrics
             self._reset_metrics(self.metrics_train)
@@ -191,17 +212,20 @@ class SequentialModel(Model):
             # Train the model and update training metrics
             for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
                 self.train_step(x_train, ytrue_train)
-                log_progress(train_batch_counter, n_batches_train, "Training on batches")
+                self._log_progress(train_batch_counter, n_batches_train, "Training metrics during epoch", 10, self.metrics_train, c.TRAIN, epoch_counter)
 
             # Update validation metrics
             for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
                 self.val_step(x_val, ytrue_val)
-                log_progress(val_batch_counter, n_batches_val, "Validating on batches")
+                self._log_progress(val_batch_counter, n_batches_val, "Validating metrics during epoch", 10, self.metrics_val, c.VAL, epoch_counter)
 
             # Evaluate metrics
-            self._evaluate_metrics(self.metrics_train, c.TRAIN)
-            self._evaluate_metrics(self.metrics_val, c.VAL)
-            log_progress(epoch_counter, n_epochs, "Epoch completed")
+            self._log_progress(epoch_counter, n_epochs, "Training metrics on epoch end", 1, self.metrics_train, c.TRAIN, epoch_counter)
+            self._log_progress(epoch_counter, n_epochs, "Validation metrics on epoch end", 1, self.metrics_val, c.VAL, epoch_counter)
+
+        toc = time.time()
+        minutes = (toc - tic) / 60
+        logger.info(f"Training completed. Total duration: {minutes:.2f} minutes")
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
         pass

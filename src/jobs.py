@@ -11,10 +11,16 @@ logger = logging.getLogger(__name__)
 class MLJob:
     def __init__(self, cp: ConfigParser):
         self.cp = cp
+        self.data_gen_train = None
+        self.data_gen_test = None
+        self.model = None
 
-        self.data_gen = get_data_generator(
+    def train_and_evaluate(self):
+        """Trains and evaluates the model"""
+        # If only a training data dir is provided, use it for training, validation and testing
+        self.data_gen_train = get_data_generator(
             data_gen_name=self.cp.data_gen_name,
-            data_dir=self.cp.data_dir,
+            data_dir=self.cp.data_dir_train,
             val_size=self.cp.val_size,
             test_size=self.cp.test_size,
             batch_size=self.cp.batch_size,
@@ -22,19 +28,34 @@ class MLJob:
             img_width=self.cp.img_width,
             random_state=c.RANDOM_STATE
         )
+        data_gen_train, n_samples_train = self.data_gen_train.train()
+        data_gen_val, n_samples_val = self.data_gen_train.val()
+        data_gen_test, n_samples_test = self.data_gen_train.test()
+        n_classes = self.data_gen_train.get_n_classes()
+
+        # If also a testing dir is provided, use it for testing
+        if self.cp.data_dir_test is not None:
+            self.data_gen_test = get_data_generator(
+                data_gen_name=self.cp.data_gen_name,
+                data_dir=self.cp.data_dir_test,
+                val_size=0,
+                test_size=1,
+                batch_size=self.cp.batch_size,
+                img_height=self.cp.img_height,
+                img_width=self.cp.img_width,
+                random_state=c.RANDOM_STATE
+            )
+            data_gen_test, n_samples_test = self.data_gen_test.test()
+
         self.model = get_model(
             model_name=self.cp.model_name,
             img_height=self.cp.img_height,
             img_width=self.cp.img_width,
             n_color_channels=self.cp.n_color_channels,
-            random_state=c.RANDOM_STATE
+            random_state=c.RANDOM_STATE,
+            n_classes=n_classes,
+            learning_rate=self.cp.learning_rate
         )
-
-    def train_and_evaluate(self):
-        data_gen_train, n_samples_train = self.data_gen.train()
-        data_gen_val, n_samples_val = self.data_gen.val()
-        data_gen_test, n_samples_test = self.data_gen.test()
-
         self.model.train(
             data_gen_train=data_gen_train,
             data_gen_val=data_gen_val,

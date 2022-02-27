@@ -3,3 +3,4 @@
 RANDOM_STATE = 42
 TRAIN = "train"
 VAL = "val"
+EPOCH = "epoch"

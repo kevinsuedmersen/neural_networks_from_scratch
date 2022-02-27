@@ -10,7 +10,6 @@ import pytest
 import src.constants as c
 from src.lib.data_generators.factory import get_data_generator
 from src.model_architectures import get_tiny_mlp_model
-from src.utils import log_progress
 from tests.test_config import TestConfig
 
 logger = logging.getLogger(__name__)
@@ -34,7 +33,7 @@ class TestGradientComputation(TestConfig):
     def img_gen_train(self, config_parser):
         img_gen = get_data_generator(
             config_parser.data_gen_name,
-            config_parser.data_dir,
+            config_parser.data_dir_train,
             config_parser.val_size,
             config_parser.test_size,
             config_parser.batch_size,
@@ -215,11 +214,6 @@ class TestGradientComputation(TestConfig):
             n_cols = untrained_model.layers[l].weights.shape[2]
             idx_generator = itertools.product(range(n_rows), range(n_cols))
             for counter, (row_idx, col_idx) in enumerate(idx_generator):
-                log_progress(
-                    counter=counter,
-                    total=(n_rows * n_cols),
-                    log_msg=f"Computing gradients of layer_index {l} using brute force",
-                )
 
                 # Make sure the next time we change a parameter, we keep all other parameters unchanged
                 # The _untrained_model is only needed to compute the current loss value
