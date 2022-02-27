@@ -58,13 +58,14 @@ class MLJob:
             n_classes=n_classes,
             learning_rate=self.cp.learning_rate
         )
-        self.model.train(
-            data_gen_train=data_gen_train,
-            data_gen_val=data_gen_val,
-            n_epochs=self.cp.n_epochs,
+        self.model.fit(
+            x=data_gen_train,
+            validation_data=data_gen_val,
+            epochs=self.cp.n_epochs,
             batch_size=self.cp.batch_size,
-            n_samples_train=n_samples_train,
-            n_samples_val=n_samples_val
+            # TODO: Add common interface for own models and tf models
+            #n_samples_train=n_samples_train,
+            #n_samples_val=n_samples_val
         )
         self.model.evaluate(data_gen_train)
         self.model.evaluate(data_gen_test)

@@ -17,7 +17,7 @@ def get_model(
     if random_state is not None:
         np.random.seed(random_state)
 
-    if model_name == "simple_mlp":
+    if model_name == "own_mlp":
         return get_mlp_model(img_height, img_width, n_color_channels, n_classes, learning_rate)
     elif model_name == "benchmark_mlp":
         return get_benchmark_mlp_model(img_height, img_width, n_color_channels, n_classes, learning_rate)

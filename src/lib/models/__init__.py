@@ -7,7 +7,7 @@ class Model(ABC):
         pass
 
     @abstractmethod
-    def train(self, *args, **kwargs):
+    def fit(self, *args, **kwargs):
         pass
 
     @abstractmethod

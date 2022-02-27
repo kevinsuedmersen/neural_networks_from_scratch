@@ -186,7 +186,7 @@ class SequentialModel(Model):
             complete_log_msg = f"{main_log_msg}. {metric_logs}. ({progress})"
             logger.info(complete_log_msg)
 
-    def train(
+    def fit(
             self,
             data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
             data_gen_val: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
