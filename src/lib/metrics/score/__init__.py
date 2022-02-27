@@ -1,5 +1,5 @@
 from abc import abstractmethod
-from typing import Tuple
+from typing import Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -9,7 +9,7 @@ from src.lib.metrics import Metric
 
 class ScoreMetric(Metric):
     """Metrics reflecting a score, like accuracy"""
-    def __init__(self, name: str, threshold: float = 0.5, average_type: str = "micro"):
+    def __init__(self, name: str, threshold: Union[float, None], average_type: str = "micro"):
         super().__init__(name)
         self.name = name
         self.threshold = threshold
@@ -30,14 +30,19 @@ class ScoreMetric(Metric):
             )
 
     @staticmethod
-    def _binarize(ypred: npt.NDArray, threshold: float) -> npt.NDArray:
-        """Binarizes predictions into 0 or 1. `ypred` becomes 1 if `ypred >= threshold` and 0
-        otherwise
+    def _binarize(ypred: npt.NDArray, threshold: Union[float, None]) -> npt.NDArray:
+        """Binarizes predictions into 0 or 1.
+        If threshold is not None, `ypred` becomes 1 if `ypred >= threshold` and 0 otherwise.
+        If threshold is None, `ypred` becomes 1 where it is largest and 0 everywhere else.
         """
-        # TODO: In a multi-class classification setting with many classes, binarized_ypred will probably always be 0 everywhere, because a very low probability is assigned to each class
-        binarized_ypred = ypred.copy()
-        binarized_ypred[ypred >= threshold] = 1
-        binarized_ypred[ypred < threshold] = 0
+        binarized_ypred = np.zeros(ypred.shape)
+
+        if threshold is not None:
+            binarized_ypred[ypred >= threshold] = 1
+        else:
+            max_values = np.max(ypred, axis=1, keepdims=True)
+            max_idxs = (ypred == max_values)
+            binarized_ypred[max_idxs] = 1
 
         return binarized_ypred
 
@@ -45,7 +50,7 @@ class ScoreMetric(Metric):
             self,
             ytrue: npt.NDArray,
             ypred: npt.NDArray,
-            threshold: float
+            threshold: Union[float, None]
     ) -> Tuple[int, int, int, int]:
         """Counts true positives, false positives, true negatives, false negatives"""
         binarized_ypred = self._binarize(ypred, threshold)

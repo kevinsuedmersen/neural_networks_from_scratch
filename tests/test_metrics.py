@@ -4,6 +4,7 @@ from sklearn import metrics
 
 from src.lib.activation_functions import softmax_forward
 from src.lib.metrics.cost.categorical_crossentropy import CategoricalCrossentropyMetric
+from src.lib.metrics.score import ScoreMetric
 from src.lib.metrics.score.accuracy import Accuracy
 from src.lib.metrics.score.precision import Precision
 from src.lib.metrics.score.recall import Recall
@@ -11,7 +12,7 @@ from tests.test_config import TestConfig
 
 
 class TestMetric(TestConfig):
-    threshold = 0.5
+    threshold = None
     # Overwrite batch_size and n_neurons_out to make it easier to understand whether the metrics
     # work as expected ==> Choose them so that we will have 100 predictions in total
     # batch_size = 50
@@ -21,8 +22,7 @@ class TestMetric(TestConfig):
     def ytrue(self):
         random_floats = np.random.randn(self.batch_size, self.n_neurons_out, 1)
         random_ytrue = random_floats.copy()
-        random_ytrue[random_floats >= self.threshold] = 1
-        random_ytrue[random_floats < self.threshold] = 0
+        random_ytrue = ScoreMetric._binarize(random_ytrue, self.threshold)
 
         return random_ytrue
 

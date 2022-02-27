@@ -162,8 +162,8 @@ class TestSimpleMLPModel(TestConfig):
         """
         _simple_model = SequentialModel(
             loss=CategoricalCrossentropyLoss("softmax", "multi_class_classification"),
-            metrics_train=[Accuracy("acc_train")],
-            metrics_val=[Accuracy("acc_val")],
+            metrics_train=[Accuracy("acc_train", None)],
+            metrics_val=[Accuracy("acc_val", None)],
             optimizer=StochasticGradientDescentOptimizer(learning_rate=0.001)
         )
         _simple_model.add_layer(InputLayer(input_shape=(None, 3, 1)))  # TODO: Why do I need to provide input_shape?

@@ -7,6 +7,8 @@ from src.lib.layers.input import InputLayer
 from src.lib.losses.categorical_crossentropy import CategoricalCrossentropyLoss
 from src.lib.metrics.cost.categorical_crossentropy import CategoricalCrossentropyMetric
 from src.lib.metrics.score.accuracy import Accuracy
+from src.lib.metrics.score.precision import Precision
+from src.lib.metrics.score.recall import Recall
 from src.lib.models import Model
 from src.lib.models.sequential import SequentialModel
 from src.lib.optimizers.stochastic_gradient_descent import StochasticGradientDescentOptimizer
@@ -26,15 +28,15 @@ def get_simple_mlp_model(
         loss=CategoricalCrossentropyLoss("softmax", "multi_class_classification"),
         metrics_train=[
             CategoricalCrossentropyMetric("categorical_crossentropy_train"),
-            #Accuracy("accuracy_train"),
-            #Precision("precision_train"),
-            #Recall("recall_train")
+            Accuracy("accuracy_train", None),
+            Precision("precision_train", None),
+            Recall("recall_train", None)
         ],
         metrics_val=[
             CategoricalCrossentropyMetric("categorical_crossentropy_val"),
-            #Accuracy("accuracy_val"),
-            #Precision("precision_val"),
-            #Recall("recall_val")
+            Accuracy("accuracy_val", None),
+            Precision("precision_val", None),
+            Recall("recall_val", None)
         ],
         optimizer=StochasticGradientDescentOptimizer(learning_rate=learning_rate)
     )
