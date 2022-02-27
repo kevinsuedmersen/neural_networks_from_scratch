@@ -10,7 +10,7 @@ def get_benchmark_mlp_model(
 ) -> tf.keras.Sequential:
     """Creates a simple Multi Layer Percepron model using the keras API for benchmakrking"""
     mlp = tf.keras.Sequential()
-    mlp.add(tf.keras.layers.Dense(512, activation="tanh", input_shape=(img_height, img_width, n_color_channels)))
+    mlp.add(tf.keras.layers.Dense(512, activation="tanh", input_shape=(img_height * img_width * n_color_channels,)))
     mlp.add(tf.keras.layers.Dense(256, activation="tanh"))
     mlp.add(tf.keras.layers.Dense(128, activation="tanh"))
     mlp.add(tf.keras.layers.Dense(64, activation="tanh"))
@@ -28,5 +28,7 @@ def get_benchmark_mlp_model(
             tf.keras.metrics.Recall()
         ]
     )
+
+    print(mlp.summary())
 
     return mlp
