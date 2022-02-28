@@ -115,6 +115,7 @@ class SequentialModel(Model):
         the error at layer l might be calculated wrongly, because it is also a fucntion of the
         weights in layer l+1 (see line 95 above)
         """
+        # Notice that `layer` is a reference to each element of self.layers[1:]
         for layer in self.layers[1:]:
             layer.update_parameters()
 

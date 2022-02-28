@@ -8,6 +8,7 @@ import numpy as np
 import numpy.typing as npt
 from PIL import Image
 
+from src.lib.custom_exceptions import CaseNotHandledError
 from src.lib.data_generators import DataGenerator
 
 logger = logging.getLogger(__name__)
@@ -166,10 +167,15 @@ class ImageDataGenerator(DataGenerator):
         if self.img_format == "grayscale":
             if img_array.ndim == 2:
                 img_array = img_array[..., np.newaxis]
-            elif img_array.ndim == 3:
-                assert img_array.shape[2] == 1, \
-                    "If img_format='grayscale' and if img_array.ndim=3, the the image should only " \
+            elif (img_array.ndim == 3) and (img_array.shape[2] != 1):
+                raise CaseNotHandledError(
+                    "If img_format='grayscale' and if img_array.ndim=3, the the image should only "
                     "have 1 color channel"
+                )
+            else:
+                raise CaseNotHandledError(
+                    f"Grayscale image has unexpected number of dimensions: {img_array.ndim}"
+                )
 
         return img_array
 

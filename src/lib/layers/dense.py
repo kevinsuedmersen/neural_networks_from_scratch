@@ -1,5 +1,6 @@
 import logging
-from typing import Tuple
+from functools import reduce
+from typing import Tuple, Union
 
 import numpy as np
 import numpy.typing as npt
@@ -26,11 +27,11 @@ class DenseLayer(Layer):
             activation_function_name
         )
         # Optimizer will be set in SequentialModel.add_layer()
-        self.optimizer: Optimizer = None
+        self.optimizer: Union[Optimizer, None] = None
 
     def _init_weights(self, n_neurons_prev: int):
         """Init weight matrices"""
-        self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.01  # batch_size=1 for broadcasting
+        self.weights = np.random.randn(1, self.n_neurons, n_neurons_prev) * 0.001  # batch_size=1 for broadcasting
 
     def _init_biases(self):
         """Init biases"""
@@ -70,8 +71,7 @@ class DenseLayer(Layer):
         # Compute the error of the current layer
         # self.error.shape = (batch_size, n_neurons, 1)
         weights_next_t = np.transpose(weights_next, axes=[0, 2, 1])
-        j_w = np.matmul(jacobians, weights_next_t)
-        self.errors = np.matmul(j_w, error_next)
+        self.errors = reduce(np.matmul, [jacobians, weights_next_t, error_next])
 
         return self.errors
 
