@@ -8,6 +8,12 @@ logger = logging.getLogger(__name__)
 
 
 class DataGenerator(ABC):
+    def __init__(self):
+        self.n_samples_train = None
+        self.n_samples_val = None
+        self.n_samples_test = None
+        self.n_classes = None
+
     @abstractmethod
     def train(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
         pass
@@ -18,9 +24,4 @@ class DataGenerator(ABC):
 
     @abstractmethod
     def test(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
-        pass
-
-    @abstractmethod
-    def get_n_classes(self) -> int:
-        """Returns the number of different classes. Returns 1 for regressions"""
         pass

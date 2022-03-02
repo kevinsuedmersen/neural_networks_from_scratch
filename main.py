@@ -10,7 +10,8 @@ logger = logging.getLogger(__name__)
 if __name__ == '__main__':
     set_root_logger()
     args = get_cli_args()
+    # TODO: Create and use get_config_parser retrieving the correct config parser based on args.task_name
     cp = ImageClassificationConfigParser(args.config_path)
     ml_job = MLJob(cp)
-    ml_job.train_and_evaluate()
-
+    ml_job.train()
+    ml_job.evaluate()

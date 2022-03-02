@@ -26,6 +26,7 @@ class ImageDataGenerator(DataGenerator):
             img_format: str,
             img_extensions: Tuple[str] = (".png", ".bmp", ".jpeg", ".jpg"),
     ):
+        super().__init__()
         self.data_dir = data_dir
         self.val_size = val_size
         self.test_size = test_size
@@ -37,6 +38,19 @@ class ImageDataGenerator(DataGenerator):
 
         self._validate_args()
         self.label_2_index: Dict[str, int] = {}
+        self.img_paths_2_one_hot_train, self.img_paths_2_one_hot_val, self.img_paths_2_one_hot_test \
+            = self._prepare_images()
+        self.n_samples_train = len(self.img_paths_2_one_hot_train)
+        self.n_samples_val = len(self.img_paths_2_one_hot_val)
+        self.n_samples_test = len(self.img_paths_2_one_hot_test)
+        self.n_classes = len(self.label_2_index)
+        logger.info(
+            f"Image data generator is set up. "
+            f"n_samples_train={self.n_samples_train}, "
+            f"n_samples_val={self.n_samples_val}, "
+            f"n_samples_test={self.n_samples_test}",
+            f"n_classes={self.n_classes}"
+        )
 
     def _validate_args(self):
         """Validates arguments"""
@@ -161,6 +175,16 @@ class ImageDataGenerator(DataGenerator):
 
         return train_subset, val_set, test_set
 
+    def _prepare_images(self) -> Tuple[List, List, List]:
+        """Prepares the data generator once at init time"""
+        img_paths_2_labels = self._get_img_paths_2_labels()
+        img_paths_2_indices = self._convert_labels_2_indices(img_paths_2_labels)
+        img_paths_2_one_hot = self._convert_indices_2_one_hot(img_paths_2_indices)
+        img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = \
+            self._train_val_test_split(img_paths_2_one_hot)
+
+        return img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test
+
     def _read_img(self, img_path: str) -> npt.NDArray:
         """Reads an image and returns it with dimensions (height, width, color_channels)"""
         img_array = np.array(Image.open(img_path))
@@ -207,53 +231,39 @@ class ImageDataGenerator(DataGenerator):
             one_hot_array = one_hot_array[np.newaxis, :, np.newaxis]  # shape=(1, NNeuronsOut, 1)
             one_hot_arrays.append(one_hot_array)
 
-            # After self.batch_size elements have been collected transform them into a numpy arrays
-            if (counter + 1) % self.batch_size == 0:
+            # After self.batch_size elements have been collected or when img_paths_2_one_hot is
+            # exhausted, transform them into a numpy arrays
+            if ((counter + 1) % self.batch_size == 0) or ((counter + 1) == len(img_paths_2_one_hot)):
                 img_batch = np.concatenate(img_arrays, axis=0)
                 label_batch = np.concatenate(one_hot_arrays, axis=0)
                 img_arrays = []
                 one_hot_arrays = []
                 yield img_batch, label_batch
-        # TODO: Test that in each batch, each image is unique
+                # TODO: Test that in each batch, each image is unique
 
-    def _get_data_gen(self, dataset: str) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def _get_data_gen(self, dataset: str) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Returns a tuple of image data_generators generators for training, validation and testing each of them
         yielding a batch of images with their corresponding one-hot-encoded output vectors
         """
-        img_paths_2_labels = self._get_img_paths_2_labels()
-        img_paths_2_indices = self._convert_labels_2_indices(img_paths_2_labels)
-        img_paths_2_one_hot = self._convert_indices_2_one_hot(img_paths_2_indices)
-        img_paths_2_one_hot_train, img_paths_2_one_hot_val, img_paths_2_one_hot_test = \
-            self._train_val_test_split(img_paths_2_one_hot)
-
         if dataset == "train":
-            data_gen = self._batch_generator(img_paths_2_one_hot_train)
-            n_samples = len(img_paths_2_one_hot_train)
+            data_gen = self._batch_generator(self.img_paths_2_one_hot_train)
 
         elif dataset == "val":
-            data_gen = self._batch_generator(img_paths_2_one_hot_val)
-            n_samples = len(img_paths_2_one_hot_val)
+            data_gen = self._batch_generator(self.img_paths_2_one_hot_val)
 
         elif dataset == "test":
-            data_gen = self._batch_generator(img_paths_2_one_hot_test)
-            n_samples = len(img_paths_2_one_hot_test)
+            data_gen = self._batch_generator(self.img_paths_2_one_hot_test)
 
         else:
             raise ValueError(f"Unknown dataset provided: {dataset}")
 
-        logger.info(f"Number of '{dataset}' images in '{self.data_dir}': {n_samples}")
+        return data_gen
 
-        return data_gen, n_samples
-
-    def train(self):
+    def train(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("train")
 
-    def val(self):
+    def val(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("val")
 
-    def test(self):
+    def test(self) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         return self._get_data_gen("test")
-
-    def get_n_classes(self):
-        """Returns the number of different classes"""
-        return len(self.label_2_index)
