@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -9,7 +10,7 @@ from tests.test_config import TestConfig
 
 class TestImageDataGenerator(TestConfig):
     """Testing the ImageDataGenerator in a multi-class-classification scheme"""
-    data_dir = "fixtures"
+    data_dir = os.path.join("fixtures", "cats_vs_dogs")
     val_size = 0.3
     test_size = 0.3
     batch_size = 8
