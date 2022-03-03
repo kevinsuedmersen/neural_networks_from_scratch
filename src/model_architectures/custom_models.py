@@ -1,3 +1,5 @@
+"""Models implemented from scratch
+"""
 import logging
 
 from src.lib.layers.dense import DenseLayer

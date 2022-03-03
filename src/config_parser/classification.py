@@ -1,36 +1,28 @@
 import logging
 import os.path
 
-from configobj import ConfigObj
+from src.config_parser import ConfigParser
 
 logger = logging.getLogger(__name__)
-
-
-class ConfigParser:
-    def __init__(self, config_path: str):
-        self.config = ConfigObj(config_path, file_error=True, unrepr=True)
 
 
 class ImageClassificationConfigParser(ConfigParser):
     def __init__(self, config_path: str):
         """Parses the config file"""
         super().__init__(config_path)
+        self._parse_config_params()
+
+    def _parse_config_params(self):
+        super()._parse_config_params()
 
         self.data_gen_name = self.config["data"]["generator_name"]
         self.data_dir_train = self.config["data"]["data_dir_train"]
         self.data_dir_test = self.config["data"]["data_dir_test"]
-        self.val_size = self.config["training"]["val_size"]
-        self.test_size = self.config["training"]["test_size"]
 
-        self.batch_size = self.config["training"]["batch_size"]
         self.img_height = self.config["data"]["image_height"]
         self.img_width = self.config["data"]["image_width"]
         self.img_format = self.config["data"]["img_format"]
         self.n_color_channels = self._get_n_color_channels()
-
-        self.model_name = self.config["training"]["model_name"]
-        self.n_epochs = self.config["training"]["n_epochs"]
-        self.learning_rate = self.config["training"]["learning_rate"]
 
         self._validate_params()
         logger.info("Config file parsed and validated")

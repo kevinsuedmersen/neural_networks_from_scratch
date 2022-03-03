@@ -3,7 +3,8 @@ import logging
 from typing import Tuple
 
 import src.constants as c
-from src.config_parser import ImageClassificationConfigParser
+from src.config_parser.classification import ImageClassificationConfigParser
+from src.jobs import MLJob
 from src.lib.data_generators import DataGenerator
 from src.lib.data_generators.factory import get_data_generator
 from src.lib.models import Model
@@ -12,9 +13,9 @@ from src.model_architectures import get_model
 logger = logging.getLogger(__name__)
 
 
-class MLJob:
+class ImageClassificationJob(MLJob):
     def __init__(self, cp: ImageClassificationConfigParser):
-        self.cp = cp
+        super().__init__(cp)
         self.data_gen_train, self.data_gen_test = self._get_data_generators()
         self.model = self._get_model(self.data_gen_train.n_classes)
 
@@ -80,3 +81,6 @@ class MLJob:
     def run_in_inference_mode(self):
         """Lets the model run in inference mode"""
         pass
+
+    def benchmark_performance(self):
+        tf_model = self._get_model()

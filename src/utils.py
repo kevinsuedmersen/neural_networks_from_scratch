@@ -20,6 +20,8 @@ def set_root_logger():
 def get_cli_args():
     """Parses CLI arguments"""
     parser = argparse.ArgumentParser(description="CLI argument parser")
+    parser.add_argument("--config_parser_type", default=None, type=str)
+    parser.add_argument("--ml_job_type", default=None, type=str)
     parser.add_argument("--config_path", default=None, type=str)
     args = parser.parse_args()
 
