@@ -15,14 +15,18 @@ class ImageClassificationConfigParser(ConfigParser):
     def _parse_config_params(self):
         super()._parse_config_params()
 
-        self.data_gen_name = self.config["data"]["generator_name"]
-        self.data_dir_train = self.config["data"]["data_dir_train"]
-        self.data_dir_test = self.config["data"]["data_dir_test"]
+        data = self.config["data"]
+        self.data_gen_name = data["generator_name"]
+        self.data_dir_train = data["data_dir_train"]
+        self.data_dir_test = data["data_dir_test"]
 
-        self.img_height = self.config["data"]["image_height"]
-        self.img_width = self.config["data"]["image_width"]
-        self.img_format = self.config["data"]["img_format"]
+        self.img_height = data["image_height"]
+        self.img_width = data["image_width"]
+        self.img_format = data["img_format"]
         self.n_color_channels = self._get_n_color_channels()
+
+        benchmarking = self.config["benchmarking"]
+        self.benchmark_model_name = benchmarking["model_name"]
 
         self._validate_params()
         logger.info("Config file parsed and validated")

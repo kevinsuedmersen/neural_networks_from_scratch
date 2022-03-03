@@ -48,7 +48,7 @@ class ImageDataGenerator(DataGenerator):
             f"Image data generator is set up. "
             f"n_samples_train={self.n_samples_train}, "
             f"n_samples_val={self.n_samples_val}, "
-            f"n_samples_test={self.n_samples_test}",
+            f"n_samples_test={self.n_samples_test}, "
             f"n_classes={self.n_classes}"
         )
 

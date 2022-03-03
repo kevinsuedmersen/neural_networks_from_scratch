@@ -12,5 +12,6 @@ if __name__ == '__main__':
     args = get_cli_args()
     cp = get_config_parser(args.config_parser_type, args.config_path)
     ml_job = get_ml_job(args.ml_job_type, cp)
+    ml_job.benchmark_performance()
     ml_job.train()
     ml_job.evaluate()

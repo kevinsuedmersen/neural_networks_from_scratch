@@ -1,6 +1,8 @@
 import copy
 import logging
-from typing import Tuple
+from typing import Tuple, Union
+
+import tensorflow as tf
 
 import src.constants as c
 from src.config_parser.classification import ImageClassificationConfigParser
@@ -17,7 +19,7 @@ class ImageClassificationJob(MLJob):
     def __init__(self, cp: ImageClassificationConfigParser):
         super().__init__(cp)
         self.data_gen_train, self.data_gen_test = self._get_data_generators()
-        self.model = self._get_model(self.data_gen_train.n_classes)
+        self.model = self._get_model(self.data_gen_train.n_classes, self.cp.model_name)
 
     def _get_data_generators(self) -> Tuple[DataGenerator, DataGenerator]:
         data_gen_train = get_data_generator(
@@ -43,7 +45,6 @@ class ImageClassificationJob(MLJob):
                 test_size=1,
                 batch_size=self.cp.batch_size,
                 random_state=c.RANDOM_STATE,
-                # TODO: Put below image-specific params in some separate kwargs-section of config file
                 img_format=self.cp.img_format,
                 img_height=self.cp.img_height,
                 img_width=self.cp.img_width,
@@ -51,13 +52,12 @@ class ImageClassificationJob(MLJob):
 
         return data_gen_train, data_gen_test
 
-    def _get_model(self, n_classes: int) -> Model:
+    def _get_model(self, n_classes: int, model_name: str) -> Union[Model, tf.keras.Sequential]:
         model = get_model(
-            model_name=self.cp.model_name,
+            model_name=model_name,
             random_state=c.RANDOM_STATE,
             n_classes=n_classes,
             learning_rate=self.cp.learning_rate,
-            # TODO: Put below image-specific params in some separate kwargs-section of config file
             img_height=self.cp.img_height,
             img_width=self.cp.img_width,
             n_color_channels=self.cp.n_color_channels,
@@ -83,4 +83,9 @@ class ImageClassificationJob(MLJob):
         pass
 
     def benchmark_performance(self):
-        tf_model = self._get_model()
+        tf_model = self._get_model(self.data_gen_train.n_classes, self.cp.benchmark_model_name)
+        tf_model.fit(
+            x=self.data_gen_train.train(),
+            validation_data=self.data_gen_train.val(),
+            epochs=self.cp.n_epochs
+        )
