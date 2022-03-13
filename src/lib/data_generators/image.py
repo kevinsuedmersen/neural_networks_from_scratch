@@ -10,6 +10,7 @@ from PIL import Image
 
 from src.lib.custom_exceptions import CaseNotHandledError
 from src.lib.data_generators import DataGenerator
+from src.lib.data_generators.decorators import control_looping_behavior
 
 logger = logging.getLogger(__name__)
 
@@ -25,6 +26,7 @@ class ImageDataGenerator(DataGenerator):
             img_width: int,
             img_format: str,
             img_extensions: Tuple[str] = (".png", ".bmp", ".jpeg", ".jpg"),
+            loop_forever: bool = False
     ):
         super().__init__()
         self.data_dir = data_dir
@@ -35,6 +37,7 @@ class ImageDataGenerator(DataGenerator):
         self.img_width = img_width
         self.img_format = img_format
         self.img_extensions = img_extensions
+        self.loop_forever = loop_forever
 
         self._validate_args()
         self.label_2_index: Dict[str, int] = {}
@@ -216,9 +219,10 @@ class ImageDataGenerator(DataGenerator):
 
         return img_array
 
+    @control_looping_behavior
     def _batch_generator(
             self,
-            img_paths_2_one_hot: List[Tuple[str, npt.NDArray]]
+            img_paths_2_one_hot: List[Tuple[str, npt.NDArray]],
     ) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         """Creates a generator yielding a batch of images"""
         img_arrays = []

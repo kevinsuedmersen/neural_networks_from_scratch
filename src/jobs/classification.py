@@ -83,9 +83,12 @@ class ImageClassificationJob(MLJob):
         pass
 
     def benchmark_performance(self):
+        """Benchmark performance with tensorflow"""
         tf_model = self._get_model(self.data_gen_train.n_classes, self.cp.benchmark_model_name)
         train_steps = math.ceil(self.data_gen_train.n_samples_train / self.cp.batch_size)
         val_steps = math.ceil(self.data_gen_train.n_samples_val / self.cp.batch_size)
+        self.data_gen_train.loop_forever = True
+        self.data_gen_test.loop_forever = True
         tf_model.fit(
             x=self.data_gen_train.train(),
             validation_data=self.data_gen_train.val(),

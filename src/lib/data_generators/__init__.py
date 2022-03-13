@@ -13,6 +13,7 @@ class DataGenerator(ABC):
         self.n_samples_val = None
         self.n_samples_test = None
         self.n_classes = None
+        self.loop_forever = None
 
     @abstractmethod
     def train(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
