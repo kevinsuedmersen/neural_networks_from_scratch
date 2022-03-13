@@ -16,13 +16,13 @@ class DataGenerator(ABC):
         self.loop_forever = None
 
     @abstractmethod
-    def train(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def train(self, *args, **kwargs) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         pass
 
     @abstractmethod
-    def val(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def val(self, *args, **kwargs) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         pass
 
     @abstractmethod
-    def test(self, *args, **kwargs) -> Tuple[Generator[Tuple[npt.NDArray, npt.NDArray], None, None], int]:
+    def test(self, *args, **kwargs) -> Generator[Tuple[npt.NDArray, npt.NDArray], None, None]:
         pass
