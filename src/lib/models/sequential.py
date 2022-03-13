@@ -6,6 +6,7 @@ from typing import List, Tuple, Generator, Union, Dict
 import numpy.typing as npt
 
 import src.constants as c
+from src.lib.data_generators import DataGenerator
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
 from src.lib.losses import Loss
@@ -115,6 +116,7 @@ class SequentialModel(Model):
         the error at layer l might be calculated wrongly, because it is also a fucntion of the
         weights in layer l+1 (see line 95 above)
         """
+        # Notice that `layer` is a reference to each element of self.layers[1:]
         for layer in self.layers[1:]:
             layer.update_parameters()
 
@@ -159,12 +161,12 @@ class SequentialModel(Model):
         metric_log = []
         for metric in metrics:
             metric_value = metric.result()
-            metric_log.append(f"{metric.name}: {metric_value:.3f}")
+            metric_log.append(f"{metric.name}={metric_value:.3f}")
             self.history[dataset][metric.name].append(metric_value)
             self.history[c.EPOCH].append(epoch)
 
         # Log metrics
-        metric_logs = ". ".join(metric_log)
+        metric_logs = ", ".join(metric_log)
         metric_log_msg = f"Results on {dataset} dataset: {metric_logs}"
 
         return metric_log_msg
@@ -186,21 +188,17 @@ class SequentialModel(Model):
             complete_log_msg = f"{main_log_msg}. {metric_logs}. ({progress})"
             logger.info(complete_log_msg)
 
-    def train(
+    def fit(
             self,
-            data_gen_train: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
-            data_gen_val: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
+            data_gen_train: DataGenerator,
             n_epochs: int,
             batch_size: int,
-            n_samples_train: int = None,
-            n_samples_val: int = None,
             logging_frequency: int = 100,
-            **kwargs
     ):
         """Trains the multi-layer perceptron batch-wise for ``epochs`` epochs
         """
-        n_batches_train = math.ceil(n_samples_train / batch_size)
-        n_batches_val = math.ceil(n_samples_val / batch_size)
+        n_batches_train = math.ceil(data_gen_train.n_samples_train / batch_size)
+        n_batches_val = math.ceil(data_gen_train.n_samples_val / batch_size)
 
         logger.info(f"Training started. Number of epochs: {n_epochs}")
         tic = time.time()
@@ -210,12 +208,12 @@ class SequentialModel(Model):
             self._reset_metrics(self.metrics_val)
 
             # Train the model and update training metrics
-            for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train):
+            for train_batch_counter, (x_train, ytrue_train) in enumerate(data_gen_train.train()):
                 self.train_step(x_train, ytrue_train)
                 self._log_progress(train_batch_counter, n_batches_train, "Training metrics during epoch", 10, self.metrics_train, c.TRAIN, epoch_counter)
 
             # Update validation metrics
-            for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_val):
+            for val_batch_counter, (x_val, ytrue_val) in enumerate(data_gen_train.val()):
                 self.val_step(x_val, ytrue_val)
                 self._log_progress(val_batch_counter, n_batches_val, "Validating metrics during epoch", 10, self.metrics_val, c.VAL, epoch_counter)
 

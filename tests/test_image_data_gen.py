@@ -1,3 +1,4 @@
+import os
 from typing import Dict, List, Tuple
 
 import numpy as np
@@ -9,12 +10,13 @@ from tests.test_config import TestConfig
 
 class TestImageDataGenerator(TestConfig):
     """Testing the ImageDataGenerator in a multi-class-classification scheme"""
-    data_dir = "fixtures"
+    data_dir = os.path.join("tests", "fixtures", "cats_vs_dogs")
     val_size = 0.3
     test_size = 0.3
     batch_size = 8
     img_height = 128
     img_width = 128
+    img_format = "rgb"
     img_extension = (".jpg",)
 
     # Test images have 3 color channels and are from 2 different categories
@@ -30,6 +32,7 @@ class TestImageDataGenerator(TestConfig):
             self.batch_size,
             self.img_height,
             self.img_width,
+            self.img_format,
             self.img_extension
         )
         return img_data_gen
@@ -103,7 +106,7 @@ class TestImageDataGenerator(TestConfig):
         assert len(unique_filepaths) == len(all_filepaths)
 
     def test_train(self, img_data_gen):
-        train_data_gen, n_samples_train = img_data_gen.train()
+        train_data_gen = img_data_gen.train()
         for img_batch, label_batch in train_data_gen:
-            assert img_batch.shape == (self.batch_size, self.img_height, self.img_width, self.n_channels)
-            assert label_batch.shape == (self.batch_size, self.n_labels, 1)
+            assert img_batch.shape[1:] == (self.img_height, self.img_width, self.n_channels)
+            assert label_batch.shape[1:] == (self.n_labels, 1)

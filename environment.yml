@@ -15,18 +15,59 @@ dependencies:
   - wheel=0.37.1
   - wincertstore=0.2
   - pip:
+    - absl-py==1.0.0
+    - astunparse==1.6.3
     - atomicwrites==1.4.0
     - attrs==21.2.0
+    - cachetools==5.0.0
+    - charset-normalizer==2.0.12
     - colorama==0.4.4
     - configobj==5.0.6
+    - flatbuffers==2.0
+    - gast==0.5.3
+    - google-auth==2.6.0
+    - google-auth-oauthlib==0.4.6
+    - google-pasta==0.2.0
+    - grpcio==1.44.0
+    - h5py==3.6.0
+    - idna==3.3
+    - importlib-metadata==4.11.1
     - iniconfig==1.1.1
+    - joblib==1.1.0
+    - keras==2.8.0
+    - keras-preprocessing==1.1.2
+    - libclang==13.0.0
+    - markdown==3.3.6
     - numpy==1.22.2
+    - oauthlib==3.2.0
     - opencv-python==4.5.5.62
+    - opt-einsum==3.3.0
     - packaging==21.0
     - pluggy==1.0.0
+    - protobuf==3.19.4
     - py==1.10.0
+    - pyasn1==0.4.8
+    - pyasn1-modules==0.2.8
     - pyparsing==2.4.7
     - pytest==6.2.5
+    - requests==2.27.1
+    - requests-oauthlib==1.3.1
+    - rsa==4.8
+    - scikit-learn==1.0.2
+    - scipy==1.8.0
     - six==1.16.0
+    - tensorboard==2.8.0
+    - tensorboard-data-server==0.6.1
+    - tensorboard-plugin-wit==1.8.1
+    - tensorflow==2.8.0
+    - tensorflow-io-gcs-filesystem==0.24.0
+    - termcolor==1.1.0
+    - tf-estimator-nightly==2.8.0.dev2021122109
+    - threadpoolctl==3.1.0
     - toml==0.10.2
+    - typing-extensions==4.1.1
+    - urllib3==1.26.8
+    - werkzeug==2.0.3
+    - wrapt==1.13.3
+    - zipp==3.7.0
 prefix: C:\Users\ksu\Anaconda3\envs\neural_networks_from_scratch
