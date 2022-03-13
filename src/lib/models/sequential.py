@@ -33,6 +33,7 @@ class SequentialModel(Model):
         :param metrics_val: List of metrics to be evaluated on the validation set
         :param optimizer: Optimizer instance applying weight updates
         """
+        super().__init__()
         self.loss = loss
         self.metrics_train = metrics_train
         self.metrics_val = metrics_val
@@ -155,15 +156,22 @@ class SequentialModel(Model):
         for metric in metrics:
             metric.reset_state()
 
-    def _evaluate_metrics(self, metrics: List[Metric], dataset: str, epoch: int):
+    def _evaluate_metrics(
+            self,
+            metrics: List[Metric],
+            dataset: str = None,
+            epoch: int = None,
+            cache_results: bool = True
+    ):
         """Evaluates and caches metrics' results"""
         # Evaluate and cache metrics
         metric_log = []
         for metric in metrics:
             metric_value = metric.result()
             metric_log.append(f"{metric.name}={metric_value:.3f}")
-            self.history[dataset][metric.name].append(metric_value)
-            self.history[c.EPOCH].append(epoch)
+            if cache_results:
+                self.history[dataset][metric.name].append(metric_value)
+                self.history[c.EPOCH].append(epoch)
 
         # Log metrics
         metric_logs = ", ".join(metric_log)
@@ -224,6 +232,7 @@ class SequentialModel(Model):
         toc = time.time()
         minutes = (toc - tic) / 60
         logger.info(f"Training completed. Total duration: {minutes:.2f} minutes")
+        self.trained = True
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
         pass
@@ -231,6 +240,20 @@ class SequentialModel(Model):
     def evaluate(
             self,
             data_gen: Generator[Tuple[npt.NDArray, npt.NDArray], None, None],
+            dataset: str,
             **kwargs
     ):
-        pass
+        """
+        Evaluates the model on either the train, validation or test set
+
+        :param data_gen: Generator that only loops once. Note that only one iteration over the evaluation
+            data is necessary
+        :param dataset: Dataset to be evaluated. Only necessary for logging
+        :param kwargs: ...
+        """
+        self._reset_metrics(self.metrics_val)
+        for x_val, ytrue_val in data_gen:
+            self.val_step(x_val, ytrue_val)
+
+        metric_log_msg = self._evaluate_metrics(self.metrics_val, dataset, cache_results=False)
+        logger.info(metric_log_msg)

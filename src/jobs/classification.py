@@ -1,7 +1,7 @@
 import copy
 import logging
 import math
-from typing import Tuple, Union
+from typing import Tuple, Union, List
 
 import tensorflow as tf
 
@@ -75,12 +75,22 @@ class ImageClassificationJob(MLJob):
 
     def evaluate(self):
         """Evaluates the model on train and test set"""
-        self.model.evaluate(self.data_gen_train)
-        self.model.evaluate(self.data_gen_test)
+        self.model.evaluate(self.data_gen_train.train(), "train")
+        self.model.evaluate(self.data_gen_test.test(), "test")
 
     def run_in_inference_mode(self):
         """Lets the model run in inference mode"""
         pass
+
+    @staticmethod
+    def _log_benchmark_evaluation_results(metric_names: List[str], metric_values: List[float]):
+        """Logs evaluation metric results to console"""
+        logs = []
+        for metric_name, metric_value in zip(metric_names, metric_values):
+            logs.append(f"{metric_name}={metric_value}")
+
+        logs_str = ", ".join(logs)
+        logger.info(logs_str)
 
     def benchmark_performance(self):
         """Benchmark performance with tensorflow"""
@@ -96,3 +106,8 @@ class ImageClassificationJob(MLJob):
             steps_per_epoch=train_steps,
             validation_steps=val_steps
         )
+
+        metric_values_train = tf_model.evaluate(self.data_gen_train.train(), steps=train_steps)
+        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_train)
+        metric_values_test = tf_model.evaluate(self.data_gen_train.test(), steps=val_steps)
+        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_test)

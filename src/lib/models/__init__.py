@@ -2,6 +2,9 @@ from abc import ABC, abstractmethod
 
 
 class Model(ABC):
+    def __init__(self):
+        self.trained = False
+
     @abstractmethod
     def train_step(self, *args, **kwargs):
         pass
