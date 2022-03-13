@@ -12,6 +12,7 @@ from src.lib.data_generators import DataGenerator
 from src.lib.data_generators.factory import get_data_generator
 from src.lib.models import Model
 from src.model_architectures import get_model
+from src.utils import track_time
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,7 @@ class ImageClassificationJob(MLJob):
 
         return model
 
+    @track_time("training_image_classifier_from_scratch")
     def train(self):
         """Trains the model"""
         self.model.fit(
@@ -92,6 +94,7 @@ class ImageClassificationJob(MLJob):
         logs_str = ", ".join(logs)
         logger.info(logs_str)
 
+    @track_time("training_benchmark_image_classifier")
     def benchmark_performance(self):
         """Benchmark performance with tensorflow"""
         tf_model = self._get_model(self.data_gen_train.n_classes, self.cp.benchmark_model_name)

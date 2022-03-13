@@ -1,6 +1,5 @@
 import logging
 import math
-import time
 from typing import List, Tuple, Generator, Union, Dict
 
 import numpy.typing as npt
@@ -209,7 +208,6 @@ class SequentialModel(Model):
         n_batches_val = math.ceil(data_gen_train.n_samples_val / batch_size)
 
         logger.info(f"Training started. Number of epochs: {n_epochs}")
-        tic = time.time()
         for epoch_counter in range(n_epochs):
             # Reset metrics
             self._reset_metrics(self.metrics_train)
@@ -229,9 +227,7 @@ class SequentialModel(Model):
             self._log_progress(epoch_counter, n_epochs, "Training metrics on epoch end", 1, self.metrics_train, c.TRAIN, epoch_counter)
             self._log_progress(epoch_counter, n_epochs, "Validation metrics on epoch end", 1, self.metrics_val, c.VAL, epoch_counter)
 
-        toc = time.time()
-        minutes = (toc - tic) / 60
-        logger.info(f"Training completed. Total duration: {minutes:.2f} minutes")
+        logger.info(f"Training completed")
         self.trained = True
 
     def predict(self, x: npt.NDArray, **kwargs) -> npt.NDArray:
