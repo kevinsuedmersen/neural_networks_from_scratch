@@ -28,7 +28,7 @@ class TestConfig:
 
     @pytest.fixture
     def config_parser(self) -> ImageClassificationConfigParser:
-        cp = ImageClassificationConfigParser(os.path.join("..", "configs", "image_classification.ini"))
-        cp.data_dir = "fixtures"
+        cp = ImageClassificationConfigParser(os.path.join("configs", "image_classification.ini"))
+        cp.data_dir = os.path.join("tests", "fixtures")
 
         return cp
