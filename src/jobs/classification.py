@@ -85,14 +85,14 @@ class ImageClassificationJob(MLJob):
         pass
 
     @staticmethod
-    def _log_benchmark_evaluation_results(metric_names: List[str], metric_values: List[float]):
+    def _log_benchmark_evaluation_results(metric_names: List[str], metric_values: List[float], dataset: str):
         """Logs evaluation metric results to console"""
         logs = []
         for metric_name, metric_value in zip(metric_names, metric_values):
             logs.append(f"{metric_name}={metric_value}")
 
         logs_str = ", ".join(logs)
-        logger.info(logs_str)
+        logger.info(f"Results on the {dataset} dataset: " + logs_str)
 
     @track_time("training_benchmark_image_classifier")
     def benchmark_performance(self):
@@ -111,6 +111,6 @@ class ImageClassificationJob(MLJob):
         )
 
         metric_values_train = tf_model.evaluate(self.data_gen_train.train(), steps=train_steps)
-        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_train)
-        metric_values_test = tf_model.evaluate(self.data_gen_train.test(), steps=val_steps)
-        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_test)
+        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_train, "train")
+        metric_values_test = tf_model.evaluate(self.data_gen_test.test(), steps=val_steps)
+        self._log_benchmark_evaluation_results(tf_model.metrics_names, metric_values_test, "test")

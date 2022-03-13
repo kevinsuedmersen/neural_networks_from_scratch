@@ -26,7 +26,6 @@ class SequentialModel(Model):
     ):
         """
         Instantiates a model consisting of a sequential stack of layers
-        :param layers: List of layers from [0, L], where layer 0 represents the input layer and L the output layer
         :param loss: Loss instance computing losses, cost and initializing backpropagation
         :param metrics_train: List of metrics to be evaluated on the training set
         :param metrics_val: List of metrics to be evaluated on the validation set
@@ -247,6 +246,7 @@ class SequentialModel(Model):
         :param dataset: Dataset to be evaluated. Only necessary for logging
         :param kwargs: ...
         """
+        logger.info(f"Evaluating model on the {dataset} dataset")
         self._reset_metrics(self.metrics_val)
         for x_val, ytrue_val in data_gen:
             self.val_step(x_val, ytrue_val)
