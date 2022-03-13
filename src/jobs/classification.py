@@ -1,5 +1,6 @@
 import copy
 import logging
+import math
 from typing import Tuple, Union
 
 import tensorflow as tf
@@ -29,7 +30,6 @@ class ImageClassificationJob(MLJob):
             test_size=self.cp.test_size,
             batch_size=self.cp.batch_size,
             random_state=c.RANDOM_STATE,
-            # TODO: Put below image-specific params in some separate kwargs-section of config file
             img_format=self.cp.img_format,
             img_height=self.cp.img_height,
             img_width=self.cp.img_width,
@@ -84,8 +84,12 @@ class ImageClassificationJob(MLJob):
 
     def benchmark_performance(self):
         tf_model = self._get_model(self.data_gen_train.n_classes, self.cp.benchmark_model_name)
+        train_steps = math.ceil(self.data_gen_train.n_samples_train / self.cp.batch_size)
+        val_steps = math.ceil(self.data_gen_train.n_samples_val / self.cp.batch_size)
         tf_model.fit(
             x=self.data_gen_train.train(),
             validation_data=self.data_gen_train.val(),
-            epochs=self.cp.n_epochs
+            epochs=self.cp.n_epochs,
+            steps_per_epoch=train_steps,
+            validation_steps=val_steps
         )
