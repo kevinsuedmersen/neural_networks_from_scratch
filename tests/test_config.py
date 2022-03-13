@@ -4,7 +4,7 @@ import numpy as np
 import numpy.typing as npt
 import pytest
 
-from src.config_parser import ImageClassificationConfigParser
+from src.config_parser.classification import ImageClassificationConfigParser
 from src.utils import set_root_logger
 
 set_root_logger()
