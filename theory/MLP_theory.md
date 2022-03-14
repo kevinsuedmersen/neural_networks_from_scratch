@@ -1133,7 +1133,7 @@ $$
 \frac{e^{z^l_i} - e^{z^l_i} \ e^{-2{z^l_i}}}{e^{z^l_i} + e^{z^l_i} \ e^{-2{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which equals the original version of the tanh function (86).
+which equals the original version of the tanh function (86). Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$.  
 
 For large negative inputs, we will implement the following amendment:
 $$
@@ -1146,7 +1146,7 @@ $$
 \frac{e^{2{z^l_i}} \ e^{-{z^l_i}} - e^{-{z^l_i}}}{e^{2{z^l_i}} \ e^{-{z^l_i}} + e^{-{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which also equals the original version of the tanh function (86).
+which also equals the original version of the tanh function (86). Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
 
 ### Softmax
 
