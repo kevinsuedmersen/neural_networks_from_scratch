@@ -1041,7 +1041,7 @@ $$
 \right].
 $$
 
-#### Numerical stability amendment 
+#### Numerical Stability Amendment 
 
 Imagine the input to the sigmoid function $z^l_i$ is largely negative. In that case, the exponent of $e$ would be extremely large and in that case, $e^{z^l_i}$ would converge to infinity very quickly. If you were to implement the above version of the sigmoid function Python, you will most likely encounter a situation where at some point, $e^{z^l_i} = \infty$ and if $\infty$ is used in subsequent computations, you will get some error. To avoid this error, we will use the following, equivalent version of the sigmoid function for any negative $z^l_i$.
 $$
@@ -1097,7 +1097,7 @@ $$
 
 The tanh function is defined as follows
 $$
-a^l_i = f(z^L_i) = \frac{e^x - e^{-x}}{e^x + e^{-x}}
+a^l_i = f(z^L_i) = \frac{e^{z^l_i} - e^{-{z^l_i}}}{e^{z^l_i} + e^{-{z^l_i}}}
 $$
 and one can show that its derivative is
 $$
@@ -1119,6 +1119,34 @@ $$
 	}
 \right].
 $$
+
+#### Numerical Stability Amendment
+
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (86). To avoid numerical instability for large positive $z^l_i$, we will introduce the following amendment.
+$$
+a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
+$$
+Proof:
+$$
+\frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}} = \\
+\frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}} \frac{e^{z^l_i}}{e^{z^l_i}} = \\
+\frac{e^{z^l_i} - e^{z^l_i} \ e^{-2{z^l_i}}}{e^{z^l_i} + e^{z^l_i} \ e^{-2{z^l_i}}} = \\
+\frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
+$$
+which equals the original version of the tanh function (86).
+
+For large negative inputs, we will implement the following amendment:
+$$
+a^l_i = f({z^l_i}) = \frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1}
+$$
+Proof:
+$$
+\frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1} = \\
+\frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1} \frac{e^{-z^l_i}}{e^{-z^l_i}} = \\
+\frac{e^{2{z^l_i}} \ e^{-{z^l_i}} - e^{-{z^l_i}}}{e^{2{z^l_i}} \ e^{-{z^l_i}} + e^{-{z^l_i}}} = \\
+\frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
+$$
+which also equals the original version of the tanh function (86).
 
 ### Softmax
 
