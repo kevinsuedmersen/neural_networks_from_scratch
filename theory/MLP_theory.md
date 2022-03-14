@@ -1041,6 +1041,21 @@ $$
 \right].
 $$
 
+#### Numerical stability amendment 
+
+Imagine the input to the sigmoid function $z^l_i$ is largely negative. In that case, the exponent of $e$ would be extremely large and in that case, $e^{z^l_i}$ would converge to infinity very quickly. If you were to implement the above version of the sigmoid function Python, you will most likely encounter a situation where at some point, $e^{z^l_i} = \infty$ and if $\infty$ is used in subsequent computations, you will get some error. To avoid this error, we will use the following, equivalent version of the sigmoid function for any negative $z^l_i$.
+$$
+a^l_i = f(z^l_i) = \frac{e^{z^l_i}}{1 + e^{z^l_i}}
+$$
+To see how the above amendment equals the original sigmoid function, see the following proof.
+$$
+\frac{e^{z^l_i}}{1 + e^{z^l_i}} = \\
+\frac{e^{z^l_i}}{1 + e^{z^l_i}} \frac{e^{-z^l_i}}{e^{-z^l_i}} = \\
+\frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
+\frac{1}{1 + e^{-z^l_i}}
+$$
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (86). 
+
 ### ReLU
 
 The Rectified Linear Unit (ReLU) is defined as
