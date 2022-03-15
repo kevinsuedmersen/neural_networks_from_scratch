@@ -26,7 +26,6 @@ def softmax_backward(
     """Computes the jacobian of the softmax activation function
     :param dendritic_potentials: (batch_size, n_neurons_current_layer, 1)
     :param activations: (batch_size, n_neurons_current_layer, 1)
-    :param debug: If True, also the diagonal elements of the Jacobian are returned
     :return: (batch_size, n_neurons_current_layer, n_neurons_current_layer)
     """
     # Take the (negative) outer matmul product from the activations

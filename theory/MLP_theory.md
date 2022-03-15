@@ -1041,6 +1041,21 @@ $$
 \right].
 $$
 
+#### Numerical Stability Amendment 
+
+Imagine the input to the sigmoid function $z^l_i$ is largely negative. In that case, the exponent of $e$ would be extremely large and in that case, $e^{z^l_i}$ would converge to infinity very quickly. If you were to implement the above version of the sigmoid function Python, you will most likely encounter a situation where at some point, $e^{z^l_i} = \infty$ and if $\infty$ is used in subsequent computations, you will get some error. To avoid this error, we will use the following, equivalent version of the sigmoid function for any negative $z^l_i$.
+$$
+a^l_i = f(z^l_i) = \frac{e^{z^l_i}}{1 + e^{z^l_i}}
+$$
+To see how the above amendment equals the original sigmoid function, see the following proof.
+$$
+\frac{e^{z^l_i}}{1 + e^{z^l_i}} = \\
+\frac{e^{z^l_i}}{1 + e^{z^l_i}} \frac{e^{-z^l_i}}{e^{-z^l_i}} = \\
+\frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
+\frac{1}{1 + e^{-z^l_i}}
+$$
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (86). 
+
 ### ReLU
 
 The Rectified Linear Unit (ReLU) is defined as
@@ -1082,7 +1097,7 @@ $$
 
 The tanh function is defined as follows
 $$
-a^l_i = f(z^L_i) = \frac{e^x - e^{-x}}{e^x + e^{-x}}
+a^l_i = f(z^L_i) = \frac{e^{z^l_i} - e^{-{z^l_i}}}{e^{z^l_i} + e^{-{z^l_i}}}
 $$
 and one can show that its derivative is
 $$
@@ -1105,6 +1120,34 @@ $$
 \right].
 $$
 
+#### Numerical Stability Amendment
+
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (86). To avoid numerical instability for large positive $z^l_i$, we will introduce the following amendment.
+$$
+a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
+$$
+Proof:
+$$
+\frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}} = \\
+\frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}} \frac{e^{z^l_i}}{e^{z^l_i}} = \\
+\frac{e^{z^l_i} - e^{z^l_i} \ e^{-2{z^l_i}}}{e^{z^l_i} + e^{z^l_i} \ e^{-2{z^l_i}}} = \\
+\frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
+$$
+which equals the original version of the tanh function (86). Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$.  
+
+For large negative inputs, we will implement the following amendment:
+$$
+a^l_i = f({z^l_i}) = \frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1}
+$$
+Proof:
+$$
+\frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1} = \\
+\frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1} \frac{e^{-z^l_i}}{e^{-z^l_i}} = \\
+\frac{e^{2{z^l_i}} \ e^{-{z^l_i}} - e^{-{z^l_i}}}{e^{2{z^l_i}} \ e^{-{z^l_i}} + e^{-{z^l_i}}} = \\
+\frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
+$$
+which also equals the original version of the tanh function (86). Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
+
 ### Softmax
 
 Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (29) that the Softmax function is defined as
@@ -1124,6 +1167,24 @@ $$
 \right].
 $$
 
+#### Numerical Stability Amendment
+
+Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (183). The following implementation will do just that:
+$$
+a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \\
+\textbf{f}(\textbf{z}^l)_i = \frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}}
+$$
+Proof:
+$$
+\frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i} \ e^{-\text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j} \ e^{-\text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i}}{\sum_{j=1}^{n^l} e^{z^l_j}} \frac{e^{-\text{max}(\textbf{z}^l)}}{e^{-\text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i}}{\sum_{j=1}^{n^l} e^{z^l_j}},
+$$
+
+
+where $\text{max}(\textbf{z}^l)$ represents the maximum of $\textbf{z}^l$, which could actually be replaced by any other constant. However, $\text{max}(\textbf{z}^l)$ seems like a good choice because by definition, it is a large value and hence keeps the exponent small. Notice that we can take $e^{-\text{max}(\textbf{z}^l)}$ out of the summation, because it will reduce to just some constant. 
+
 # Implementation
 
 The following diagram shows the flow of data through the neural network:
@@ -1132,11 +1193,29 @@ The following diagram shows the flow of data through the neural network:
 
 Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
 
-## Forward and Backward Pass
+# Empirical results
 
-TODO
+The implemented neural network was tested on the MNIST dataset containing hand-written digits from $0$ to $9$, which can be downloaded from [here](https://www.kaggle.com/jidhumohan/mnist-png). The dataset contains $60,000$ training and $10,000$ testing images with a height and width of 28 pixels each. We tested a couple of different model architectures and noticed that, in our implementation, deep neural networks suffered from the vanishing gradient problem very quickly, so we tried to keep the model architecture fairly simple. 
 
-## Weight Initialization
+So, we chose a model with an input layer of $28 \times 28 = 784$ neurons (which was simply given by the image size), 32 neurons in the first hidden layer, 16 neurons in the second hidden layer and 10 neurons in the output layer. The two hidden layers both used the tanh activation function and the output layer used the softmax activation function while the weight updates were performed using Stochastic Gradient Descent. Finally, we compared the results of our model with the same network architecture implemented in Tensorflow. 
 
-TODO
+Below you can see a summary of the results and the settings that we used:
+
+| Library    | Epochs | Batch Size | Learning Rate | Categorical Cross-entropy | Accuracy | Precision | Recall | Training Time | Processing Unit |
+| ---------- | ------ | ---------- | ------------- | ------------------------- | -------- | --------- | ------ | ------------- | --------------- |
+| Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.95      | 0.950  | 17.95 min     | CPU             |
+| Tensorflow | 5      | 32         | 0.1           | 0.290                     | 0.984    | 0.941     | 0.895  | 6.64 min      | GPU             |
+
+Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count up all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
+$$
+\text{accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}
+$$
+
+$$
+\text{precision} = \frac{\text{TP}}{\text{TP} + \text{FP}}
+$$
+
+$$
+\text{recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
+$$
 

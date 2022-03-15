@@ -30,7 +30,8 @@ class InputLayer(Layer):
         # "compilation" time
         assert x_batch.shape[1:] == self.input_shape[1:], \
             f"Expected x_batch.shape={self.input_shape}, actual x_batch.shape={x_batch.shape}. " \
-            f"The input layer of the network needs consistent input shapes"
+            f"The input layer of the network needs consistent input shapes. " \
+            f"Is the image format set correctly?"
         self.activations = x_batch.reshape((x_batch.shape[0], -1, 1))
 
         return self.activations

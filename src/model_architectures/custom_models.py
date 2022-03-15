@@ -40,6 +40,7 @@ def get_mlp_model(
         optimizer=StochasticGradientDescentOptimizer(learning_rate=learning_rate)
     )
     mlp.add_layer(InputLayer(input_shape=(None, img_height, img_width, n_color_channels)))
+    mlp.add_layer(DenseLayer(32, "tanh"))
     mlp.add_layer(DenseLayer(16, "tanh"))
     mlp.add_layer(DenseLayer(n_classes, "softmax"))
 

@@ -9,7 +9,7 @@ import pytest
 
 import src.constants as c
 from src.lib.data_generators.factory import get_data_generator
-from src.model_architectures import get_tiny_mlp_model
+from src.model_architectures.custom_models import get_tiny_mlp_model
 from tests.test_config import TestConfig
 
 logger = logging.getLogger(__name__)

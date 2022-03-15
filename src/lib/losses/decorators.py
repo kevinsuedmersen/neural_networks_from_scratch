@@ -14,7 +14,9 @@ def simplify_init_error(
     `simplify_init_error` is the outer decorator which returns a parametrized, inner decorator
     """
     def _decorator(method) -> Callable:
-        """This is the actual, inner decorator which is returned by calling `simplify_init_error`"""
+        """This is the actual inner, parametrized decorator which is returned by calling
+        `simplify_init_error`
+        """
         def _method_wrapper(
                 loss_instance,
                 ytrue: npt.NDArray,
