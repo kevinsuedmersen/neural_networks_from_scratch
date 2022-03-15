@@ -1167,6 +1167,24 @@ $$
 \right].
 $$
 
+#### Numerical Stability Amendment
+
+Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (183). The following implementation will do just that:
+$$
+a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \\
+\textbf{f}(\textbf{z}^l)_i = \frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}}
+$$
+Proof:
+$$
+\frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i} \ e^{-\text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j} \ e^{-\text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i}}{\sum_{j=1}^{n^l} e^{z^l_j}} \frac{e^{-\text{max}(\textbf{z}^l)}}{e^{-\text{max}(\textbf{z}^l)}} = \\
+\frac{e^{z^l_i}}{\sum_{j=1}^{n^l} e^{z^l_j}},
+$$
+
+
+where $\text{max}(\textbf{z}^l)$ represents the maximum of $\textbf{z}^l$, which could actually be replaced by any other constant. However, $\text{max}(\textbf{z}^l)$ seems like a good choice because by definition, it is a large value and hence keeps the exponent small. Notice that we can take $e^{-\text{max}(\textbf{z}^l)}$ out of the summation, because it will reduce to just some constant. 
+
 # Implementation
 
 The following diagram shows the flow of data through the neural network:
