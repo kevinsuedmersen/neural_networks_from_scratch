@@ -1,6 +1,6 @@
 # Neural Networks from Scratch
 
-This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. neural networks consisting of fully connected, dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples.  
+This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a sta, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples. 
 
 # Table of contents
 
@@ -1201,9 +1201,9 @@ So, we chose a model with an input layer of $28 \times 28 = 784$ neurons (which 
 
 Below you can see a summary of the results and the settings that we used:
 
-| Library    | Epochs | Batch Size | Learning Rate | Categorical Cross-entropy | Accuracy | Precision | Recall | Training Time | Processing Unit |
+| Library    | Epochs | Batch Size | Learning Rate | Categorical Cross-Entropy | Accuracy | Precision | Recall | Training Time | Processing Unit |
 | ---------- | ------ | ---------- | ------------- | ------------------------- | -------- | --------- | ------ | ------------- | --------------- |
-| Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.95      | 0.950  | 17.95 min     | CPU             |
+| Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.950     | 0.950  | 17.95 min     | CPU             |
 | Tensorflow | 5      | 32         | 0.1           | 0.290                     | 0.984    | 0.941     | 0.895  | 6.64 min      | GPU             |
 
 Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count up all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
