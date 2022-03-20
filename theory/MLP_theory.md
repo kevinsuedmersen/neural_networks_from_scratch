@@ -1,6 +1,6 @@
 # Neural Networks from Scratch
 
-This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a sta, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples. 
+This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a stack of dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples. 
 
 # Table of contents
 
@@ -8,7 +8,7 @@ This document aims to derive and implement equations for training Multi Layer Pe
 
 # Forward Propagation
 
-The forward propagation algorithm propagates inputs through the layers of the network until they reach the output layer which generates the predictions. After that, the quality of these predictions are evaluated by calculating a certain cost function.    
+The forward propagation algorithm propagates inputs through the layers of the network until they reach the output layer which generates the predictions. After all or a batch of input examples have been propagated through the network, the quality of these predictions are evaluated by calculating a certain cost function.    
 
 ## Forward Propagation for a Single Training Example
 
@@ -22,12 +22,13 @@ The input layer (layer index 0) consists of 3 neurons, the hidden layer (layer i
 
 The hidden layer consists of 2 neurons which are supposed to represent more complex, latent (not directly observable) features or combinations of features that the network *learns* by itself so that it can make better decisions whether or not we should go to sports today. For example, if we slept well last night and we have little homework to do, we might be in a very good *mood* today and we want to go to sports. So, some neuron in the hidden layer might be some sort of mood indicator (good or bad). 
 
-Each of these hidden neurons has a *dendritic potential* $z_i^1$ and a corresponding *firing rate*, i.e. activation, $a_i^1$ for $i = 1, 2$. For example, 
+Each of these hidden neurons has a *dendritic potential* $z_i^1$ as input and a corresponding *firing rate*, i.e. activation, $a_i^1$ as output for $i = 1, 2$. For example, 
 $$
 z_1^1 = a_1^0 w_{1, 1}^1 + a_2^0 w_{1, 2}^1 + a_3^0 w_{1, 3}^1 + b_1^1
 $$
+and 
 $$
-a_1^1 = f(z_1^1, z^1_2, z^1_3)
+a_1^1 = \textbf{f}(z_1^1, z^1_2, z^1_3)_1
 $$
 
 
@@ -37,14 +38,14 @@ $$
 z_i^l = \sum_{k=1}^{n^{l-1}} \left( a_k^{l-1} w_{i, k}^{l} \right) + b_i^l
 $$
 $$
-a_i^l = f(z^l_1, z^l_2, ..., z_i^l, ..., z^l_{n^{l-1}}),
+a_i^l = \textbf{f}(z^l_1, z^l_2, ..., z_i^l, ..., z^l_{n^{l-1}})_i = \textbf{f}(\textbf{z}^l)_i,
 $$
 
 
 
-where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the activation $a_i^l$ of neuron $i$ in layer $l$. 
+where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, and where $b_i^l$ represents a bias term. Note that the weights and biases are initialized with random values and represent the parameters of the network, i.e. the parameters which the network *learns* and updates during the training phase. 
 
-The weights and biases are initialized with random values and represent the parameters of the network, i.e. the parameters which the network *learns* and updates during the training phase. The activation function $f(\cdot)$ is some non-linear transformation transforming the dendritic potential into the firing rate of neuron $i$ in layer $l$. The activation function may or may not depend on a single dendritic potential, but to keep the discussion simple for now, we will assume that our activation function is the sigmoid function which only depends on a single input and is defined as
+$\textbf{f}(\textbf{z}^l)_i$ represents the $i$-th output element of the *activation function* $\textbf{f}(\cdot)$ that is applied to the weighted inputs in layer $l$. Note that, in the most general case, $\textbf{f}(\cdot)$ is a function that takes a vector as input and also outputs a vector. For now however, we will assume that the activation function is simply the scalar-valued sigmoid function, which is defined as follows:
 $$
 f(z_i^l) = \frac{1}{1 + e^{-z_i^l}},
 $$
@@ -58,7 +59,9 @@ or more generally,
 $$
 a_i^L = \hat{y}_i
 $$
-where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. In our example network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}_i$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
+where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. 
+
+In our example network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}_i$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
 $$
 \text{prediction}_i =
 \begin{cases}
@@ -66,7 +69,9 @@ $$
 0, & \hat{y}_i \leq \text{threshold}_i
 \end{cases},
 $$
-where $1$ means that we will go to sports and $0$ that we won't go to sports. The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but for now, we will assume that $\text{threshold} = 0.5$. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision. Precision is the ratio of true positives divided by the sum of true positives and false positives while recall is the ratio of true positives divided by the sum of true positives and false negatives. 
+where $1$ means that we will go to sports and $0$ that we won't go to sports. 
+
+The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but for now, we will assume that $\text{threshold} = 0.5$. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision. Precision and recall will be defined more thoroughly later on.
 
 Now, we want to introduce a matrix-based approach for forward propagating the input data to the output layer, because first, it will make the notation easier and second, it will make your code run faster when you actually need to implement it in Python, because vectorized operations are highly efficient and optimized. So first, we will rewrite equation (3) as 
 $$
@@ -108,9 +113,9 @@ $$
 $$
 and then, equation (4) can be rewritten as
 $$
-\textbf{a}^l = f(\textbf{z}^l),
+\textbf{a}^l = \textbf{f}(\textbf{z}^l),
 $$
-where, in case of the sigmoid function, the activation function $f(\cdot)$ is applied element wise such as
+or written out explicitly:
 $$
 \left[ 
 	\matrix{
@@ -122,14 +127,14 @@ $$
 \right] = 
 \left[
 	\matrix{
-		f(z_1^l) \\
-		f(z_2^l) \\
+		\textbf{f}(\textbf{z}^l)_1 \\
+		\textbf{f}(\textbf{z}^l)_2 \\
 		\vdots \\
-		f(z_{n^l}^l) \\
+		\textbf{f}(\textbf{z}^l)_{n^l} \\
 	}
 \right].
 $$
-So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\textbf{z}^l$, $\textbf{a}^{l-1}$, and $\textbf{b}^l$. For each neuron in layer $l$, the weight matrix $\textbf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\textbf{W}^l$ are $n^l \times n^{l-1}$. Then finally, the sigmoid activation function $f(\cdot)$ is just applied to each element of $\textbf{z}^l$ to produce the activation vector $\textbf{a}^l$. 
+So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\textbf{z}^l$, $\textbf{a}^{l-1}$, and $\textbf{b}^l$. For each neuron in layer $l$, the weight matrix $\textbf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\textbf{W}^l$ are $n^l \times n^{l-1}$. Then finally, activation function $\textbf{f}(\cdot)$ is just applied to each element of $\textbf{z}^l$ to produce the activation vector $\textbf{a}^l$. 
 
 We can now apply equations (9) and (11) recursively all the way to the output layer $L$, until we compute the predicted probabilities of the network as follows
 $$
@@ -156,7 +161,7 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (8). 
 
-Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problems where *exactly* one of  $n^L$​ classes must be predicted (i.e. a Multi-Class classification problem), a commonly used loss function is the *categorical cross entropy*, which is defined as follows
+Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For classification problems where *exactly* one of  $n^L$​ classes must be predicted (i.e. a multi-class classification problem), a commonly used loss function is the *categorical cross entropy*, which is defined as follows
 
 
 $$
@@ -182,11 +187,13 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each element in the depth dimension belongs to a different training example: 
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, where each element in the depth dimension belongs to a different training example: 
 
 ![X_and_A0](X_and_A0.png)
 
 Figure 2
+
+where $x^m_i = a^{l, m}_i$ represents the $i$-th activation in layer $l$ of the $m$-th training example.  
 
 Next, equation (9) becomes
 $$
@@ -198,7 +205,11 @@ or written out explicitly
 
 Figure 4
 
-where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to make the whole operation compatible. The dimensions of each component are as follows
+where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times along the depth dimension in order to make the whole operation compatible. 
+
+Note that when implementing the forward propagation for a whole batch of training examples at once in NumPy, the batch-dimension must be placed at the first axis of any 3D array (`axis=0`), i.e. every training example must be placed in a separate row.  However, in the figures above and the below figures to come, we placed each training example in the batch dimension, which is normally at `axis=2`. We chose to draw each training example in the depth dimension, because it is simply easier to draw that way. For the actual implementation in NumPy though, it's important to place each training example in a different row.  
+
+In the implementation with NumPy, the dimensions of each component of figure 4 are as follows:
 
 - $\textbf{Z}^l: M \times n^l \times 1$
 - $\textbf{W}^l: M \times n^l \times n^{l-1}$
@@ -206,13 +217,12 @@ where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have b
 - $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently and in parallel
 - $\textbf{B}^l: M \times n^{l} \times 1$
 
-so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $ND$ arrays where $N>2$, and because it is easier to draw that way. 
-
 Then, like before, the activation function is applied independently to each training example
+
 $$
-\textbf{A}^l = f(\textbf{Z}^l),
+\textbf{A}^l = \textbf{f}(\textbf{Z}^l),
 $$
-which, in case of the sigmoid function is equal to
+which can be written out to
 
 ![Al](Al.png)
 
@@ -234,7 +244,7 @@ $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for over-fitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size` (like e.g. the sum). Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to penalize models with lots of free parameters, leading to simpler models, and hence to fight over-fitting. 
 
 # Backward Propagation
 
