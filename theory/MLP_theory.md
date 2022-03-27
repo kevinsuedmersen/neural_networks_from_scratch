@@ -868,7 +868,7 @@ Figure 11
 
 ### BP3.2
 
-Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the overall cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{W}^l},
 $$
@@ -891,7 +891,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (64) as follows
+so, using that, we can rewrite (62) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -915,13 +915,13 @@ Using the same notation as before, we can represent the above equation such that
 
 Figure 12
 
-where $np.mean$ refers to the `mean` function of `numpy` . Figure 12 can be multiplied out as
+where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be multiplied out as
 
  ![dC_dW_l_2](dC_dW_l_2.png)
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples of each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
 
 ### BP4.2
 
