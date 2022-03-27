@@ -597,7 +597,7 @@ because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian
 
 ### BP3.1
 
-After calculating the errors at a certain layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can be done as follows
+After calculating the errors at a certain layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can be done as follows 
 
 $$
 \frac{\partial L}{\partial \textbf{W}^l} 
@@ -636,13 +636,13 @@ $$
 
 where $J_{\textbf{z}^l}(\textbf{W}^l)$ is a $n^l \times (n^l \times n^{l-1})$ matrix, since there are $n^l$ components in $\textbf{z}^l$ and $n^l \times n^{l-1}$ components in $\textbf{W}^l$. 
 
-Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (21), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
 
 First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
 \frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
 $$
-Next, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j \neq i$. In that case, the weight $w^l_{i, k}$ is not connected to neuron $j$ in layer $l$, so 
+Next, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j \neq i$. In that case, the weight $w^l_{i, k}$ is not connected to neuron $j$ in layer $l$, so $z^l_j$ will never change if $w^l_{i,k}$ changes and therefore,
 $$
 \frac{\partial z^l_j}{\partial w^l_{i,k}} = 0.
 $$
@@ -654,7 +654,7 @@ $$
 	0 & \text{if} \ j \neq i \\
 \end{cases}
 $$
-Using (25) and (50), we can now fill in each value of (47) as follows
+Using (21) and (48), we can now fill in each value of (45) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
