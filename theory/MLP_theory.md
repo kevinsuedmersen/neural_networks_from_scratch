@@ -419,7 +419,7 @@ $$
 
 ### BP2.1
 
-In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested function of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
 $$
 (\boldsymbol{\delta}^{l-1})^T
 \coloneqq \frac{\partial L}{\partial \textbf{z}^{l-1}}
@@ -443,7 +443,7 @@ $$
 	}
 \right].
 $$
-In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (25), 
+In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (21), we have defined every element as
 $$
 \frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
@@ -457,12 +457,12 @@ where we need to use the total differential. To add a little more intuition why 
 
 Figure 7 
 
-When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
+When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes when $z^{l-1}_2$ changes (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 different paths how to achieve that:
 
-1. A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
-2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if e.g. the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
+1. Direct path: A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
+2. Indirect path: A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ (if e.g. the softmax activation function is used, since the activations of the softmax function alway sum up to 1), and each change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
 
-Using (39) and (40), we can fill in each component of (38) as follows
+Using (35) and (36), we can fill in each component of (34) as follows
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
@@ -522,7 +522,7 @@ $$
 = \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
 = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}),
 $$
-or similarly
+or similarly, after iterating one layer forward,
 $$
 (\boldsymbol{\delta}^{l})^T 
 = \nabla L(\textbf{z}^{l+1}) \ \textbf{J}_{\textbf{z}^{l+1}}(\textbf{z}^{l})
@@ -530,7 +530,7 @@ $$
 $$
 
 
-The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its Jacobi matrix for the backpropagation algorithm. 
+The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its forward pass and its Jacobi matrix for the backpropagation algorithm. In other words, we regard any activation function as an interchangeable - *and completely independent* - component of our neural network. 
 
 #### Example 
 
@@ -542,10 +542,10 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-Using the above result, we can write out (42) as follows
+Using the above result, we can write out (40) as follows
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
-= \left[
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+\left[
 	\matrix{
 		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
@@ -565,9 +565,35 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
 	}
-\right].
+\right]
+,
 $$
 
+which, in this specific example, reduces to 
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+\left[
+	\matrix{
+		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		a^{l-1}_1(1 - a^{l-1}_1) & a^{l-1}_2(1 - a^{l-1}_2) & ... & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
+	}
+\right]
+.
+$$
+because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian is a diagonal matrix, and a row vector multiplied with a diagonal matrix can be reformulated as the *Hadamard* product ($\odot$ operator). 
 
 ### BP3.1
 
