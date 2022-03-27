@@ -388,7 +388,15 @@ $$
 
 which, when multiplied out, yields
 $$
-\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = \\
+\left[
+	\matrix{
+		-y_1(1 - a^L_1) + y_2 a^L_1 + ... + y_{n^L} a^L_1 &
+        y_1 a^L_2 - y_2(1 - a^L_2) + ... + y_{n^L} a^L_2 & 
+        ... & 
+        y_1 a^L_{n^L} + y_2 a^L_{n^L} + ... + (-y_{n^L})(1 - a^L_{n^L}) 
+	\matrix}
+\right] = \\
 \left[
 	\matrix{
 		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L})
