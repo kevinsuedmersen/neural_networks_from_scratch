@@ -951,7 +951,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (70) and plug (72) back into the transpose of (70) yielding
+From here on out, it is really straight forward. Transpose both sides of (65) and use (67), yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -964,13 +964,13 @@ $$
 	}
 \right].
 $$
-Representing (73) such that each training example refers to a separate element of the depth dimension, we will get
+Representing (68) such that each training example refers to a separate element of the depth dimension, we will get
 
 ![dC_db_l](dC_db_l.png)
 
 Figure 14
 
-where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
+where again, we take the average across all training examples of each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
 
 ## Summary
 
