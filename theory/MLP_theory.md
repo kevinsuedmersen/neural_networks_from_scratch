@@ -754,7 +754,7 @@ $$
 	}
 \right]
 $$
-Again, the components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see from (3) that 
+Again, the components of $\nabla L(\textbf{z}^l)$ are given by (21), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see from (3) that 
 $$
 \frac{\partial z^l_j}{\partial b^l_k} = 
 \begin{cases}
@@ -762,7 +762,7 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-So, using (25) and (57), we can re-write equation (56) as follows
+So, using (21) and (55), we can re-write equation (54) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
