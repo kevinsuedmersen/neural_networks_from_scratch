@@ -850,7 +850,7 @@ $$
 = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
 $$
 
-As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
+As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ along `axis and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
 ![Delta_l_1.png](Delta_l_1.png)
 
@@ -1057,7 +1057,7 @@ $$
 
 ## Activation Functions
 
-This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2).  
+This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2). Notice that for all activation functions shown here, the Jacobians are always symmetric matrices, so in the actual Python implementation of the activation functions, we may use that $(\textbf{J}_{\textbf{a}^l}(\textbf{z}^l))^T = \textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$. 
 
 ### Sigmoid
 
