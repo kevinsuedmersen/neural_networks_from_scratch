@@ -791,7 +791,7 @@ The above equation represents **BP4.1**.
 
 ## Backpropagation for a Batch of Training Examples
 
-In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
+In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `NumPy`. 
 
 ### BP1.2
 
@@ -818,19 +818,19 @@ $$
     \vdots \\ 
     \frac{\partial L}{\partial a^{L}_{n^L}}
     }
-\right]
+\right],
 $$
-Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
+Next, for each training example $m$, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
 
 ![Delta_L](Delta_L.png)
 
 Figure 8
 
-where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension or where `axis=0`, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
-Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
+Assuming we are using the categorical cross entropy cost function from equation (19) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
 
 ![Delta_L_example](Delta_L_example.png)
 
@@ -847,14 +847,8 @@ $$
 Again, we will first transpose both sides of the above equation giving us
 $$
 \boldsymbol{\delta}^{l-1} 
-= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l,
+= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
 $$
-which, in our use case, is equivalent to the following, since, as the examples will show, the Jacobian is usually a symmetric matrix
-$$
-\boldsymbol{\delta}^{l-1} 
-= \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}) \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
-$$
-
 
 As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
