@@ -994,17 +994,13 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 [^3]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
-Note that, before updating the weights and biases of each layer, we must have calculated the errors of *all* layers beforehand. Calculating the gradients and updating the weights and biases for each layer simultaneously will yield incorrect gradients, because in BP2.1 and BP2.2, we can see that the error of layer $l$ is also a function of the weights in layer $l+1$. So, if you were to calculate the error of layer $l+1$ and then immediately update the weights in layer $l+1$, you will get a wrong error for layer $l$ in t. To get the correct errors of each layer, you need to keep the weights fixed. Only after having calculated the errors of each layer, you may update the weights and biases. 
+Note that, before updating the weights and biases of each layer, we must have calculated the errors of *all* layers beforehand. Calculating the gradients and updating the weights and biases for each layer simultaneously will yield incorrect gradients, because in BP2.1 and BP2.2, we can see that the error of layer $l$ is also a function of the weights in layer $l+1$. So, if you were to calculate the error of layer $l+1$ and then immediately update the weights in layer $l+1$, you will get a wrong error for layer $l$ in the next iteration. To get the correct errors of each layer, you need to keep the weights fixed. Only after having calculated the errors of each layer, you may update the weights and biases.  
 
-# Loss and activation Functions
-
-In this section, we will show equations for the forward and backward pass of all loss and activation functions which we want to implement.  
-
-## Loss functions
+# Loss functions
 
 This section will show how all relevant loss functions and their gradients $\nabla L (\textbf{a}^L) = \frac{\partial L}{\partial \textbf{a}^L}$, which are needed as an interim quantity to initialize the error at the output layer (see BP1.1 and BP1.2). 
 
-### Categorical Crossentropy
+## Categorical Crossentropy
 
 Recall from (15) that
 $$
@@ -1022,7 +1018,7 @@ $$
 $$
 
 
-### Sum of Squared Errors
+## Sum of Squared Errors
 
 The Sum of Squared Errors loss is defined as
 $$
@@ -1040,11 +1036,11 @@ $$
 $$
 
 
-## Activation Functions
+# Activation Functions
 
 This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2). Notice that for all activation functions shown here, the Jacobians are always symmetric matrices, so in the actual Python implementation of the activation functions, we may use that $(\textbf{J}_{\textbf{a}^l}(\textbf{z}^l))^T = \textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$. 
 
-### Sigmoid
+## Sigmoid
 
 Recall from (5) that
 $$
@@ -1064,7 +1060,7 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment 
+### Numerical Stability Amendment 
 
 Imagine the input to the sigmoid function $z^l_i$ is largely negative. In that case, the exponent of $e$ would be extremely large and in that case, $e^{z^l_i}$ would converge to infinity very quickly. If you were to implement the above version of the sigmoid function Python, you will most likely encounter a situation where at some point, $e^{z^l_i} = \infty$ and if $\infty$ is used in subsequent computations, you will get some error. To avoid this error, we will use the following, equivalent version of the sigmoid function for any negative $z^l_i$.
 $$
@@ -1077,15 +1073,15 @@ $$
 \frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
 \frac{1}{1 + e^{-z^l_i}}
 $$
-For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (86). 
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (78). 
 
-### ReLU
+## ReLU
 
 The Rectified Linear Unit (ReLU) is defined as
 $$
 a^l_i = f(z^l_i) = max(0, z^l_i).
 $$
-Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
+Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0.000000000...$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
 $$
 \frac{\partial a^l_i}{\partial z^l_i}
 = f'(z^l_i) 
@@ -1094,15 +1090,15 @@ $$
 0 & \text{if} & z^l_i \leq 0
 \end{cases}.
 $$
-Since like the Sigmoid function, ReLU function also just depends on a single scalar, we can know that
+Since like the Sigmoid function, ReLU function also just depends on a single scalar, we know that
 $$
 \frac{\partial a^l_i}{\partial z^l_j} =
 \begin{cases}
 	f'(z^l_i) & \text{if} \ i=j \\
 	0 & \text{if} \ i \neq k
-\end{cases},
+\end{cases}
 $$
-where $f'(z^l_i)$ was already defined in (92). Using (93), we can construct Jacobian of the ReLU as follows 
+where $f'(z^l_i)$ was already defined in (81). Using (82), we can construct Jacobian of the ReLU as follows 
 $$
 \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
 = \left[
@@ -1116,7 +1112,7 @@ $$
 $$
 
 
-### tanh
+## tanh
 
 The tanh function is defined as follows
 $$
@@ -1143,9 +1139,9 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment
+### Numerical Stability Amendment
 
-Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (86). To avoid numerical instability for large positive $z^l_i$, we will introduce the following amendment.
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (84). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
 $$
@@ -1156,9 +1152,9 @@ $$
 \frac{e^{z^l_i} - e^{z^l_i} \ e^{-2{z^l_i}}}{e^{z^l_i} + e^{z^l_i} \ e^{-2{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which equals the original version of the tanh function (86). Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$.  
+Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$. 
 
-For large negative inputs, we will implement the following amendment:
+For large negative inputs, we will implement the following, equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1}
 $$
@@ -1169,15 +1165,15 @@ $$
 \frac{e^{2{z^l_i}} \ e^{-{z^l_i}} - e^{-{z^l_i}}}{e^{2{z^l_i}} \ e^{-{z^l_i}} + e^{-{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which also equals the original version of the tanh function (86). Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
+Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
 
-### Softmax
+## Softmax
 
-Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (29) that the Softmax function is defined as
+Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (24) that the Softmax function is defined as
 $$
 a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \frac{e^{z^l_i}}{\sum_{k=1}^{n^l} e^{z^l_k}}
 $$
-and recall from (35), that its Jacobian is
+and recall from (30), that its Jacobian is
 $$
 \textbf{J}_{\textbf{a}^l}(\textbf{z}^l) = 
 \left[
@@ -1190,9 +1186,9 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment
+### Numerical Stability Amendment
 
-Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (183). The following implementation will do just that:
+Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (91). The following implementation will do just that:
 $$
 a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \\
 \textbf{f}(\textbf{z}^l)_i = \frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}}
@@ -1210,11 +1206,11 @@ where $\text{max}(\textbf{z}^l)$ represents the maximum of $\textbf{z}^l$, which
 
 # Implementation
 
-The following diagram shows the flow of data through the neural network:
+TODO: Explain structure in src/lib
 
-![data_flow](data_flow.png)
+# Tests
 
-Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
+TODO: Explain how I tested the gradients were computed correctly. 
 
 # Empirical results
 
