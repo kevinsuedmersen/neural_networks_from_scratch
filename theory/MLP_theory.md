@@ -1206,7 +1206,58 @@ where $\text{max}(\textbf{z}^l)$ represents the maximum of $\textbf{z}^l$, which
 
 # Implementation
 
-TODO: Explain structure in src/lib
+The actual Python implementation can be found in the `src/lib` directory which contains the following packages, modules and classes:
+
+- `activation_functions` package: Contains separate files for each activation function which all have the same signature so that they can be used interchangeably. For each activation function, the forward and backward pass are implemented.
+  - `linear.py`
+    -  `linear_forward` function
+    - `linear_backward` function
+  - `relu.py`
+    - `relu_forward` function
+    - `relu_backward` function
+  - `sigmoid.py`
+    - `sigmoid_forward` function
+    - `sigmoid_backward` function
+  - `softmax.py`
+    - `softmax_forward` function
+    - `softmax_backward` function
+  - `tanh.py`
+    - `tanh_forward` function
+    - `tanh_backward` function
+- `data_generators` package: Contains data generators yielding batches of training data for supervised learning problems.
+  - `__init__.py`
+    - `DataGenerator` class defining interface for all data generator types. (Continue )
+  - `image.py`
+    - `ImageDataGenerator` class, inheriting from `DataGenerator`
+- `layers` package: Contains different layer types. Each layer is responsible for one forward- and backward-propagation.
+  - `__init__.py`
+    - `Layer` class
+  - `dense.py`
+    - `DenseLayer` class, inheriting from `Layer`
+- `losses` package
+  - `__init__.py`: Loss interface
+  - `categorical_crossentropy.py`
+    - `CategoricalCrossentropyLoss` class: Implements the loss and cost computation and initializes backpropagation. We chose to initialize the backpropagation in this class, because initializing backpropagation is dependent on the loss/cost function. 
+- `metrics` package:
+  - `cost` package: Contains metrics representing some loss/cost value
+    - `__init__.py`: Interface for all cost metrics
+    - `categorical_crossentropy.py`
+      - `CategoricalCrossentropyMetric` class: Computes the same loss and cost values like `CategoricalCrossentropyLoss`, but is able to aggregate them over all training examples in an efficient way
+  - `score` package: Contains metrics representing some score value, e.g.:
+    - `__init__.py`: Interface for all score metrics
+    - `accuracy.py`
+      - `Accuracy` class
+    - `precision.py` 
+      - `Precision` class
+    - `recall.py`
+      - `Recall` class
+- `models` package
+  - `__init__.py`: Interface for all model types
+  - `sequential.py`
+    - `SequentialModel`class: Models that are a sequential stack of layers, executing all layers sequentially from the input to the output layer
+- `optimizers` package
+  - `stochastic_gradient_descent.py`
+    - `StochasticGradientDescentOptimizer` class: Updating the weights and biases using stochastic gradient descent
 
 # Tests
 
