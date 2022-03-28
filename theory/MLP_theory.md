@@ -593,7 +593,7 @@ $$
 \right]
 .
 $$
-because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian is a diagonal matrix, and a row vector multiplied with a diagonal matrix can be reformulated as the *Hadamard* product ($\odot$ operator). 
+because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian is a diagonal matrix, and a row vector multiplied with a diagonal matrix can be reformulated as the *Hadamard* product ($\odot$ operator) between the row vector and the elements on the main diagonal of the diagonal matrix. 
 
 ### BP3.1
 
@@ -826,7 +826,7 @@ Next, for each training example $m$, we will simply stack the Jacobian $(\textbf
 
 Figure 8
 
-where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension or where `axis=0`, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ dimensional array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension or where `axis=0`, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
@@ -921,7 +921,7 @@ where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be mult
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples of each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples of each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
 
 ### BP4.2
 
@@ -970,24 +970,7 @@ Representing (68) such that each training example refers to a separate element o
 
 Figure 14
 
-where again, we take the average across all training examples of each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
-
-## Summary
-
-To summarize, in our backpropagation module, we want to implement the following 4 equations for an arbitrary network topology and activation functions:
-
-- BP1.2: 
-  - $\boldsymbol{\Delta}^L$ from figure 8
-  - Shape: $M \times n^L \times 1$ 
-- BP2.2: 
-  - $\boldsymbol{\Delta}^{l-1}$ from figure 10
-  - Shape: $M \times n^{l-1} \times 1$ 
-- BP3.2: 
-  - $\frac{\partial C}{\partial \textbf{W}^l}$ from figure 12
-  - Shape: $M \times n^l \times n^{l-1}$ 
-- BP4.2: 
-  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ from figure 14
-  - Shape: $M \times n^l \times 1$ 
+where again, we take the average across all training examples of each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
 
 # Gradient Descent
 

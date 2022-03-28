@@ -17,7 +17,7 @@ The knowledge used in this repository stems from a variety of sources. The below
 - [Micheal Nielsons online Deep Learning book](http://neuralnetworksanddeeplearning.com/)
 - [3Blue1Brown](https://www.youtube.com/watch?v=aircAruvnKk&ab_channel=3Blue1Brown)
 
- I also want to thank my professor and mentor Prof. Dr. Andreas Knoblauch for constantly providing helpful feedback and detailed study material. 
+ I also want to thank my professor and mentor Prof. Dr. Knoblauch for valuable feedback and detailed study material. 
 
 # Theory
 
