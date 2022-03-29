@@ -1218,7 +1218,25 @@ The actual Python implementation can be found in the `src/lib` directory which c
 
 # Tests
 
-TODO: Explain how I tested the gradients were computed correctly. 
+A lot of tests can be found in the `tests` folder which generally contains one module per package described above. The most interesting tests are contained in `test_model.py` which takes a simple example neural network and tests that the forward pass produces the expected dendritic potentials, activations, losses and cost and that the backward pass produces the expected errors and gradients. The expected results were computed manually and the actual results were computed using the above described algorithms for forward- and backward propagation. 
+
+The architecture the example network is as follows:
+
+- Input layer: 3 neurons
+- Hidden layer: 2 neurons with sigmoid activation function
+- Output layer: 2 neurons with softmax activation function
+
+As the forward pass computations are relatively trivial and have already been explained in the [Forward Propagation](#Forward Propagation) section, we will now show how the gradients of each layer are computed manually. 
+
+Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{W}^2}$ as well as $\frac{\partial L}{\partial \textbf{b}^1}$ and $\frac{\partial L}{\partial \textbf{b}^2}$. 
+$$
+\frac{\partial L}{\partial \textbf{W}^1}
+$$
+and 
+$$
+\frac{\partial L}{\partial \textbf{W}^2}
+$$
+
 
 # Empirical results
 
