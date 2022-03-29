@@ -1228,13 +1228,50 @@ The architecture the example network is as follows:
 
 As the forward pass computations are relatively trivial and have already been explained in the [Forward Propagation](#Forward Propagation) section, we will now show how the gradients of each layer are computed manually. 
 
-Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{W}^2}$ as well as $\frac{\partial L}{\partial \textbf{b}^1}$ and $\frac{\partial L}{\partial \textbf{b}^2}$. 
+Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{W}^2}$ as well as $\frac{\partial L}{\partial \textbf{b}^1}$ and $\frac{\partial L}{\partial \textbf{b}^2}$. Each of these terms can be expanded using the chain rule.
+$$
+\frac{\partial L}{\partial \textbf{W}^2} = \\
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
+\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2} = \\
+-\left[
+	\matrix{
+		\frac{\partial L}{\partial a^2_1} & \frac{\partial L}{\partial a^2_2}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial a^2_1}{\partial z^2_1} & \frac{\partial a^2_1}{\partial z^2_2} \\
+		\frac{\partial a^2_2}{\partial z^2_1} & \frac{\partial a^2_2}{\partial z^2_2}
+	}
+\right]
+\left[
+	\matrix{
+		\frac{\partial z^2_1}{\partial w^2_{1,1}} & \frac{\partial z^2_1}{\partial w^2_{1,2}} & \frac{\partial z^2_1}{\partial w^2_{2,1}} & \frac{\partial z^2_1}{\partial w^2_{2,2}} \\
+		\frac{\partial z^2_2}{\partial w^2_{1,1}} & \frac{\partial z^2_2}{\partial w^2_{1,2}} & \frac{\partial z^2_2}{\partial w^2_{2,1}} & \frac{\partial z^2_2}{\partial w^2_{2,2}}
+	}
+\right] = \\
+-\left[
+	\matrix{
+		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
+	}
+\right]
+\left[
+	\matrix{
+		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
+		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
+	}
+\right]
+\left[
+	\matrix{
+		a^1_1 & a^1_2 & 0 & 0 \\
+		0 & 0 & a^1_1 & a^1_2
+	}
+\right],
+$$
+which, after forward propagation, can be filled in with exact values. As a sanity check, note that the above product will yield a $1 \times 4$ row vector (or stacked as a $2 \times 2$ matrix if you will), i.e. has 4 elements, just as many elements as $\textbf{W}^2$ should have. 
 $$
 \frac{\partial L}{\partial \textbf{W}^1}
-$$
-and 
-$$
-\frac{\partial L}{\partial \textbf{W}^2}
 $$
 
 
