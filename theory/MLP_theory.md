@@ -1230,91 +1230,94 @@ As the forward pass computations are relatively trivial and have already been ex
 
 Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{b}^1}$ as well as $\frac{\partial L}{\partial \textbf{W}^2} $ and $\frac{\partial L}{\partial \textbf{b}^2}$. Each of these terms can be expanded using the chain rule.
 $$
-\frac{\partial L}{\partial \textbf{W}^2} = \\
+\frac{\partial L}{\partial \textbf{W}^2} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
-\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2} = \\
--\left[
+\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2},
+$$
+where 
+$$
+\frac{\partial L}{\partial \textbf{a}^2} = 
+\left[
 	\matrix{
 		\frac{\partial L}{\partial a^2_1} & \frac{\partial L}{\partial a^2_2}
 	}
+\right] = 
+-\left[
+	\matrix{
+		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
+	}
 \right]
+$$
+
+$$
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} =
 \left[
 	\matrix{
 		\frac{\partial a^2_1}{\partial z^2_1} & \frac{\partial a^2_1}{\partial z^2_2} \\
 		\frac{\partial a^2_2}{\partial z^2_1} & \frac{\partial a^2_2}{\partial z^2_2}
 	}
+\right] = 
+\left[
+	\matrix{
+		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
+		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
+	}
 \right]
+$$
+
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2} =
 \left[
 	\matrix{
 		\frac{\partial z^2_1}{\partial w^2_{1,1}} & \frac{\partial z^2_1}{\partial w^2_{1,2}} & \frac{\partial z^2_1}{\partial w^2_{2,1}} & \frac{\partial z^2_1}{\partial w^2_{2,2}} \\
 		\frac{\partial z^2_2}{\partial w^2_{1,1}} & \frac{\partial z^2_2}{\partial w^2_{1,2}} & \frac{\partial z^2_2}{\partial w^2_{2,1}} & \frac{\partial z^2_2}{\partial w^2_{2,2}}
 	}
-\right] = \\
--\left[
-	\matrix{
-		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
-	}
-\right]
-\left[
-	\matrix{
-		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
-		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
-	}
-\right]
+\right] = 
 \left[
 	\matrix{
 		a^1_1 & a^1_2 & 0 & 0 \\
 		0 & 0 & a^1_1 & a^1_2
 	}
-\right],
+\right]
 $$
-which, after forward propagation, can be filled in with exact values. As a sanity check, note that the above product will yield a $1 \times 4$ row vector (or stacked as a $2 \times 2$ matrix if you will), i.e. has 4 elements, just as many elements as $\textbf{W}^2$ should have. 
 
-Having calculated $\frac{\partial L}{\partial \textbf{W}^1}$, calculating $\frac{\partial L}{\partial \textbf{b}^1}$ is straight forward, because we already know some intermediate quantities:
+
+
+which, after forward propagation, can be filled in with exact values. As a sanity check, note that (95) will yield a $1 \times 4$ row vector (or stacked as a $2 \times 2$ matrix if you will), i.e. it has 4 elements, just as many elements as $\textbf{W}^2$ should have. 
+
+Having calculated $\frac{\partial L}{\partial \textbf{W}^2}$, calculating $\frac{\partial L}{\partial \textbf{b}^2}$ is straight forward, because we already know some intermediate quantities:
 $$
-\frac{\partial L}{\partial \textbf{b}^1} = \\
+\frac{\partial L}{\partial \textbf{b}^1} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
-\frac{\partial \textbf{z}^2}{\partial \textbf{b}^2} = \\
--\left[
-	\matrix{
-		\frac{\partial L}{\partial a^2_1} & \frac{\partial L}{\partial a^2_2}
-	}
-\right]
-\left[
-	\matrix{
-		\frac{\partial a^2_1}{\partial z^2_1} & \frac{\partial a^2_1}{\partial z^2_2} \\
-		\frac{\partial a^2_2}{\partial z^2_1} & \frac{\partial a^2_2}{\partial z^2_2}
-	}
-\right]
-\left[
-	\matrix{
-		\frac{\partial z^2_1}{\partial b^2_1} & \frac{\partial z^2_1}{\partial b^2_2} \\
-		\frac{\partial z^2_2}{\partial b^2_1} & \frac{\partial z^2_2}{\partial b^2_2}
-	}
-\right] = \\
--\left[
-	\matrix{
-		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
-	}
-\right]
-\left[
-	\matrix{
-		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
-		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
-	}
-\right]
+\frac{\partial \textbf{z}^2}{\partial \textbf{b}^2}
+,
+$$
+where the new quantity
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{b}^2} = 
 \left[
 	\matrix{
 		1 & 0 \\
 		0 & 1
 	}
-\right],
+\right]
 $$
+
+
+
+
 which will yield a $1 \times 2$ row vector, as expected. 
+
+Now, let's move to the weights in the first layer: 
 $$
-\frac{\partial L}{\partial \textbf{W}^1}
+\frac{\partial L}{\partial \textbf{W}^1} = \\
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2}
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1}
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1}
+\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1} = \\
 $$
 
 
