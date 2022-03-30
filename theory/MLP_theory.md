@@ -1,6 +1,6 @@
 # Neural Networks from Scratch
 
-This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. neural networks consisting of fully connected, dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples.  
+This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a stack of dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples. 
 
 # Table of contents
 
@@ -8,7 +8,7 @@ This document aims to derive and implement equations for training Multi Layer Pe
 
 # Forward Propagation
 
-The forward propagation algorithm propagates inputs through the layers of the network until they reach the output layer which generates the predictions. After that, the quality of these predictions are evaluated by calculating a certain cost function.    
+The forward propagation algorithm propagates inputs through the layers of the network until they reach the output layer which generates the predictions. After all or a batch of input examples have been propagated through the network, the quality of these predictions are evaluated by calculating a certain cost function.    
 
 ## Forward Propagation for a Single Training Example
 
@@ -22,12 +22,13 @@ The input layer (layer index 0) consists of 3 neurons, the hidden layer (layer i
 
 The hidden layer consists of 2 neurons which are supposed to represent more complex, latent (not directly observable) features or combinations of features that the network *learns* by itself so that it can make better decisions whether or not we should go to sports today. For example, if we slept well last night and we have little homework to do, we might be in a very good *mood* today and we want to go to sports. So, some neuron in the hidden layer might be some sort of mood indicator (good or bad). 
 
-Each of these hidden neurons has a *dendritic potential* $z_i^1$ and a corresponding *firing rate*, i.e. activation, $a_i^1$ for $i = 1, 2$. For example, 
+Each of these hidden neurons has a *dendritic potential* $z_i^1$ as input and a corresponding *firing rate*, i.e. activation, $a_i^1$ as output for $i = 1, 2$. For example, 
 $$
 z_1^1 = a_1^0 w_{1, 1}^1 + a_2^0 w_{1, 2}^1 + a_3^0 w_{1, 3}^1 + b_1^1
 $$
+and 
 $$
-a_1^1 = f(z_1^1, z^1_2, z^1_3)
+a_1^1 = \textbf{f}(z_1^1, z^1_2, z^1_3)_1
 $$
 
 
@@ -37,14 +38,14 @@ $$
 z_i^l = \sum_{k=1}^{n^{l-1}} \left( a_k^{l-1} w_{i, k}^{l} \right) + b_i^l
 $$
 $$
-a_i^l = f(z^l_1, z^l_2, ..., z_i^l, ..., z^l_{n^{l-1}}),
+a_i^l = \textbf{f}(z^l_1, z^l_2, ..., z_i^l, ..., z^l_{n^{l-1}})_i = \textbf{f}(\textbf{z}^l)_i,
 $$
 
 
 
-where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, $b_i^l$ represents a bias term, and where $f(\cdot)$ represents an *activation function* that is applied to the weighted input in order to produce the activation $a_i^l$ of neuron $i$ in layer $l$. 
+where $n^{l-1}$ represents the number of neurons in layer $l-1$, $w_{i, k}^l$ the weight that connects $a_k^{l-1}$ to $a_i^l$, and where $b_i^l$ represents a bias term. Note that the weights and biases are initialized with random values and represent the parameters of the network, i.e. the parameters which the network *learns* and updates during the training phase. 
 
-The weights and biases are initialized with random values and represent the parameters of the network, i.e. the parameters which the network *learns* and updates during the training phase. The activation function $f(\cdot)$ is some non-linear transformation transforming the dendritic potential into the firing rate of neuron $i$ in layer $l$. The activation function may or may not depend on a single dendritic potential, but to keep the discussion simple for now, we will assume that our activation function is the sigmoid function which only depends on a single input and is defined as
+$\textbf{f}(\textbf{z}^l)_i$ represents the $i$-th output element of the *activation function* $\textbf{f}(\cdot)$ that is applied to the weighted inputs in layer $l$. Note that, in the most general case, $\textbf{f}(\cdot)$ is a function that takes a vector as input and also outputs a vector. For now however, we will assume that the activation function is simply the scalar-valued sigmoid function, which is defined as follows:
 $$
 f(z_i^l) = \frac{1}{1 + e^{-z_i^l}},
 $$
@@ -58,7 +59,9 @@ or more generally,
 $$
 a_i^L = \hat{y}_i
 $$
-where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. In our example network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}_i$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
+where $L$ represents the final layer of the network and $\hat{y}_i$ the *probability* that we go to sports. 
+
+In our example network, there is no benefit for adding the neuron index $i$, but we still left it there to show that the output layer might consists of an arbitrary number of neurons, e.g. one for each category in our classification task. Also, since $\hat{y}_i$ is a probability, we know that the activation function of the output layer must return values between $0$ and $1$. To convert the predicted probability that we will go to sports into an actual decision, we will apply a threshold as follows
 $$
 \text{prediction}_i =
 \begin{cases}
@@ -66,7 +69,9 @@ $$
 0, & \hat{y}_i \leq \text{threshold}_i
 \end{cases},
 $$
-where $1$ means that we will go to sports and $0$ that we won't go to sports. The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but for now, we will assume that $\text{threshold} = 0.5$. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision. Precision is the ratio of true positives divided by the sum of true positives and false positives while recall is the ratio of true positives divided by the sum of true positives and false negatives. 
+where $1$ means that we will go to sports and $0$ that we won't go to sports. 
+
+The threshold for category $i$ may be chosen manually and fine tuned on a validation set, but for now, we will assume that $\text{threshold} = 0.5$. If you decide to increase the threshold, your model is likely to achieve a higher precision at the expense of recall and if you decide to decrease the threshold, your model is likely to achieve a higher recall at the expense of precision. Precision and recall will be defined more thoroughly later on.
 
 Now, we want to introduce a matrix-based approach for forward propagating the input data to the output layer, because first, it will make the notation easier and second, it will make your code run faster when you actually need to implement it in Python, because vectorized operations are highly efficient and optimized. So first, we will rewrite equation (3) as 
 $$
@@ -108,9 +113,9 @@ $$
 $$
 and then, equation (4) can be rewritten as
 $$
-\textbf{a}^l = f(\textbf{z}^l),
+\textbf{a}^l = \textbf{f}(\textbf{z}^l),
 $$
-where, in case of the sigmoid function, the activation function $f(\cdot)$ is applied element wise such as
+or written out explicitly:
 $$
 \left[ 
 	\matrix{
@@ -122,14 +127,14 @@ $$
 \right] = 
 \left[
 	\matrix{
-		f(z_1^l) \\
-		f(z_2^l) \\
+		\textbf{f}(\textbf{z}^l)_1 \\
+		\textbf{f}(\textbf{z}^l)_2 \\
 		\vdots \\
-		f(z_{n^l}^l) \\
+		\textbf{f}(\textbf{z}^l)_{n^l} \\
 	}
 \right].
 $$
-So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\textbf{z}^l$, $\textbf{a}^{l-1}$, and $\textbf{b}^l$. For each neuron in layer $l$, the weight matrix $\textbf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\textbf{W}^l$ are $n^l \times n^{l-1}$. Then finally, the sigmoid activation function $f(\cdot)$ is just applied to each element of $\textbf{z}^l$ to produce the activation vector $\textbf{a}^l$. 
+So, we just stacked the weighted inputs, the activations and the biases of each layer into column vectors $\textbf{z}^l$, $\textbf{a}^{l-1}$, and $\textbf{b}^l$. For each neuron in layer $l$, the weight matrix $\textbf{W}^l$ contains one row and for each neuron in layer $l-1$, it contains one column, meaning that the dimensions of $\textbf{W}^l$ are $n^l \times n^{l-1}$. Then finally, activation function $\textbf{f}(\cdot)$ is just applied to each element of $\textbf{z}^l$ to produce the activation vector $\textbf{a}^l$. 
 
 We can now apply equations (9) and (11) recursively all the way to the output layer $L$, until we compute the predicted probabilities of the network as follows
 $$
@@ -156,7 +161,7 @@ $$
 $$
 where each $\hat{y}_i$ is converted into an actual decision using (8). 
 
-Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For a classification problems where *exactly* one of  $n^L$​ classes must be predicted (i.e. a Multi-Class classification problem), a commonly used loss function is the *categorical cross entropy*, which is defined as follows
+Having computed $\textbf{a}^L$​, we can compute a certain *loss* which indicates how well or badly our model predicts for a *single* training example. For classification problems where *exactly* one of  $n^L$​ classes must be predicted (i.e. a multi-class classification problem), a commonly used loss function is the *categorical cross entropy*, which is defined as follows
 
 
 $$
@@ -182,11 +187,13 @@ in all of the 4 above cases, we get the desired result.
 
 ## Forward Propagation for a Batch of  Training Examples
 
-Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, of dimensions $(M \times n^0 \times 1)$, where each element in the depth dimension belongs to a different training example: 
+Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, where each element in the depth dimension belongs to a different training example: 
 
 ![X_and_A0](X_and_A0.png)
 
 Figure 2
+
+where $x^m_i = a^{l, m}_i$ represents the $i$-th activation in layer $l$ of the $m$-th training example.  
 
 Next, equation (9) becomes
 $$
@@ -198,7 +205,11 @@ or written out explicitly
 
 Figure 4
 
-where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times in order to make the whole operation compatible. The dimensions of each component are as follows
+where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have been broad-casted $M$ times along the depth dimension in order to make the whole operation compatible. 
+
+Note that when implementing the forward propagation for a whole batch of training examples at once in NumPy, the batch-dimension must be placed at the first axis of any 3D array (`axis=0`), i.e. every training example must be placed in a separate row.  However, in the figures above and the below figures to come, we placed each training example in the batch dimension, which is normally at `axis=2`. We chose to draw each training example in the depth dimension, because it is simply easier to draw that way. For the actual implementation in NumPy though, it's important to place each training example in a different row.  
+
+In the implementation with NumPy, the dimensions of each component of figure 4 are as follows:
 
 - $\textbf{Z}^l: M \times n^l \times 1$
 - $\textbf{W}^l: M \times n^l \times n^{l-1}$
@@ -206,13 +217,12 @@ where the weight matrix $\textbf{W}^l$ and the bias vector $\textbf{B}^l$ have b
 - $\textbf{W}^l \textbf{A}^{l-1}: M \times n^{l} \times 1$. Note here, that each of the $M$ matrix multiplications is done independently and in parallel
 - $\textbf{B}^l: M \times n^{l} \times 1$
 
-so the dimensions are conform. Also note that we chose to represent the depth dimension as the first dimension (`axis=0`), because that is how `numpy` arranges matrix multiplications of $ND$ arrays where $N>2$, and because it is easier to draw that way. 
-
 Then, like before, the activation function is applied independently to each training example
+
 $$
-\textbf{A}^l = f(\textbf{Z}^l),
+\textbf{A}^l = \textbf{f}(\textbf{Z}^l),
 $$
-which, in case of the sigmoid function is equal to
+which can be written out to
 
 ![Al](Al.png)
 
@@ -234,11 +244,11 @@ $$
 C = \frac{1}{M} \sum_{m=1}^M L(\textbf{y}^m, \hat{\textbf{y}}^m) 
 = -\frac{1}{M} \sum_{m=1}^M \sum_{i=1}^{n^L} y_i^m log(\hat{y}_i^m),
 $$
-Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size`. Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to account for over-fitting.
+Note that the loss function represents an error over a *single* training example, while the cost function is an aggregation of the loss over $M$ training examples. When computing the cost for $M$ training examples, it makes sense to choose the average as an aggregation method, because the average cost doesn't increase linearly with the `batch_size` (like e.g. the sum). Also, the cost function may include a regularization term, which should be monotonically increasing in the number of parameters of the model, to penalize models with lots of free parameters, leading to simpler models, and hence to fight over-fitting. 
 
 # Backward Propagation
 
-Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. This section will describe how to calculate (1), the gradient using the backpropagation algorithm which is a very cost efficient algorithm. First, the backpropagation algorithm is explained for a single training example and then extended to a whole batch of training examples. 
+Neural networks learn by iteratively adjusting their weights and biases such that the cost decreases, i.e. such that the predictions become more accurate. This goal is achieved by (1) computing all partial derivatives of the cost w.r.t. the weights and biases in the network (the *gradient*) and (2) by updating the weights and biases using *gradient descent*. This section will describe how to calculate, the gradient using the backpropagation algorithm which is a very cost efficient algorithm. First, the backpropagation algorithm is explained for a single training example and then extended to a whole batch of training examples. 
 
 The backpropagation algorithm generally works as follows. For any given layer $l$​​​, the backpropagation algorithm computes an intermediate quantity, the so called *error*​​​ at layer $l$, and then computes the gradients of the weights and biases in layer $l$ using that error. Then, the error is propagated one layer backwards and the gradients are computed again. This process is repeated recursively until the gradients of the weights and biases in layer 1 (layer with index 1) are computed. 
 
@@ -246,7 +256,7 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
 
 - BP1.x: An equation for the error at the output layer, needed for initializing the backpropagation algorithm
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^L$ or BP1.1
-  - When considering `batch_size`training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​.
+  - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^L$​ or BP1.2​.
 - BP2.x: A recursive equation relating the error at layer $l+1$​​​ to the error at layer $l$​​​​​​​​, needed for recursively calculating the error at each layer.
   - When considering a single training example, we will refer to this equation as $\boldsymbol{\delta}^l$ or BP2.1
   - When considering `batch_size` training examples, we will refer to this equation as $\boldsymbol{\Delta}^l$​ or BP2.2.
@@ -258,15 +268,15 @@ The backpropagation algorithm is based on 4 key equations which we will derive i
   - The derivative of the *loss* function w.r.t the biases in layer $l$​​​ when considering a *single* training example, i.e. $\frac{\partial L}{\partial \textbf{b}^l}$​​​. We'll refer to this equation as BP4.1
   - The derivative of the *cost* function w.r.t. the biases in layer $l$​​​​ when considering a *batch* of training examples, i.e. $\frac{\partial C}{\partial \textbf{b}^l}$​​​​​​.We'll refer to this equation as BP4.2
 
-Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` training examples at once is just a little overhead in math but will save a lot of time when running the actual code.  
+Most of the work will go into deriving equations BP1.1-BP4.1 and applying these equations to `batch_size` training examples at once is just a little overhead but will save a lot of time when running the actual code.  
 
 ## Why Backpropagation
 
 You might wonder why we should bother trying to derive a complicated algorithm and not use other seemingly simpler methods for computing all partial derivatives in the network. To motivate the need for the backpropagation algorithm, assume we simply wanted to compute the partial derivative of weight $w_{j}$ as follows[^2]
 $$
-\frac{\partial L}{\partial w_{j}} = \frac{L(\textbf{w} + \epsilon \textbf{e}_{j}, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon},
+\frac{\partial L}{\partial w_{j}} = \text{lim}_{\epsilon \rightarrow 0} \left( \frac{L(\textbf{w} + \epsilon \textbf{e}_{j}, \textbf{b}) - L(\textbf{w}, \textbf{b})}{\epsilon} \right),
 $$
-where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​​ is a infinitesimal scalar and where $\textbf{e}_j$​​ is the unit vector being $1$​​ at position $j$​​ and $0$​​ elsewhere. Assuming that our network has one million parameters, we would need to calculate $L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$​ a million times (once for each $j$​), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$​ once, summing up to a total of $1,000,001$​ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just *one* forward- and one backward pass through the network, so the backpropagation algorithm is a very efficient way of computing the gradients.
+where $\textbf{w}$​​ and $\textbf{b}$​​ are flattened vectors containing all weights and biases of the network, where $\epsilon$​​ is a infinitesimal scalar and where $\textbf{e}_j$​​ is the unit vector being $1$​​ at position $j$​​ and $0$​​ elsewhere. Assuming that our network has one million parameters, we would need to calculate $L(\textbf{w} + \epsilon \textbf{e}_j, \textbf{b})$​ a million times (once for each $j$​), and also, we would need to calculate $L(\textbf{w}, \textbf{b})$​ once, summing up to a total of $1,000,001$​ forward passes for just a *single* training example! As we will see in this section, the backpropagation algorithm let's us compute all partial derivatives of the network with just *one* forward- and one backward pass through the network, so the backpropagation algorithm is a very cost efficient way of computing the gradients.
 
 [^2]: For simplicity reasons we left out the layer and column indices of the weight matrices, because this has no influence on the point we want to make. 
 
@@ -280,7 +290,7 @@ $$
 $$
 Notice that the transposition $T$ must be used, because the derivative of a scalar ($L$) w.r.t a vector ($\textbf{z}^l$) is defined as a row vector[^1].
 
-[^1]: Notice that some authors define the derivative of a scalar w.r.t. a vector as a column vector. No matter which notation is used, the results of one notation should be equal to the transposition of the other notation. 
+[^1]: Notice that some authors define the derivative of a scalar w.r.t. a vector as a column vector. No matter which notation is used, the results of one notation should be equal to the transposition of the results using the other notation. 
 
 The error at the output layer can be expressed as follows (remembering the chain rule from calculus)
 $$
@@ -307,7 +317,7 @@ $$
     }
 \right],
 $$
-which ends up as a $1 \times n^L$ row vector. In its most general form, the above vector matrix product represents **BP1.1**, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer $a^L$​​, the above equation cannot be simplified any further. In the next section, we will show how to further specify this equation by choosing a specific loss and activation function. 
+which ends up as a $1 \times n^L$ row vector. In its most general form, the above vector-matrix product represents **BP1.1**, so without making any assumptions about the loss function $L$​​ and the activation function in the output layer​​, the above equation cannot be simplified any further. In the next section, we will show how to further specify this equation by choosing a specific loss and activation function. 
 
 #### Example
 
@@ -315,14 +325,14 @@ For multi-class classification problems, a common choice for the loss function i
 $$
 a^l_j = \textbf{f}([z^l_1, z^l_2, ..., z^l_j, ..., z^l_{n^l}])_j = \frac{e^{z^l_j}}{\sum_{k=1}^{n^l} e^{z^l_k}}.
 $$
-First, we will try to find concrete expressions for each component of $\nabla L(\textbf{a}^L)$ in (27). From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$,
+First, we will try to find concrete expressions for each component of $\nabla L(\textbf{a}^L)$ in equation (23). From the categorical cross entropy loss function in equation 15, we can derive that for $i = 1, 2, ..., n^L$,
 $$
 \frac{\partial L}{\partial a^{L}_j} = - \frac{y_j}{a^{L}_j},
 $$
 
 where we used the fact that $\hat{y}_j = a^{L}_j$​​​​​​​. 
 
-Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (27). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
+Second, we want to find concrete expressions for each component of $\textbf{J}_{\textbf{a}^L}(\textbf{z}^L)$​​​​ in (23). When taking the derivative of the Softmax function, we need to consider two cases. The first case is represented by $\frac{\partial a^L_j}{\partial z^L_k}$​​​​, if $j=k$​​​​, i.e. $\frac{\partial a^L_j}{\partial z^L_j}$​​​​.
 $$
 \large
 \begin{array}{l}
@@ -330,8 +340,8 @@ $$
 	& = \frac{e^{z^L_j} \left( \sum^{n^L}_{k=1} e^{z^l_k} \right) - e^{z^L_j} e^{z^L_j}}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
 	& = \frac{e^{z^L_j} \left( \left(\sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j} \right)}{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right)^2} \\
 	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \frac{\left( \sum^{n^L}_{k=1} e^{z^L_k} \right) - e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \\
-	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
-	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
+	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( \frac{\sum^{n^L}_{k=1} e^{z^L_k}}{\sum^{n^L}_{k=1} e^{z^L_k}} - \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right) \\ 
+	& = \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \left( 1 - \frac{e^{z^L_j}}{\sum^{n^L}_{k=1} e^{z^L_k}} \right),
 \end{array}
 $$
  where we can now use the definition of the Softmax function (equation 28) again to simplify further to
@@ -358,7 +368,7 @@ $$
 	\end{cases}
 $$
 
-Using (29) and (33), we can now fill in each component of (27) as follows
+Using (25) and (29), we can now fill in each component of (23) as follows
 $$
 \nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
 - \left[
@@ -378,7 +388,15 @@ $$
 
 which, when multiplied out, yields
 $$
-\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = 
+\nabla L(\textbf{a}^L) \ \textbf{J}_{\textbf{a}^L}(\textbf{z}^L) = \\
+\left[
+	\matrix{
+		-y_1(1 - a^L_1) + y_2 a^L_1 + ... + y_{n^L} a^L_1 &
+        y_1 a^L_2 - y_2(1 - a^L_2) + ... + y_{n^L} a^L_2 & 
+        ... & 
+        y_1 a^L_{n^L} + y_2 a^L_{n^L} + ... + (-y_{n^L})(1 - a^L_{n^L}) 
+	\matrix}
+\right] = \\
 \left[
 	\matrix{
 		-y_1 + a^L_1(y_1 + y_2 + ... + y_{n^L})
@@ -401,7 +419,7 @@ $$
 
 ### BP2.1
 
-In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested functions of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested function of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
 $$
 (\boldsymbol{\delta}^{l-1})^T
 \coloneqq \frac{\partial L}{\partial \textbf{z}^{l-1}}
@@ -425,7 +443,7 @@ $$
 	}
 \right].
 $$
-In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (25), 
+In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (21), we have defined every element as
 $$
 \frac{\partial L}{\partial z^l_j} = \delta^l_j.
 $$
@@ -439,12 +457,12 @@ where we need to use the total differential. To add a little more intuition why 
 
 Figure 7 
 
-When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes if $z^{l-1}_2$ (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 sorts of ways how to achieve that:
+When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes when $z^{l-1}_2$ changes (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 different paths how to achieve that:
 
-1. A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
-2. A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_i \ \text{for} \ i = 1, 3$, if e.g. the softmax activation function is used, and each change in $a^{l-1}_i \ \text{for} \ i = 1, 3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
+1. Direct path: A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
+2. Indirect path: A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ (if e.g. the softmax activation function is used, since the activations of the softmax function alway sum up to 1), and each change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
 
-Using (39) and (40), we can fill in each component of (38) as follows
+Using (35) and (36), we can fill in each component of (34) as follows
 $$
 \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
 = \left[
@@ -504,7 +522,7 @@ $$
 = \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
 = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}),
 $$
-or similarly
+or similarly, after iterating one layer forward,
 $$
 (\boldsymbol{\delta}^{l})^T 
 = \nabla L(\textbf{z}^{l+1}) \ \textbf{J}_{\textbf{z}^{l+1}}(\textbf{z}^{l})
@@ -512,7 +530,7 @@ $$
 $$
 
 
-The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its Jacobi matrix for the backpropagation algorithm. 
+The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its forward pass and its Jacobi matrix for the backpropagation algorithm. In other words, we regard any activation function as an interchangeable - *and completely independent* - component of our neural network. 
 
 #### Example 
 
@@ -524,10 +542,10 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-Using the above result, we can write out (42) as follows
+Using the above result, we can write out (40) as follows
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
-= \left[
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+\left[
 	\matrix{
 		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
 	}
@@ -547,13 +565,39 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		0 & 0 & 0 & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
 	}
-\right].
+\right]
+,
 $$
 
+which, in this specific example, reduces to 
+$$
+\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+\left[
+	\matrix{
+		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
+	}
+\right]
+\left[
+	\matrix{
+		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
+		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
+		\vdots & \vdots & \ddots & \vdots \\
+		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
+	}
+\right]
+\odot
+\left[
+	\matrix{
+		a^{l-1}_1(1 - a^{l-1}_1) & a^{l-1}_2(1 - a^{l-1}_2) & ... & a^{l-1}_{n^{l-1}}(1 - a^{l-1}_{n^{l-1}})
+	}
+\right]
+.
+$$
+because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian is a diagonal matrix, and a row vector multiplied with a diagonal matrix can be reformulated as the *Hadamard* product ($\odot$ operator) between the row vector and the elements on the main diagonal of the diagonal matrix. 
 
 ### BP3.1
 
-After calculating the errors at a certain layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can be done as follows
+After calculating the errors at a certain layer, we now want to relate them to the derivative of the loss w.r.t the weights in layer $l$, which we can be done as follows 
 
 $$
 \frac{\partial L}{\partial \textbf{W}^l} 
@@ -592,13 +636,13 @@ $$
 
 where $J_{\textbf{z}^l}(\textbf{W}^l)$ is a $n^l \times (n^l \times n^{l-1})$ matrix, since there are $n^l$ components in $\textbf{z}^l$ and $n^l \times n^{l-1}$ components in $\textbf{W}^l$. 
 
-Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
+Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (21), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
 
 First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
 \frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
 $$
-Next, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j \neq i$. In that case, the weight $w^l_{i, k}$ is not connected to neuron $j$ in layer $l$, so 
+Next, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j \neq i$. In that case, the weight $w^l_{i, k}$ is not connected to neuron $j$ in layer $l$, so $z^l_j$ will never change if $w^l_{i,k}$ changes and therefore,
 $$
 \frac{\partial z^l_j}{\partial w^l_{i,k}} = 0.
 $$
@@ -610,7 +654,7 @@ $$
 	0 & \text{if} \ j \neq i \\
 \end{cases}
 $$
-Using (25) and (50), we can now fill in each value of (47) as follows
+Using (21) and (48), we can now fill in each value of (45) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
@@ -710,7 +754,7 @@ $$
 	}
 \right]
 $$
-Again, the components of $\nabla L(\textbf{z}^l)$ are given by (25), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see from (3) that 
+Again, the components of $\nabla L(\textbf{z}^l)$ are given by (21), and to derive each component of $J_{\textbf{z}^l}(\textbf{b}^l)$, we can easily see from (3) that 
 $$
 \frac{\partial z^l_j}{\partial b^l_k} = 
 \begin{cases}
@@ -718,7 +762,7 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-So, using (25) and (57), we can re-write equation (56) as follows
+So, using (21) and (55), we can re-write equation (54) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
@@ -747,7 +791,7 @@ The above equation represents **BP4.1**.
 
 ## Backpropagation for a Batch of Training Examples
 
-In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `numpy`. 
+In the previous section, we have derived equations which can help us to compute the gradients of a *single* training example. Computing these expressions separately for each training example will take a tremendous amount of time, so in this section, we aim to extend these equations so that we can compute the gradient for `batch_size` training examples at once, harnessing already optimized and extremely efficient matrix multiplication libraries such as `NumPy`. 
 
 ### BP1.2
 
@@ -774,19 +818,19 @@ $$
     \vdots \\ 
     \frac{\partial L}{\partial a^{L}_{n^L}}
     }
-\right]
+\right],
 $$
-Next, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
+Next, for each training example $m$, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
 
 ![Delta_L](Delta_L.png)
 
 Figure 8
 
-where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
+where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ dimensional array. Notice that the matrix-vector multiplications for each training example, i.e. each element in the depth dimension or where `axis=0`, is done independently and in parallel. In its most general form, the above equation represents **BP1.2**.
 
 #### Example
 
-Assuming we are using the categorical cross entropy cost function from equation (24) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
+Assuming we are using the categorical cross entropy cost function from equation (19) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
 
 ![Delta_L_example](Delta_L_example.png)
 
@@ -803,16 +847,10 @@ $$
 Again, we will first transpose both sides of the above equation giving us
 $$
 \boldsymbol{\delta}^{l-1} 
-= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l,
-$$
-which, in our use case, is equivalent to the following, since, as the examples will show, the Jacobian is usually a symmetric matrix
-$$
-\boldsymbol{\delta}^{l-1} 
-= \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}) \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
+= (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
 $$
 
-
-As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
+As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ along `axis and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
 ![Delta_l_1.png](Delta_l_1.png)
 
@@ -830,7 +868,7 @@ Figure 11
 
 ### BP3.2
 
-Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
+Remember that the real quantities of interest during backpropagation are the gradients of the *cost* function w.r.t. the weights and biases, because we need those to adjust the weights and biases into the direction so that the overall cost decreases. Also, recall that the cost is just the averaged loss over $M$ training examples, i.e. 
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = \frac{1}{M} \sum^M_{m=1} \frac{\partial L^m}{\partial \textbf{W}^l},
 $$
@@ -853,7 +891,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (64) as follows
+so, using that, we can rewrite (62) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -877,13 +915,13 @@ Using the same notation as before, we can represent the above equation such that
 
 Figure 12
 
-where $np.mean$ refers to the `mean` function of `numpy` . Figure 12 can be multiplied out as
+where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be multiplied out as
 
  ![dC_dW_l_2](dC_dW_l_2.png)
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples of each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
 
 ### BP4.2
 
@@ -913,7 +951,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (70) and plug (72) back into the transpose of (70) yielding
+From here on out, it is really straight forward. Transpose both sides of (65) and use (67), yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -926,36 +964,19 @@ $$
 	}
 \right].
 $$
-Representing (73) such that each training example refers to a separate element of the depth dimension, we will get
+Representing (68) such that each training example refers to a separate element of the depth dimension, we will get
 
 ![dC_db_l](dC_db_l.png)
 
 Figure 14
 
-where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**. 
-
-## Summary
-
-To summarize, in our backpropagation module, we want to implement the following 4 equations for an arbitrary network topology and activation functions:
-
-- BP1.2: 
-  - $\boldsymbol{\Delta}^L$ from figure 8
-  - Shape: $M \times n^L \times 1$ 
-- BP2.2: 
-  - $\boldsymbol{\Delta}^{l-1}$ from figure 10
-  - Shape: $M \times n^{l-1} \times 1$ 
-- BP3.2: 
-  - $\frac{\partial C}{\partial \textbf{W}^l}$ from figure 12
-  - Shape: $M \times n^l \times n^{l-1}$ 
-- BP4.2: 
-  - $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ from figure 14
-  - Shape: $M \times n^l \times 1$ 
+where again, we take the average across all training examples of each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
 
 # Gradient Descent
 
 In the previous section, we described how to compute the gradients, which mathematically speaking, point into the *direction* of the steepest ascent of the cost function. In this section, we will describe how to use the gradients in order to *update* the weights and biases such that the cost decreases. 
 
-We will describe a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2, we can perform the weight updates as
+We will describe a very simple way of updating the weights and biases which is called *Stochastic Gradient Descent* (SGD). Assuming that we have calculated BP3.2 and BP4.2 for all layers, we can perform the weight updates as
 $$
 \textbf{W}^{l}_{s} = \textbf{W}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{W}^l} \right)_{s-1},
 $$
@@ -973,15 +994,13 @@ where $\text{round\_up}$​ is a function that always rounds a floating point nu
 
 [^3]: During one epoch, all training examples have been forward- and backward propagated through the network. Usually, neural networks will need many (50-100) of such epochs to accurately predict the target values. Notice, that during each epoch, $S$​ gradient descent update steps are performed.  
 
-# Loss and activation Functions
+Note that, before updating the weights and biases of each layer, we must have calculated the errors of *all* layers beforehand. Calculating the gradients and updating the weights and biases for each layer simultaneously will yield incorrect gradients, because in BP2.1 and BP2.2, we can see that the error of layer $l$ is also a function of the weights in layer $l+1$. So, if you were to calculate the error of layer $l+1$ and then immediately update the weights in layer $l+1$, you will get a wrong error for layer $l$ in the next iteration. To get the correct errors of each layer, you need to keep the weights fixed. Only after having calculated the errors of each layer, you may update the weights and biases.  
 
-In this section, we will show equations for the forward and backward pass of all loss and activation functions which we want to implement.  
-
-## Loss functions
+# Loss functions
 
 This section will show how all relevant loss functions and their gradients $\nabla L (\textbf{a}^L) = \frac{\partial L}{\partial \textbf{a}^L}$, which are needed as an interim quantity to initialize the error at the output layer (see BP1.1 and BP1.2). 
 
-### Categorical Crossentropy
+## Categorical Crossentropy
 
 Recall from (15) that
 $$
@@ -999,7 +1018,7 @@ $$
 $$
 
 
-### Sum of Squared Errors
+## Sum of Squared Errors
 
 The Sum of Squared Errors loss is defined as
 $$
@@ -1017,11 +1036,11 @@ $$
 $$
 
 
-## Activation Functions
+# Activation Functions
 
-This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2).  
+This section will show all relevant activations functions and their corresponding Jacobians $\textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$ which are needed as an interim quantity when initializing the error at the output layer (see BP1.1 and BP1.2) as well as an interim quantity when backpropagating the error from layer to layer (see BP2.1 and BP2.2). Notice that for all activation functions shown here, the Jacobians are always symmetric matrices, so in the actual Python implementation of the activation functions, we may use that $(\textbf{J}_{\textbf{a}^l}(\textbf{z}^l))^T = \textbf{J}_{\textbf{a}^l}(\textbf{z}^l)$. 
 
-### Sigmoid
+## Sigmoid
 
 Recall from (5) that
 $$
@@ -1041,7 +1060,7 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment 
+### Numerical Stability Amendment 
 
 Imagine the input to the sigmoid function $z^l_i$ is largely negative. In that case, the exponent of $e$ would be extremely large and in that case, $e^{z^l_i}$ would converge to infinity very quickly. If you were to implement the above version of the sigmoid function Python, you will most likely encounter a situation where at some point, $e^{z^l_i} = \infty$ and if $\infty$ is used in subsequent computations, you will get some error. To avoid this error, we will use the following, equivalent version of the sigmoid function for any negative $z^l_i$.
 $$
@@ -1054,15 +1073,15 @@ $$
 \frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
 \frac{1}{1 + e^{-z^l_i}}
 $$
-For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (86). 
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (78). 
 
-### ReLU
+## ReLU
 
 The Rectified Linear Unit (ReLU) is defined as
 $$
 a^l_i = f(z^l_i) = max(0, z^l_i).
 $$
-Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
+Its derivative is actually not defined for $z=0$​, but in practice, the probability that $z=0.000000000...$​ exactly is infinitesimal. So, we will define the derivative of the ReLU function as 
 $$
 \frac{\partial a^l_i}{\partial z^l_i}
 = f'(z^l_i) 
@@ -1071,15 +1090,15 @@ $$
 0 & \text{if} & z^l_i \leq 0
 \end{cases}.
 $$
-Since like the Sigmoid function, ReLU function also just depends on a single scalar, we can know that
+Since like the Sigmoid function, ReLU function also just depends on a single scalar, we know that
 $$
 \frac{\partial a^l_i}{\partial z^l_j} =
 \begin{cases}
 	f'(z^l_i) & \text{if} \ i=j \\
 	0 & \text{if} \ i \neq k
-\end{cases},
+\end{cases}
 $$
-where $f'(z^l_i)$ was already defined in (92). Using (93), we can construct Jacobian of the ReLU as follows 
+where $f'(z^l_i)$ was already defined in (81). Using (82), we can construct Jacobian of the ReLU as follows 
 $$
 \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
 = \left[
@@ -1093,7 +1112,7 @@ $$
 $$
 
 
-### tanh
+## tanh
 
 The tanh function is defined as follows
 $$
@@ -1120,9 +1139,9 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment
+### Numerical Stability Amendment
 
-Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (86). To avoid numerical instability for large positive $z^l_i$, we will introduce the following amendment.
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (84). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
 $$
@@ -1133,9 +1152,9 @@ $$
 \frac{e^{z^l_i} - e^{z^l_i} \ e^{-2{z^l_i}}}{e^{z^l_i} + e^{z^l_i} \ e^{-2{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which equals the original version of the tanh function (86). Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$.  
+Now, for large $z^l_i$, $e^{-2 z^l_i}$ will approach $0$. 
 
-For large negative inputs, we will implement the following amendment:
+For large negative inputs, we will implement the following, equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{e^{2{z^l_i}} - 1}{e^{2{z^l_i}} + 1}
 $$
@@ -1146,15 +1165,15 @@ $$
 \frac{e^{2{z^l_i}} \ e^{-{z^l_i}} - e^{-{z^l_i}}}{e^{2{z^l_i}} \ e^{-{z^l_i}} + e^{-{z^l_i}}} = \\
 \frac{e^{z^l_i} - e^{-z^l_i}}{e^{z^l_i} + e^{-z^l_i}},
 $$
-which also equals the original version of the tanh function (86). Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
+Now, for large negative $z^l_i$, $e^{2 z^l_i}$ will also approach $0$.  
 
-### Softmax
+## Softmax
 
-Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (29) that the Softmax function is defined as
+Unlike all other activation functions discussed so far, the Softmax function is a vector valued function which receives a vector of length $n$ as input and also outputs a vector of length $n$, whose elements sum up to $1$. Recall from (24) that the Softmax function is defined as
 $$
 a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \frac{e^{z^l_i}}{\sum_{k=1}^{n^l} e^{z^l_k}}
 $$
-and recall from (35), that its Jacobian is
+and recall from (30), that its Jacobian is
 $$
 \textbf{J}_{\textbf{a}^l}(\textbf{z}^l) = 
 \left[
@@ -1167,9 +1186,9 @@ $$
 \right].
 $$
 
-#### Numerical Stability Amendment
+### Numerical Stability Amendment
 
-Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (183). The following implementation will do just that:
+Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (91). The following implementation will do just that:
 $$
 a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \\
 \textbf{f}(\textbf{z}^l)_i = \frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}}
@@ -1187,11 +1206,190 @@ where $\text{max}(\textbf{z}^l)$ represents the maximum of $\textbf{z}^l$, which
 
 # Implementation
 
-The following diagram shows the flow of data through the neural network:
+The actual Python implementation can be found in the `src/lib` directory which contains the following packages:
 
-![data_flow](data_flow.png)
+- `activation_functions` : Contains separate modules (i.e. python files) for each activation function which all have the same signature so that they can be used interchangeably. For each activation function, the forward and backward pass are implemented as described in the [Activation Functions](#Activation Functions) section
+- `data_generators` : Contains data generators yielding batches of training data for supervised learning problems. Each type of data generator must implement the `train`, `val`, and `test` method so that they can be used interchangeably. Currently, an image data generator has been implemented. 
+- `layers` : Contains different layer types responsible for forward- and backpropagation as well as gradient computations. Each layer type must implement the `init_parameters`, `forward_propagate`, `backward_propagate`, `compute_weight_gradients`, and `compute_bias_gradients` methods. 
+- `losses` : Implements the loss as well as cost computation and initializes backpropagation. Each loss must implement `compute_losses`, `compute_cost`, and `init_error` methods. We chose to initialize the backpropagation in this class, because initializing backpropagation is dependent on the choice of loss/cost function.
+- `metrics` : Implements different metrics for evaluating performance during or after training. Each metric must implement the `update_state`, `result`, and `reset_state` methods. 
+- `optimizers` : Implements the weights and biases updates. Each optimizer must implement the `update_parameters` method and at the moment, Stochastic Gradient Descent is supported. 
+- `models` : Implements different types of models in which all of the above building blocks come together and are executed in a specific way. Each type of model must implement the `train_step`, `fit`, `predict`, `val_step`, and `evaluate` methods. Currently sequential models are supported which consist of a stack of layers executed sequentially. 
 
-Should the above picture not be large enough, it can also be found at `resources\drawings\implementation.png`. Each small square box represents an input or output to some function and each small rounded box represents a function. The data flow starts at the top left at `Layer_0_forward` and ends at `Parameter_updates`. 
+# Tests
+
+A lot of tests can be found in the `tests` folder which generally contains one module per package described above. The most interesting tests are contained in `tests/test_model.py` which takes a simple example neural network and tests that the forward pass produces the expected dendritic potentials, activations, losses and cost and that the backward pass produces the expected gradients. The expected results were computed manually and the actual results were computed using the above described algorithms for forward- and backward propagation. 
+
+The architecture the example network is as follows:
+
+- Input layer: 3 neurons
+- Hidden layer: 2 neurons with sigmoid activation function
+- Output layer: 2 neurons with softmax activation function and Categorical Cross -ntropy loss
+
+As the forward pass computations are relatively trivial and have already been explained in the [Forward Propagation](#Forward Propagation) section, we will now show how the gradients of each layer are computed manually. 
+
+Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{b}^1}$ as well as $\frac{\partial L}{\partial \textbf{W}^2} $ and $\frac{\partial L}{\partial \textbf{b}^2}$. Each of these terms can be expanded using the chain rule. We will start with the gradients in the hidden layer:
+$$
+\frac{\partial L}{\partial \textbf{W}^2} = 
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
+\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2},
+$$
+where 
+$$
+\frac{\partial L}{\partial \textbf{a}^2} = 
+\left[
+	\matrix{
+		\frac{\partial L}{\partial a^2_1} & \frac{\partial L}{\partial a^2_2}
+	}
+\right] = 
+-\left[
+	\matrix{
+		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
+	}
+\right],
+$$
+
+(gradient of the categorical cross entropy loss)
+$$
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} =
+\left[
+	\matrix{
+		\frac{\partial a^2_1}{\partial z^2_1} & \frac{\partial a^2_1}{\partial z^2_2} \\
+		\frac{\partial a^2_2}{\partial z^2_1} & \frac{\partial a^2_2}{\partial z^2_2}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
+		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
+	}
+\right],
+$$
+
+(Jacobian of the softmax activation function)
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{W}^2} =
+\left[
+	\matrix{
+		\frac{\partial z^2_1}{\partial w^2_{1,1}} & \frac{\partial z^2_1}{\partial w^2_{1,2}} & \frac{\partial z^2_1}{\partial w^2_{2,1}} & \frac{\partial z^2_1}{\partial w^2_{2,2}} \\
+		\frac{\partial z^2_2}{\partial w^2_{1,1}} & \frac{\partial z^2_2}{\partial w^2_{1,2}} & \frac{\partial z^2_2}{\partial w^2_{2,1}} & \frac{\partial z^2_2}{\partial w^2_{2,2}}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^1_1 & a^1_2 & 0 & 0 \\
+		0 & 0 & a^1_1 & a^1_2
+	}
+\right],
+$$
+
+(see equation (3))
+
+which, after forward propagation, can be filled in with exact values. As a sanity check, note that (95) will yield a $1 \times 4$ row vector (or stacked as a $2 \times 2$ matrix if you will), i.e. it has 4 elements, just as many elements as $\textbf{W}^2$ should have. 
+
+Having calculated $\frac{\partial L}{\partial \textbf{W}^2}$, calculating $\frac{\partial L}{\partial \textbf{b}^2}$ is straight forward, because we already know some intermediate quantities:
+$$
+\frac{\partial L}{\partial \textbf{b}^1} = 
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
+\frac{\partial \textbf{z}^2}{\partial \textbf{b}^2}
+,
+$$
+where the new quantity
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{b}^2} = 
+\left[
+	\matrix{
+		1 & 0 \\
+		0 & 1
+	}
+\right]
+$$
+
+(see equation (3)), which will yield a $1 \times 2$ row vector, as expected. 
+
+Now, let's move to the weights in the first layer: 
+$$
+\frac{\partial L}{\partial \textbf{W}^1} = 
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2}
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1}
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1}
+\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1},
+$$
+
+where the new quantities are
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1} = \left[
+	\matrix{
+		\frac{\partial z^2_1}{\partial a^1_1} & \frac{\partial z^2_1}{\partial a^1_2} \\
+		\frac{\partial z^2_2}{\partial a^1_1} & \frac{\partial z^2_2}{\partial a^1_2}
+	}
+\right] = 
+\left[
+	\matrix{
+		w^2_{1,1} & w^2_{1,2} \\
+		w^2_{2,1} & w^2_{2,2}
+	}
+\right],
+$$
+(see equation (3))
+$$
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1} = 
+\left[
+	\matrix{
+		\frac{\partial a^1_1}{\partial z^1_1} & \frac{\partial a^1_1}{\partial z^1_2} \\
+		\frac{\partial a^1_2}{\partial z^1_1} & \frac{\partial a^1_2}{\partial z^1_2}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^1_1(1 - a^1_1) & 0 \\
+		0 & a^1_2(1 - a^1_2)
+	}
+\right],
+$$
+(Jacobian of the sigmoid function)
+$$
+\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1} = 
+\left[
+	\matrix{
+		\frac{\partial z^1_1}{\partial w^1_{1,1}} & \frac{\partial z^1_1}{\partial w^1_{1,2}} & \frac{\partial z^1_1}{\partial w^1_{1,3}} & \frac{\partial z^1_1}{\partial w^1_{2,1}} & \frac{\partial z^1_1}{\partial w^1_{2,2}} & \frac{\partial z^1_1}{\partial w^1_{2,3}} \\
+		\frac{\partial z^1_2}{\partial w^1_{1,1}} & \frac{\partial z^1_2}{\partial w^1_{1,2}} & \frac{\partial z^1_2}{\partial w^1_{1,3}} & \frac{\partial z^1_2}{\partial w^1_{2,1}} & \frac{\partial z^1_2}{\partial w^1_{2,2}} & \frac{\partial z^1_2}{\partial w^1_{2,3}}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^0_1 & a^0_2 & a^0_3 & 0 & 0 & 0 \\
+		0 & 0 & 0 & a^0_1 & a^0_2 & a^0_3
+	}
+\right]
+$$
+(see equation (3)).
+
+Finally, the computation of the bias gradients of layer 1 is very similar to the one of the weight gradients of layer 1, i.e.
+$$
+\frac{\partial L}{\partial \textbf{b}^1} = 
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2}
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1}
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1}
+\frac{\partial \textbf{z}^1}{\partial \textbf{b}^1},
+$$
+ where the new quantity is
+$$
+\frac{\partial \textbf{z}^1}{\partial \textbf{b}^1} = 
+\left[
+	\matrix{
+		1 & 0 \\
+		0 & 1
+	}
+\right]
+$$
+(see equation (3)).
+
+All of the above gradients can be computed after randomly initializing the weights and biases of the network and after providing some random input vector $\textbf{a}^0$. To see the actual implementation of this test, I suggest to view the code in `tests/test_model.py`. 
 
 # Empirical results
 
@@ -1201,12 +1399,12 @@ So, we chose a model with an input layer of $28 \times 28 = 784$ neurons (which 
 
 Below you can see a summary of the results and the settings that we used:
 
-| Library    | Epochs | Batch Size | Learning Rate | Categorical Cross-entropy | Accuracy | Precision | Recall | Training Time | Processing Unit |
+| Library    | Epochs | Batch Size | Learning Rate | Categorical Cross-Entropy | Accuracy | Precision | Recall | Training Time | Processing Unit |
 | ---------- | ------ | ---------- | ------------- | ------------------------- | -------- | --------- | ------ | ------------- | --------------- |
-| Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.95      | 0.950  | 17.95 min     | CPU             |
+| Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.950     | 0.950  | 17.95 min     | CPU             |
 | Tensorflow | 5      | 32         | 0.1           | 0.290                     | 0.984    | 0.941     | 0.895  | 6.64 min      | GPU             |
 
-Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count up all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
+Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
 $$
 \text{accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}
 $$
