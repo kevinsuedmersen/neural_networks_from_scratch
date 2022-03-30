@@ -1218,17 +1218,17 @@ The actual Python implementation can be found in the `src/lib` directory which c
 
 # Tests
 
-A lot of tests can be found in the `tests` folder which generally contains one module per package described above. The most interesting tests are contained in `test_model.py` which takes a simple example neural network and tests that the forward pass produces the expected dendritic potentials, activations, losses and cost and that the backward pass produces the expected errors and gradients. The expected results were computed manually and the actual results were computed using the above described algorithms for forward- and backward propagation. 
+A lot of tests can be found in the `tests` folder which generally contains one module per package described above. The most interesting tests are contained in `tests/test_model.py` which takes a simple example neural network and tests that the forward pass produces the expected dendritic potentials, activations, losses and cost and that the backward pass produces the expected gradients. The expected results were computed manually and the actual results were computed using the above described algorithms for forward- and backward propagation. 
 
 The architecture the example network is as follows:
 
 - Input layer: 3 neurons
 - Hidden layer: 2 neurons with sigmoid activation function
-- Output layer: 2 neurons with softmax activation function
+- Output layer: 2 neurons with softmax activation function and Categorical Cross -ntropy loss
 
 As the forward pass computations are relatively trivial and have already been explained in the [Forward Propagation](#Forward Propagation) section, we will now show how the gradients of each layer are computed manually. 
 
-Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{b}^1}$ as well as $\frac{\partial L}{\partial \textbf{W}^2} $ and $\frac{\partial L}{\partial \textbf{b}^2}$. Each of these terms can be expanded using the chain rule.
+Since our example network has two layers with trainable parameters, i.e. the hidden and output layer, what we are most interested in are $\frac{\partial L}{\partial \textbf{W}^1}$ and $\frac{\partial L}{\partial \textbf{b}^1}$ as well as $\frac{\partial L}{\partial \textbf{W}^2} $ and $\frac{\partial L}{\partial \textbf{b}^2}$. Each of these terms can be expanded using the chain rule. We will start with the gradients in the hidden layer:
 $$
 \frac{\partial L}{\partial \textbf{W}^2} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
@@ -1247,9 +1247,10 @@ $$
 	\matrix{
 		\frac{y_1}{a^2_1} & \frac{y_2}{a^2_2}
 	}
-\right]
+\right],
 $$
 
+(gradient of the categorical cross entropy loss)
 $$
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} =
 \left[
@@ -1263,9 +1264,10 @@ $$
 		a^2_1(1 - a^2_1) & -a^2_1 a^2_2 \\
 		-a^2_2 a^2_1 & a^2_2(1 - a^2_2)
 	}
-\right]
+\right],
 $$
 
+(Jacobian of the softmax activation function)
 $$
 \frac{\partial \textbf{z}^2}{\partial \textbf{W}^2} =
 \left[
@@ -1279,10 +1281,10 @@ $$
 		a^1_1 & a^1_2 & 0 & 0 \\
 		0 & 0 & a^1_1 & a^1_2
 	}
-\right]
+\right],
 $$
 
-
+(see equation (3))
 
 which, after forward propagation, can be filled in with exact values. As a sanity check, note that (95) will yield a $1 \times 4$ row vector (or stacked as a $2 \times 2$ matrix if you will), i.e. it has 4 elements, just as many elements as $\textbf{W}^2$ should have. 
 
@@ -1305,10 +1307,7 @@ $$
 \right]
 $$
 
-
-
-
-which will yield a $1 \times 2$ row vector, as expected. 
+(see equation (3)), which will yield a $1 \times 2$ row vector, as expected. 
 
 Now, let's move to the weights in the first layer: 
 $$
@@ -1335,7 +1334,7 @@ $$
 	}
 \right],
 $$
-
+(see equation (3))
 $$
 \frac{\partial \textbf{a}^1}{\partial \textbf{z}^1} = 
 \left[
@@ -1351,7 +1350,7 @@ $$
 	}
 \right],
 $$
-
+(Jacobian of the sigmoid function)
 $$
 \frac{\partial \textbf{z}^1}{\partial \textbf{W}^1} = 
 \left[
@@ -1365,12 +1364,11 @@ $$
 		a^0_1 & a^0_2 & a^0_3 & 0 & 0 & 0 \\
 		0 & 0 & 0 & a^0_1 & a^0_2 & a^0_3
 	}
-\right].
+\right]
 $$
+(see equation (3)).
 
-
-
-Finally, the bias gradients of layer 1 are very similar to the weight gradients of layer 1, i.e.
+Finally, the computation of the bias gradients of layer 1 is very similar to the one of the weight gradients of layer 1, i.e.
 $$
 \frac{\partial L}{\partial \textbf{b}^1} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
@@ -1387,8 +1385,10 @@ $$
 		1 & 0 \\
 		0 & 1
 	}
-\right].
+\right]
 $$
+(see equation (3)).
+
 All of the above gradients can be computed after randomly initializing the weights and biases of the network and after providing some random input vector $\textbf{a}^0$. To see the actual implementation of this test, I suggest to view the code in `tests/test_model.py`. 
 
 # Empirical results
