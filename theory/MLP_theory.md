@@ -1312,13 +1312,64 @@ which will yield a $1 \times 2$ row vector, as expected.
 
 Now, let's move to the weights in the first layer: 
 $$
-\frac{\partial L}{\partial \textbf{W}^1} = \\
+\frac{\partial L}{\partial \textbf{W}^1} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2}
 \frac{\partial \textbf{z}^2}{\partial \textbf{a}^1}
 \frac{\partial \textbf{a}^1}{\partial \textbf{z}^1}
-\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1} = \\
+\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1},
 $$
+
+where the new quantities are
+$$
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1} = \left[
+	\matrix{
+		\frac{\partial z^2_1}{\partial a^1_1} & \frac{\partial z^2_1}{\partial a^1_2} \\
+		\frac{\partial z^2_2}{\partial a^1_1} & \frac{\partial z^2_2}{\partial a^1_2}
+	}
+\right] = 
+\left[
+	\matrix{
+		w^2_{1,1} & w^2_{1,2} \\
+		w^2_{2,1} & w^2_{2,2}
+	}
+\right],
+$$
+
+$$
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1} = 
+\left[
+	\matrix{
+		\frac{\partial a^1_1}{\partial z^1_1} & \frac{\partial a^1_1}{\partial z^1_2} \\
+		\frac{\partial a^1_2}{\partial z^1_1} & \frac{\partial a^1_2}{\partial z^1_2}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^1_1(1 - a^1_1) & 0 \\
+		0 & a^1_2(1 - a^1_2)
+	}
+\right],
+$$
+
+$$
+\frac{\partial \textbf{z}^1}{\partial \textbf{W}^1} = 
+\left[
+	\matrix{
+		\frac{\partial z^1_1}{\partial w^1_{1,1}} & \frac{\partial z^1_1}{\partial w^1_{1,2}} & \frac{\partial z^1_1}{\partial w^1_{1,3}} & \frac{\partial z^1_1}{\partial w^1_{2,1}} & \frac{\partial z^1_1}{\partial w^1_{2,2}} & \frac{\partial z^1_1}{\partial w^1_{2,3}} \\
+		\frac{\partial z^1_2}{\partial w^1_{1,1}} & \frac{\partial z^1_2}{\partial w^1_{1,2}} & \frac{\partial z^1_2}{\partial w^1_{1,3}} & \frac{\partial z^1_2}{\partial w^1_{2,1}} & \frac{\partial z^1_2}{\partial w^1_{2,2}} & \frac{\partial z^1_2}{\partial w^1_{2,3}}
+	}
+\right] = 
+\left[
+	\matrix{
+		a^0_1 & a^0_2 & a^0_3 & 0 & 0 & 0 \\
+		0 & 0 & 0 & a^0_1 & a^0_2 & a^0_3
+	}
+\right]
+$$
+
+
+
 
 
 # Empirical results
