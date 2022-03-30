@@ -1365,12 +1365,31 @@ $$
 		a^0_1 & a^0_2 & a^0_3 & 0 & 0 & 0 \\
 		0 & 0 & 0 & a^0_1 & a^0_2 & a^0_3
 	}
-\right]
+\right].
 $$
 
 
 
-
+Finally, the bias gradients of layer 1 are very similar to the weight gradients of layer 1, i.e.
+$$
+\frac{\partial L}{\partial \textbf{b}^1} = 
+\frac{\partial L}{\partial \textbf{a}^2} 
+\frac{\partial \textbf{a}^2}{\partial \textbf{z}^2}
+\frac{\partial \textbf{z}^2}{\partial \textbf{a}^1}
+\frac{\partial \textbf{a}^1}{\partial \textbf{z}^1}
+\frac{\partial \textbf{z}^1}{\partial \textbf{b}^1},
+$$
+ where the new quantity is
+$$
+\frac{\partial \textbf{z}^1}{\partial \textbf{b}^1} = 
+\left[
+	\matrix{
+		1 & 0 \\
+		0 & 1
+	}
+\right].
+$$
+All of the above gradients can be computed after randomly initializing the weights and biases of the network and after providing some random input vector $\textbf{a}^0$. To see the actual implementation of this test, I suggest to view the code in `tests/test_model.py`. 
 
 # Empirical results
 
