@@ -1404,7 +1404,7 @@ Below you can see a summary of the results and the settings that we used:
 | Our own    | 5      | 32         | 0.1           | 0.166                     | 0.990    | 0.950     | 0.950  | 17.95 min     | CPU             |
 | Tensorflow | 5      | 32         | 0.1           | 0.290                     | 0.984    | 0.941     | 0.895  | 6.64 min      | GPU             |
 
-Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count up all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
+Note that all metric values of categorical cross-entropy, accuracy, precision and recall were computed on the test set. Also notice that accuracy, precision and recall were computed using *micro averaging* which means that - independently of class - we count all instances of true positives (TP), false positives (FP), true negatives (TN) and false negatives (FN) and once that is done, accuracy, precision and recall are calculated as usual, i.e.:
 $$
 \text{accuracy} = \frac{\text{TP} + \text{TN}}{\text{TP} + \text{TN} + \text{FP} + \text{FN}}
 $$
