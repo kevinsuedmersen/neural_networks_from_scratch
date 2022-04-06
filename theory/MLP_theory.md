@@ -419,94 +419,48 @@ $$
 
 ### BP2.1
 
-In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested function of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. This can be done as follows
+In order to represent the error of the previous layer $(\boldsymbol{\delta}^{l-1})^T$​ in terms of the error in the current layer $(\boldsymbol{\delta}^{l})^T$, it helps to view the loss function as a nested function of weighted input vectors, i.e. $L(\textbf{z}^l(\textbf{z}^{l-1}))$ which we want to derive w.r.t. $\textbf{z}^{l-1}$. Using the chain rule, this can be done as follows:
 $$
 (\boldsymbol{\delta}^{l-1})^T
 \coloneqq \frac{\partial L}{\partial \textbf{z}^{l-1}}
-= \frac{\partial L}{\partial \textbf{z}^l} \frac{\partial \textbf{z}^l}{\partial \textbf{z}^{l-1}}
-= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) ,
+= \frac{\partial L}{\partial \textbf{z}^l} 
+\frac{\partial \textbf{z}^l}{\partial \textbf{a}^{l-1}}
+\frac{\partial \textbf{a}^{l-1}}{\partial \textbf{z}^{l-1}},
 $$
-which can be written out explicitly as
+where, using the definition in (21), we have
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
-= \left[
-	\matrix{
-		\frac{\partial L}{\partial z^l_1} & \frac{\partial L}{\partial z^l_2} & ... & \frac{\partial L}{\partial z^l_{n^l}} 
-	}
-\right]
+\frac{\partial L}{\partial \textbf{z}^l} \coloneqq 
 \left[
 	\matrix{
-		\frac{\partial z^l_1}{\partial z^{l-1}_1} & \frac{\partial z^l_1}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_1}{\partial z^{l-1}_{n^{l-1}}} \\
-        \frac{\partial z^l_2}{\partial z^{l-1}_1} & \frac{\partial z^l_2}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_2}{\partial z^{l-1}_{n^{l-1}}} \\
-        \vdots & \vdots & \ddots & \vdots \\
-        \frac{\partial z^l_{n^l}}{\partial z^{l-1}_1} & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_2} & ... & \frac{\partial z^l_{n^l}}{\partial z^{l-1}_{n^{l-1}}}
+		\delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l} 
 	}
-\right].
+\right] =
+(\boldsymbol{\delta}^{l})^T,
 $$
-In order to find an expression for every component of $\nabla L(\textbf{z}^l)$, notice that by our definition in equation (21), we have defined every element as
+where, using (3), we have
 $$
-\frac{\partial L}{\partial z^l_j} = \delta^l_j.
-$$
-In order to find an expression for every component of $\textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})$, recall that $z^l_j = \sum^{n^{l-1}}_{k=1} \left( a^{l-1}_k w^l_{j, k} \right) + b^l_j$ and therefore, 
-$$
-\frac{\partial z^l_j}{\partial z^{l-1}_k} = \sum^{n^{l-1}}_{i=1} w^l_{j, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_k},
-$$
-where we need to use the total differential. To add a little more intuition why the total differential must be used here, consider the following picture and assume that we wanted to determine $\frac{\partial z^l_1}{\partial z^{l-1}_2}$. 
-
-![total_differential_intuition](total_differential_intuition.png)
-
-Figure 7 
-
-When determining $\frac{\partial z^l_1}{\partial z^{l-1}_2}$, we want to figure out how much $z^l_1$ changes when $z^{l-1}_2$ changes (that's how derivatives are defined). In order for $z^l_1$ to change, there are 2 different paths how to achieve that:
-
-1. Direct path: A change in $z^{l-1}_2$ leads to a change $a^{l-1}_2$, which is amplified by $w^l_{1, 2}$.
-2. Indirect path: A change in $z^{l-1}_2$ might cause a change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ (if e.g. the softmax activation function is used, since the activations of the softmax function alway sum up to 1), and each change in $a^{l-1}_1 \text{ and } a^{l-1}_3$ is amplified by $w^l_{1, 1}$ and $w^l_{1, 3}$ respectively.  
-
-Using (35) and (36), we can fill in each component of (34) as follows
-$$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
-= \left[
-	\matrix{
-		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
-	}
-\right]
+\frac{\partial \textbf{z}^l}{\partial \textbf{a}^{l-1}} =
 \left[
 	\matrix{
-		\sum^{n^{l-1}}_{i=1} w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
-		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
-		& ...
-		& \sum^{n^{l-1}}_{i=1}  w^l_{1, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
-		
-		\sum^{n^{l-1}}_{i=1} w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
-		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
-		& ...
-		& \sum^{n^{l-1}}_{i=1}  w^l_{2, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
-		
+		\frac{\partial z^l_1}{\partial a^{l-1}_1} & \frac{\partial z^l_1}{\partial a^{l-1}_2} & ... & \frac{\partial z^l_1}{\partial a^{l-1}_{n^{l-1}}} \\
+		\frac{\partial z^l_2}{\partial a^{l-1}_1} & \frac{\partial z^l_2}{\partial a^{l-1}_2} & ... & \frac{\partial z^l_2}{\partial a^{l-1}_{n^{l-1}}} \\
+		\vdots & \vdots & \ddots \vdots \\
+		\frac{\partial z^l_{n^l}}{\partial a^{l-1}_1} & \frac{\partial z^l_{n^l}}{\partial a^{l-1}_2} & ... & \frac{\partial z^l_{n^l}}{\partial a^{l-1}_{n^{l-1}}}
+	}
+\right] =
+\left[
+	\matrix{
+		w^l_{1,1} & w^l_{1,2} & ... & w^l_{1,n^{l-1}} \\
+		w^l_{2,1} & w^l_{2,2} & ... & w^l_{2,n^{l-1}} \\
 		\vdots & \vdots & \ddots & \vdots \\
-		
-		\sum^{n^{l-1}}_{i=1} w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_1}
-		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_2}
-		& ...
-		& \sum^{n^{l-1}}_{i=1}  w^l_{n^l, i} \frac{\partial a^{l-1}_i}{\partial z^{l-1}_{n^{l-1}}} \\
+		w^l_{n^l,1} & w^l_{n^l,2} & ... & w^l_{n^l,n^{l-1}}
 	}
-\right],
+\right] =
+\textbf{W}^l,
 $$
-which can be decomposed into
+since $\frac{\partial z^l_j}{\partial a^{l-1}_k} = w^l_{j, k}$, and where 
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) 
-= \left[
-	\matrix{
-		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
-	}
-\right]
-\left[
-	\matrix{
-		w^l_{1, 1} & w^l_{1, 2} & ... & w^l_{1, n^{l-1}} \\
-		w^l_{2, 1} & w^l_{2, 2} & ... & w^l_{2, n^{l-1}} \\
-		\vdots & \vdots & \ddots & \vdots \\
-		w^l_{n^l, 1} & w^l_{n^l, 2} & ... & w^l_{n^l, n^{l-1}}
-	}
-\right]
+\frac{\partial \textbf{a}^{l-1}}{\partial \textbf{z}^{l-1}} = 
 \left[
 	\matrix{
 		\frac{\partial a^{l-1}_1}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_1}{\partial z^{l-1}_{n^{l-1}}} \\
@@ -514,23 +468,22 @@ $$
 		\vdots & \vdots & \ddots & \vdots \\
 		\frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_1} & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_2} & ... & \frac{\partial a^{l-1}_{n^{l-1}}}{\partial z^{l-1}_{n^{l-1}}}
 	}
-\right],
+\right] = 
+\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
 $$
-or in short,
+Combining all terms of (34), (35) and (36), we have
 $$
 (\boldsymbol{\delta}^{l-1})^T 
-= \nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1})
 = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}),
 $$
 or similarly, after iterating one layer forward,
 $$
 (\boldsymbol{\delta}^{l})^T 
-= \nabla L(\textbf{z}^{l+1}) \ \textbf{J}_{\textbf{z}^{l+1}}(\textbf{z}^{l})
 = (\boldsymbol{\delta}^{l+1})^T \ \textbf{W}^{l+1} \ \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^{l})
 $$
 
 
-The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its forward pass and its Jacobi matrix for the backpropagation algorithm. In other words, we regard any activation function as an interchangeable - *and completely independent* - component of our neural network. 
+The above equation represents **BP2.1** in its most general form. This is a nice result, because the term $\textbf{J}_{\textbf{a}^{l}}(\textbf{z}^{l})$ already appeared in BP1.1, which shows us that for any activation function we want to use, we just need to implement its forward pass and its Jacobi matrix for the backpropagation algorithm. In other words, we regard any activation function as an interchangeable - *and completely independent* - component of our neural network. 
 
 #### Example 
 
@@ -542,9 +495,10 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-Using the above result, we can write out (40) as follows
+Using the above result, we can write out (37) as follows
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+(\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})
+= \\
 \left[
 	\matrix{
 		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
@@ -571,7 +525,7 @@ $$
 
 which, in this specific example, reduces to 
 $$
-\nabla L(\textbf{z}^l) \ \textbf{J}_{\textbf{z}^l}(\textbf{z}^{l-1}) = \\
+(\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}) = \\
 \left[
 	\matrix{
 		 \delta^l_1 & \delta^l_2 & ... & \delta^l_{n^l}
@@ -593,7 +547,7 @@ $$
 \right]
 .
 $$
-because $\boldsymbol{\delta}^l \ \textbf{W}^l$ yields a row vector, the Jacobian is a diagonal matrix, and a row vector multiplied with a diagonal matrix can be reformulated as the *Hadamard* product ($\odot$ operator) between the row vector and the elements on the main diagonal of the diagonal matrix. 
+because $(\boldsymbol{\delta}^l)^T \ \textbf{W}^l$ yields a row vector, because $\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$ is a diagonal matrix here, and because a row vector multiplied with a diagonal matrix can be simplified to the *Hadamard* product ($\odot$ operator) between the row vector and the non-zero elements of the diagonal matrix. 
 
 ### BP3.1
 
