@@ -843,7 +843,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (60) as follows
+so, using that, we can rewrite (59) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -903,7 +903,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (63) and use (65), yielding
+From here on out, it is really straight forward. Transpose both sides of (62) and use (64), yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -916,7 +916,7 @@ $$
 	}
 \right].
 $$
-Representing (66) such that each training example refers to a separate element of the depth dimension, we will get
+Representing (65) such that each training example refers to a separate element of the depth dimension, we will get
 
 ![dC_db_l](dC_db_l.png)
 
@@ -1025,7 +1025,7 @@ $$
 \frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
 \frac{1}{1 + e^{-z^l_i}}
 $$
-For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (76). 
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (75). 
 
 ## ReLU
 
@@ -1050,7 +1050,7 @@ $$
 	0 & \text{if} \ i \neq k
 \end{cases}
 $$
-where $f'(z^l_i)$ was already defined in (79). Using (80), we can construct Jacobian of the ReLU as follows 
+where $f'(z^l_i)$ was already defined in (78). Using (79), we can construct Jacobian of the ReLU as follows 
 $$
 \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
 = \left[
@@ -1093,7 +1093,7 @@ $$
 
 ### Numerical Stability Amendment
 
-Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (82). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (81). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
 $$
