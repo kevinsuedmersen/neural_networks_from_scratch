@@ -592,7 +592,7 @@ where $J_{\textbf{z}^l}(\textbf{W}^l)$ is a $n^l \times (n^l \times n^{l-1})$ ma
 
 Again, we will first find expressions for each component of $\nabla L(\textbf{z}^l)$ and after that, for each component of $J_{\textbf{z}^l}(\textbf{W}^l)$. The components of $\nabla L(\textbf{z}^l)$ are given by (21), and to derive each component of $J_{\textbf{z}^l}(\textbf{W}^l)$, we need to consider two cases again. 
 
-First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  Remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
+First, consider $\frac{\partial z^l_j}{\partial w^l_{i, k}}$ if $j = i$, i.e. $\frac{\partial z^l_j}{\partial w^l_{j, k}}$.  From (3), remember that $z^l_j = \sum^{n^{l-1}}_{k=1} w^l_{j,k} \ a^{l-1}_k + b^l_j$, so
 $$
 \frac{\partial z^l_j}{\partial w^l_{j,k}} = a^{l-1}_k.
 $$
@@ -608,7 +608,7 @@ $$
 	0 & \text{if} \ j \neq i \\
 \end{cases}
 $$
-Using (21) and (48), we can now fill in each value of (45) as follows
+Using (21) and (46), we can now fill in each value of (43) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{W}^l) = 
 \left[
@@ -649,7 +649,7 @@ $$
 	}
 \right],
 $$
-which we want to stack as
+which we want to stack as the following $n^l \times n^{l-1}$ matrix
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) = 
 \left[
@@ -716,7 +716,7 @@ $$
 	0 & \text{if} \ j \neq k
 \end{cases}
 $$
-So, using (21) and (55), we can re-write equation (54) as follows
+So, using (21) and (53), we can re-write equation (52) as follows
 $$
 \nabla L(\textbf{z}^l) \ J_{\textbf{z}^l}(\textbf{w}^l) =
 \left[
@@ -794,23 +794,21 @@ which is easily computed, because we are given $\textbf{Y}$ (since we are talkin
 
 ### BP2.2
 
-Recall from BP2.1 that 
-$$
-(\boldsymbol{\delta}^{l-1})^T = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}).
-$$
-Again, we will first transpose both sides of the above equation giving us
+Recall from BP2.1 that $(\boldsymbol{\delta}^{l-1})^T = (\boldsymbol{\delta}^l)^T \ \textbf{W}^l \ \textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1})$. Again, we will first transpose both sides of BP2.1 giving us
 $$
 \boldsymbol{\delta}^{l-1} 
 = (\textbf{J}_{\textbf{a}^{l-1}}(\textbf{z}^{l-1}))^T \ (\textbf{W}^l)^T \ \boldsymbol{\delta}^l.
 $$
 
-As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ along `axis and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
+As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$[^4] along the depth dimension and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
 ![Delta_l_1.png](Delta_l_1.png)
 
 Figure 10
 
 where $\Delta^{l-1}$ is a $M \times n^{l-1} \times 1$ dimensional array. Again, the matrix-matrix-vector multiplication for each training example is done independently. In its most general form, Figure 10 represents **BP2.2**. 
+
+[^4]: Actually, in all our use cases $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$ turns out to be a symmetric matrix, so we could also use that $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T = \textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m})$. 
 
 #### Example
 
@@ -845,7 +843,7 @@ $$
 	}
 \right],
 $$
-so, using that, we can rewrite (62) as follows
+so, using that, we can rewrite (60) as follows
 $$
 \frac{\partial C}{\partial \textbf{W}^l} = 
 \frac{1}{M} \sum^M_{m=1} 
@@ -875,7 +873,7 @@ where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be mult
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples of each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
 
 ### BP4.2
 
@@ -905,7 +903,7 @@ $$
 	}
 \right].
 $$
-From here on out, it is really straight forward. Transpose both sides of (65) and use (67), yielding
+From here on out, it is really straight forward. Transpose both sides of (63) and use (65), yielding
 $$
 \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T = 
 \frac{1}{M} \sum^M_{m=1}
@@ -918,13 +916,13 @@ $$
 	}
 \right].
 $$
-Representing (68) such that each training example refers to a separate element of the depth dimension, we will get
+Representing (66) such that each training example refers to a separate element of the depth dimension, we will get
 
 ![dC_db_l](dC_db_l.png)
 
 Figure 14
 
-where again, we take the average across all training examples of each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
+where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
 
 # Gradient Descent
 
@@ -960,7 +958,7 @@ Recall from (15) that
 $$
 L = - \sum^{n^L}_{i=1} y_i \ log(a^{L}_i),
 $$
-where we used that $\hat{\textbf{y}}^m = \textbf{a}^{L, m}$. Its gradient is defined as
+where we used that $\hat{\textbf{y}} = \textbf{a}^{L}$. Its gradient is defined as
 $$
 \frac{\partial L}{\partial \textbf{a}^{L}}
 = - \frac{\textbf{y}}{\textbf{a}^L}
@@ -1001,7 +999,7 @@ $$
 a^l_i = f(z^l_i) = \frac{1}{1 + e^{-z^l_i}}.
 $$
 
- From (45) and 46), we can infer that the Jacobian of the Sigmoid function is
+ From (39) and (40), we can infer that the Jacobian of the Sigmoid function is
 $$
 \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
 = \left[
@@ -1027,7 +1025,7 @@ $$
 \frac{1}{e^{-z^l_i} + e^{z^l_i} e^{-z^l_i}} = \\
 \frac{1}{1 + e^{-z^l_i}}
 $$
-For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (78). 
+For large positive $z^l_i$, $e^{-z^l_i}$ will convert to $0$, in which case we can use the original version of the sigmoid function in (76). 
 
 ## ReLU
 
@@ -1052,7 +1050,7 @@ $$
 	0 & \text{if} \ i \neq k
 \end{cases}
 $$
-where $f'(z^l_i)$ was already defined in (81). Using (82), we can construct Jacobian of the ReLU as follows 
+where $f'(z^l_i)$ was already defined in (79). Using (80), we can construct Jacobian of the ReLU as follows 
 $$
 \textbf{J}_{\textbf{a}^{l}}(\textbf{z}^l) 
 = \left[
@@ -1095,7 +1093,7 @@ $$
 
 ### Numerical Stability Amendment
 
-Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (84). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
+Unlike the sigmoid function, the tanh function will suffer from numerical instability if both $z^l_i \rightarrow \infty$ and $z^l_i \rightarrow -\infty$, because once the exponent is positive and once it is negative in (82). To avoid numerical instability for large positive $z^l_i$, we will introduce the following equivalent version:
 $$
 a^l_i = f({z^l_i}) = \frac{1 - e^{-2{z^l_i}}}{1 + e^{-2{z^l_i}}}
 $$
@@ -1142,7 +1140,7 @@ $$
 
 ### Numerical Stability Amendment
 
-Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (91). The following implementation will do just that:
+Because the exponent $e^{z^l_i}$ is positive, we might run into numerical overflow problems if $z^l_i \rightarrow \infty$. So, we should try to reduce $e^{z^l_i}$ somehow without changing the result of (89). The following implementation will do just that:
 $$
 a^l_i = \textbf{f}([z^l_1, z^l_2, ..., z^l_i, ..., z^l_{n^l}])_i = \\
 \textbf{f}(\textbf{z}^l)_i = \frac{e^{z^l_i - \text{max}(\textbf{z}^l)}}{\sum_j^{n^l} e^{z^l_j - \text{max}(\textbf{z}^l)}}
