@@ -1,10 +1,48 @@
+
+
 # Neural Networks from Scratch
 
-This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a stack of dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples. 
 
-# Table of contents
+
+| Author          | Mat-Nr. | University                       | Study Program    | Course                               | Mentor              |
+| --------------- | ------- | -------------------------------- | ---------------- | ------------------------------------ | ------------------- |
+| Kevin Südmersen | 89966   | Hochschule Albstadt-Sigmardingen | MSc Data Science | 40200 Practical Work (Seminararbeit) | Prof. Dr. Knoblauch |
+
+
+
+## Acknowledgments 
+
+The knowledge used in this repository stems from a variety of sources. The below is probably an incomplete list of helpful sources, but it is definitely a good start.
+
+- [Machine Learning course of Hochschule Albstadt-Sigmardingen (Prof. Dr. Knoblauch)](https://www.hs-albsig.de/studienangebot/masterstudiengaenge/data-science)
+- [Andrew Ng's Deep Learning Courses on Coursera](https://www.coursera.org/specializations/deep-learning?utm_source=gg&utm_medium=sem&utm_campaign=17-DeepLearning-ROW&utm_content=17-DeepLearning-ROW&campaignid=6465471773&adgroupid=77415260637&device=c&keyword=coursera%20deep%20learning%20ai&matchtype=b&network=g&devicemodel=&adpostion=&creativeid=506751438660&hide_mobile_promo&gclid=CjwKCAjw-sqKBhBjEiwAVaQ9ayqogdXIcEIxKgM1lXbJaUr4DgI5nEdHSjA9pp8Q2b3x8nFMgVo80BoCusIQAvD_BwE)
+- [Micheal Nielsons online Deep Learning book](http://neuralnetworksanddeeplearning.com/)
+- [3Blue1Brown](https://www.youtube.com/watch?v=aircAruvnKk&ab_channel=3Blue1Brown) 
+
+## Table of contents
 
 [TOC]
+
+# Introduction
+
+This document aims to derive and implement equations for training Multi Layer Perceptrons (MLPs), i.e. Feed Forward Neural Networks consisting of a stack of dense layers, from scratch. These neural networks will consist of an arbitrary number of layers, each with an arbitrary number of neurons and arbitrary choice of activation function. At the moment, the following building blocks are supported, but may easily be extended:
+
+- Dense layers with one of the following activation functions:
+  - Sigmoid
+  - Tanh
+  - Linear
+  - ReLU
+  - Softmax
+- Categorical Cross-Entropy losses
+- Image data generators
+- Stochastic Gradient Descent optimizers
+- Following evaluation metrics:
+  - Categorical Cross-Entropy
+  - Accuracy (micro-averaged)
+  - Precision (micro-averaged)
+  - Recall (micro-averaged)
+
+First, we will derive equations for the forward- as well as backward propagation algorithms in scalar form for a single training example. Then, we will extend these equations to a *matrix-based*  approach for a single training example, and finally, we will extend them to a matrix-based approach for a batch of training examples.
 
 # Forward Propagation
 
@@ -14,7 +52,7 @@ The forward propagation algorithm propagates inputs through the layers of the ne
 
 Suppose we wanted to decide whether or not to go to sports today and suppose that we had three types of information, i.e. *input features*, that can aid us making that decision: The weather temperature (in degree Celsius), whether or not we slept well last night (yes or no), and whether or not we have a lot of homework to do (yes or no). To answer the question whether we should go to sports tonight, we might construct a simple neural network consisting of an input layer, one hidden layer and an output layer that might look like this: 
 
-![neural_network_pic](neural_network_pic.png)
+![neural_network_pic](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/neural_network_pic.png)
 
 Figure 1: Example neural network
 
@@ -37,6 +75,7 @@ or more generally,
 $$
 z_i^l = \sum_{k=1}^{n^{l-1}} \left( a_k^{l-1} w_{i, k}^{l} \right) + b_i^l
 $$
+
 $$
 a_i^l = \textbf{f}(z^l_1, z^l_2, ..., z_i^l, ..., z^l_{n^{l-1}})_i = \textbf{f}(\textbf{z}^l)_i,
 $$
@@ -189,7 +228,7 @@ in all of the 4 above cases, we get the desired result.
 
 Assuming that we have $M$ training examples in our current batch and $n^0$ input features, imagine a 3 dimensional (3D) matrix $\textbf{X} = \textbf{A}^0$, where each element in the depth dimension belongs to a different training example: 
 
-![X_and_A0](X_and_A0.png)
+![X_and_A0](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/X_and_A0.png)
 
 Figure 2
 
@@ -201,7 +240,7 @@ $$
 $$
 or written out explicitly
 
-![Zl](Zl.png)
+![Zl](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Zl.png)
 
 Figure 4
 
@@ -224,13 +263,13 @@ $$
 $$
 which can be written out to
 
-![Al](Al.png)
+![Al](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Al.png)
 
 Figure 5
 
 Like before, equations (19) and (21) are applied recursively to layer $L$, until we can compute all `batch_size` losses at once, yielding the following result
 
-![L](L.png)
+![L](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/L.png)
 
 Figure 6
 
@@ -776,7 +815,7 @@ $$
 $$
 Next, for each training example $m$, we will simply stack the Jacobian $(\textbf{J}_{\textbf{a}^{L, m}}(\textbf{z}^{L, m}))^T$ and the gradient of each training example $(\nabla L(\textbf{a}^{L, m}))^T$ for all $m = 1, 2, ..., M$ along the first axis (`axis=0`), which again, we chose to draw in the depth dimension, such that
 
-![Delta_L](Delta_L.png)
+![Delta_L](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Delta_L.png)
 
 Figure 8
 
@@ -786,7 +825,7 @@ where $\boldsymbol{\Delta}^L$ is an $M \times n^L \times 1$ dimensional array. N
 
 Assuming we are using the categorical cross entropy cost function from equation (19) and the Softmax activation function in the output layer, we can proceed similarly as above and first transpose both sides of (32) and then stack the error of each training example in a a separate element of the depth dimension. Having done so, we will end up with the following expression
 
-![Delta_L_example](Delta_L_example.png)
+![Delta_L_example](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Delta_L_example.png)
 
 Figure 9
 
@@ -802,7 +841,7 @@ $$
 
 As before, we want to stack each error $\boldsymbol{\delta}^{l, m}$ and each Jacobian $(\textbf{J}_{\textbf{a}^{l-1, m}}(\textbf{z}^{l-1, m}))^T$[^4] along the depth dimension and broadcast each weight matrix $ (\textbf{W}^l)^T$ for all $m = 1, 2, ..., M$ training examples in each element of the depth dimension, such that
 
-![Delta_l_1.png](Delta_l_1.png)
+![Delta_l_1.png](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Delta_l_1.png)
 
 Figure 10
 
@@ -814,7 +853,7 @@ where $\Delta^{l-1}$ is a $M \times n^{l-1} \times 1$ dimensional array. Again, 
 
 Using the sigmoid activation function in layer $l-1$, figure 10 can be specified as follows
 
-![Delta_l_1_example](Delta_l_1_example.png)
+![Delta_l_1_example](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/Delta_l_1_example.png)
 
 Figure 11
 
@@ -863,13 +902,13 @@ $$
 $$
 Using the same notation as before, we can represent the above equation such that each training example belongs to a different element of the depth dimension
 
-![dC_dW_l](dC_dW_l_1.png)
+![dC_dW_l](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/dC_dW_l_1.png)
 
 Figure 12
 
 where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be multiplied out as
 
- ![dC_dW_l_2](dC_dW_l_2.png)
+ ![dC_dW_l_2](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/dC_dW_l_2.png)
 
 Figure 13
 
@@ -918,7 +957,7 @@ $$
 $$
 Representing (65) such that each training example refers to a separate element of the depth dimension, we will get
 
-![dC_db_l](dC_db_l.png)
+![dC_db_l](C:/Users/ksu/dev/UNI/neural_networks_from_scratch/theory/dC_db_l.png)
 
 Figure 14
 
