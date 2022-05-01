@@ -873,7 +873,7 @@ where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be mult
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $1 \times n^l \times n^{l-1}$ dimensional array. 
 
 ### BP4.2
 
@@ -922,7 +922,7 @@ Representing (65) such that each training example refers to a separate element o
 
 Figure 14
 
-where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
+where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $1 \times n^l \times 1$ dimensional array. 
 
 # Gradient Descent
 
