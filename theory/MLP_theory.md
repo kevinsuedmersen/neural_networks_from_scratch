@@ -1242,7 +1242,7 @@ which, after forward propagation, can be filled in with exact values. As a sanit
 
 Having calculated $\frac{\partial L}{\partial \textbf{W}^2}$, calculating $\frac{\partial L}{\partial \textbf{b}^2}$ is straight forward, because we already know some intermediate quantities:
 $$
-\frac{\partial L}{\partial \textbf{b}^1} = 
+\frac{\partial L}{\partial \textbf{b}^2} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
 \frac{\partial \textbf{z}^2}{\partial \textbf{b}^2}
