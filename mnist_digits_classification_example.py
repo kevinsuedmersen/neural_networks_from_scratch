@@ -1,3 +1,5 @@
+import numpy as np
+
 from src.lib.data_generators.image import ImageDataGenerator
 from src.lib.layers.dense import DenseLayer
 from src.lib.layers.input import InputLayer
@@ -17,6 +19,9 @@ IMG_FORMAT = "grayscale"
 BATCH_SIZE = 32
 
 if __name__ == "__main__":
+    # Set seed for reproducible results
+    np.random.seed(42)
+
     # Make sure logs are printed to the console
     set_root_logger()
 

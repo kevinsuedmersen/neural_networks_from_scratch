@@ -873,7 +873,7 @@ where $np.mean$ refers to the `mean` function of `NumPy` . Figure 12 can be mult
 
 Figure 13
 
-Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $M \times n^l \times n^{l-1}$ dimensional array. 
+Note that the average is taken along `axis=0`, i.e. we take the average across all training examples for each element of the matrix resulting from $\boldsymbol{\delta}^{l} (\textbf{a}^{l-1})^T$. Figure 13 represents **BP3.2**, where $\frac{\partial C}{\partial \textbf{W}^l}$ is an $1 \times n^l \times n^{l-1}$ dimensional array. 
 
 ### BP4.2
 
@@ -922,7 +922,7 @@ Representing (65) such that each training example refers to a separate element o
 
 Figure 14
 
-where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $M \times n^l \times 1$ dimensional array. 
+where again, we take the average across all training examples for each element of $\boldsymbol{\delta}^l$. Figure 14 represents **BP4.2**, where $\left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T$ is an $1 \times n^l \times 1$ dimensional array. 
 
 # Gradient Descent
 
@@ -934,7 +934,7 @@ $$
 $$
 and similarly, the bias updates as
 $$
-\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)^T_{s-1},
+\textbf{b}^{l}_s = \textbf{b}^{l}_{s-1} - \lambda \left( \frac{\partial C}{\partial \textbf{b}^l} \right)_{s-1},
 $$
 for update steps $i = 1, 2, ..., S$. Notice that $\textbf{w}^{l}_{s=0}$ and $\textbf{b}^{l}_{s=0}$ are initialized randomly, $S$ represents the number of update steps and $\lambda$ represents the *learning rate* controlling the step size toward the local (and hopefully global) minimum of the cost function. 
 
@@ -1242,7 +1242,7 @@ which, after forward propagation, can be filled in with exact values. As a sanit
 
 Having calculated $\frac{\partial L}{\partial \textbf{W}^2}$, calculating $\frac{\partial L}{\partial \textbf{b}^2}$ is straight forward, because we already know some intermediate quantities:
 $$
-\frac{\partial L}{\partial \textbf{b}^1} = 
+\frac{\partial L}{\partial \textbf{b}^2} = 
 \frac{\partial L}{\partial \textbf{a}^2} 
 \frac{\partial \textbf{a}^2}{\partial \textbf{z}^2} 
 \frac{\partial \textbf{z}^2}{\partial \textbf{b}^2}
@@ -1369,3 +1369,4 @@ $$
 \text{recall} = \frac{\text{TP}}{\text{TP} + \text{FN}}
 $$
 
+​	
